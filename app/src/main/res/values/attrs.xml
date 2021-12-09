@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Background drawable or color for each of the page-->
+    <attr name="pageBackground" format="reference|color" />
+</resources>

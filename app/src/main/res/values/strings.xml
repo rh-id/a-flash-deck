@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">a-flash-deck</string>
+    <string name="home">Home</string>
+    <string name="settings">Settings</string>
+    <string name="toast_back_press_exit">Press BACK again to exit</string>
+    <string name="licenses">Licenses</string>
+    <string name="version">Version</string>
+    <string name="log_file">Log file</string>
+    <string name="no_record">No record</string>
+    <string name="share_log_file">Share log file</string>
+    <string name="error_sharing_log_file">Error sharing log file</string>
+    <string name="log_file_deleted">Log file deleted</string>
+    <string name="ui_desc_delete_log_file">Delete log file</string>
+    <string name="add_deck">Add deck</string>
+    <string name="add_card">Add card</string>
+    <string name="form_name">Name</string>
+    <string name="save">Save</string>
+    <string name="name_is_required">Name is required</string>
+    <string name="error_adding_new_deck">Error adding new deck</string>
+    <string name="error_updating_deck">Error updating deck</string>
+    <string name="success_adding_new_deck">Deck added: %s</string>
+    <string name="success_updating_deck">Deck updated: %s</string>
+    <string name="question_is_required">Question is required</string>
+    <string name="answer_is_required">Answer is required</string>
+    <string name="question">Question</string>
+    <string name="answer">Answer</string>
+    <string name="deck_id_is_required">Deck ID is required, please select deck first</string>
+    <string name="new_card">New Card</string>
+    <string name="error_count_deck">Error counting deck</string>
+    <string name="error_failed_to_add_card">Error failed to add card</string>
+    <string name="success_adding_new_card">New card added</string>
+    <string name="error_failed_to_update_card">Error failed to update card</string>
+    <string name="success_updating_card">Card updated</string>
+    <string name="cancel">Cancel</string>
+</resources>
