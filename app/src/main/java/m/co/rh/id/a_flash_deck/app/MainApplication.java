@@ -20,7 +20,12 @@ package m.co.rh.id.a_flash_deck.app;
 import android.app.Activity;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.multidex.MultiDex;
+import androidx.work.Configuration;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import m.co.rh.id.a_flash_deck.app.provider.AppProviderModule;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
@@ -28,7 +33,7 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class MainApplication extends BaseApplication {
+public class MainApplication extends BaseApplication implements Configuration.Provider {
 
     private Provider mProvider;
 
@@ -65,5 +70,17 @@ public class MainApplication extends BaseApplication {
             return mProvider.get(INavigator.class);
         }
         return null;
+    }
+
+    @NonNull
+    @Override
+    public Configuration getWorkManagerConfiguration() {
+        ExecutorService executorService = mProvider.get(ScheduledExecutorService.class);
+
+        return new Configuration.Builder()
+                .setMinimumLoggingLevel(android.util.Log.INFO)
+                .setExecutor(executorService)
+                .setTaskExecutor(executorService)
+                .build();
     }
 }

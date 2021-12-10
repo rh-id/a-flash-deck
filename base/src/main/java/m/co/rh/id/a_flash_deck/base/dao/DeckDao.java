@@ -24,7 +24,9 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -74,6 +76,66 @@ public abstract class DeckDao {
 
     @Query("SELECT COUNT(*) FROM deck")
     public abstract int countDeck();
+
+    @Query("SELECT * FROM deck ORDER BY name ASC LIMIT :limit")
+    public abstract List<Deck> getDeckWithLimit(int limit);
+
+    @Query("SELECT * FROM deck WHERE name LIKE '%'||:search||'%' ORDER BY name")
+    public abstract List<Deck> searchDeck(String search);
+
+    @Query("SELECT * FROM card ORDER BY ordinal ASC LIMIT :limit")
+    public abstract List<Card> getCardWithLimit(int limit);
+
+    @Query("SELECT * FROM card WHERE deck_id=:deckId ORDER BY ordinal ASC LIMIT :limit")
+    public abstract List<Card> getCardByDeckIdWithLimit(long deckId, int limit);
+
+    @Query("SELECT * FROM card WHERE question LIKE '%'||:search||'%' " +
+            "OR answer LIKE '%'||:search||'%' ORDER BY ordinal")
+    public abstract List<Card> searchCard(String search);
+
+    @Query("SELECT * FROM card WHERE deck_id=:deckId AND (question LIKE '%'||:search||'%' " +
+            "OR answer LIKE '%'||:search||'%') ORDER BY ordinal")
+    public abstract List<Card> searchCardByDeckId(long deckId, String search);
+
+    @Query("SELECT * FROM deck WHERE id=:deckId")
+    public abstract Deck getDeckById(long deckId);
+
+    @Query("SELECT * FROM card WHERE deck_id IN (:deckIds)")
+    public abstract List<Card> getCardByDeckIds(List<Long> deckIds);
+
+    @Query("SELECT * FROM card WHERE id =:cardId")
+    public abstract Card getCardByCardId(long cardId);
+
+    @Query("SELECT * FROM deck WHERE id IN (:deckIds)")
+    public abstract List<Deck> getDeckByIds(List<Long> deckIds);
+
+    public List<Card> getCardsByDecks(List<Deck> decks) {
+        if (decks == null || decks.isEmpty()) return new ArrayList<>();
+        List<Long> deckIds = new ArrayList<>();
+        for (Deck deck : decks) {
+            deckIds.add(deck.id);
+        }
+        return getCardByDeckIds(deckIds);
+    }
+
+    @Transaction
+    public void moveCardToDeck(Card card, Deck deck) {
+        if (card == null || deck == null || card.id == null || deck.id == null) {
+            return;
+        }
+        card.deckId = deck.id;
+        update(card);
+    }
+
+    @Transaction
+    public void copyCardToDeck(Card card, Deck deck) {
+        if (card == null || deck == null || card.id == null || deck.id == null) {
+            return;
+        }
+        card.deckId = deck.id;
+        card.id = null;
+        card.id = insert(card);
+    }
 
     @Transaction
     public void insertCard(Card card) {

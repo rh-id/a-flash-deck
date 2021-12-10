@@ -19,11 +19,12 @@ package m.co.rh.id.a_flash_deck.app.provider;
 
 import android.content.Context;
 
+import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 import m.co.rh.id.aprovider.ProviderValue;
 
-public class StatefulViewProvider implements Provider, ProviderDisposable {
+public class StatefulViewProvider implements IStatefulViewProvider, ProviderDisposable {
     private Provider mProvider;
 
     public StatefulViewProvider(Provider parentProvider) {

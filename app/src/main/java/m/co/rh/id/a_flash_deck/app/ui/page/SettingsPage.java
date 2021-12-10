@@ -25,10 +25,12 @@ import android.widget.LinearLayout;
 import java.util.ArrayList;
 
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.app.ui.component.AppBarSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.LicensesMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.LogMenuSV;
+import m.co.rh.id.a_flash_deck.app.ui.component.settings.NotificationTimeMenuSV;
+import m.co.rh.id.a_flash_deck.app.ui.component.settings.ThemeMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.VersionMenuSV;
+import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.aprovider.Provider;
@@ -45,6 +47,10 @@ public class SettingsPage extends StatefulView<Activity> {
     public SettingsPage() {
         mAppBarSV = new AppBarSV();
         mStatefulViews = new ArrayList<>();
+        NotificationTimeMenuSV notificationTimeMenuSV = new NotificationTimeMenuSV();
+        mStatefulViews.add(notificationTimeMenuSV);
+        ThemeMenuSV themeMenuSV = new ThemeMenuSV();
+        mStatefulViews.add(themeMenuSV);
         LogMenuSV logMenuSV = new LogMenuSV();
         mStatefulViews.add(logMenuSV);
         LicensesMenuSV licensesMenuSV = new LicensesMenuSV();

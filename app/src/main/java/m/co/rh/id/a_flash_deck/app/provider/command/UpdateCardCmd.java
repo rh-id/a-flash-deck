@@ -23,7 +23,7 @@ import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.aprovider.Provider;
 
-public class UpdateCardCmd extends NewCardCmd{
+public class UpdateCardCmd extends NewCardCmd {
     public UpdateCardCmd(Context context, Provider provider) {
         super(context, provider);
     }
@@ -33,6 +33,7 @@ public class UpdateCardCmd extends NewCardCmd{
         return Single.fromFuture(
                 mExecutorService.get().submit(() -> {
                     mDeckDao.get().updateCard(card);
+                    mDeckChangeNotifier.get().cardUpdated(card);
                     return card;
                 })
         );

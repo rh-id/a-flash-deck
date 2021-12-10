@@ -36,11 +36,11 @@ import java.io.Serializable;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewDeckCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateDeckCmd;
-import m.co.rh.id.a_flash_deck.app.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
@@ -71,11 +71,8 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
         super.initState(activity);
         mDeck = new Deck();
         mDeck.name = "";
-        Args args = Args.of(mNavRoute);
-        if (args != null) {
-            if (args.isUpdate()) {
-                mDeck = args.getDeck();
-            }
+        if (isUpdate()) {
+            mDeck = getArgs().getDeck();
         }
     }
 
@@ -84,12 +81,17 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
         if (mSvProvider != null) {
             mSvProvider.dispose();
         }
-        mSvProvider = mProvider.get(StatefulViewProvider.class);
-        mTitle = activity.getString(R.string.add_deck);
-        View view = activity.getLayoutInflater().inflate(R.layout.deck_detail, container, false);
+        mSvProvider = mProvider.get(IStatefulViewProvider.class);
+        if(isUpdate()){
+            mTitle = activity.getString(R.string.title_edit_deck);
+        }else{
+            mTitle = activity.getString(R.string.title_add_deck);
+        }
+
+        View view = activity.getLayoutInflater().inflate(R.layout.dialog_deck_detail, container, false);
         setTitleSubject();
         setNameSubject();
-        TextView textViewTitle = view.findViewById(R.id.text_view_title);
+        TextView textViewTitle = view.findViewById(R.id.text_title);
         EditText editTextName = view.findViewById(R.id.edit_text_name);
         editTextName.addTextChangedListener(this);
         Button buttonCancel = view.findViewById(R.id.button_cancel);
@@ -152,6 +154,15 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
             mNameSubject.onComplete();
             mNameSubject = null;
         }
+    }
+
+    private Args getArgs() {
+        return Args.of(mNavRoute);
+    }
+
+    private boolean isUpdate() {
+        Args args = getArgs();
+        return args != null && args.isUpdate();
     }
 
     private void clear() {

@@ -6,7 +6,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        minSdk 16
+        minSdk 21
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -43,8 +43,20 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
     api 'com.github.rh-id:a-provider:v0.0.14'
-    api 'com.github.rh-id:a-navigator:v0.0.34'
+    api 'com.github.rh-id:a-navigator:v0.0.39'
     api 'com.github.rh-id:a-logger:v0.0.3'
+    api 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    api 'io.reactivex.rxjava3:rxjava:3.0.13'
+    api 'androidx.appcompat:appcompat:1.4.0'
+    api 'com.google.android.material:material:1.4.0'
+    api 'androidx.constraintlayout:constraintlayout:2.1.2'
+    api 'androidx.drawerlayout:drawerlayout:1.1.1'
+    api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    api 'androidx.recyclerview:recyclerview:1.2.1'
+
+    def work_version = "2.7.1"
+    api "androidx.work:work-runtime:$work_version"
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

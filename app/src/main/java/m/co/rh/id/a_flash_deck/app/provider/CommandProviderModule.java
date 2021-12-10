@@ -19,9 +19,18 @@ package m.co.rh.id.a_flash_deck.app.provider;
 
 import android.content.Context;
 
+import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.DeleteDeckCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.MoveCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewDeckCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.PagedCardItemsCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.PagedDeckItemsCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.UpdateCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateDeckCmd;
+import m.co.rh.id.a_flash_deck.timer.provider.NotificationTimerCmdProviderModule;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -33,6 +42,15 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(NewDeckCmd.class, () -> new NewDeckCmd(context, provider));
         providerRegistry.registerLazy(UpdateDeckCmd.class, () -> new UpdateDeckCmd(context, provider));
         providerRegistry.registerLazy(NewCardCmd.class, () -> new NewCardCmd(context, provider));
+        providerRegistry.registerLazy(UpdateCardCmd.class, () -> new UpdateCardCmd(context, provider));
+        providerRegistry.registerLazy(PagedDeckItemsCmd.class, () -> new PagedDeckItemsCmd(context, provider));
+        providerRegistry.registerLazy(DeleteDeckCmd.class, () -> new DeleteDeckCmd(provider));
+        providerRegistry.registerLazy(DeckQueryCmd.class, () -> new DeckQueryCmd(provider));
+        providerRegistry.registerLazy(PagedCardItemsCmd.class, () -> new PagedCardItemsCmd(context, provider));
+        providerRegistry.registerLazy(DeleteCardCmd.class, () -> new DeleteCardCmd(provider));
+        providerRegistry.registerLazy(MoveCardCmd.class, () -> new MoveCardCmd(provider));
+        providerRegistry.registerLazy(CopyCardCmd.class, () -> new CopyCardCmd(provider));
+        providerRegistry.registerModule(new NotificationTimerCmdProviderModule());
     }
 
     @Override

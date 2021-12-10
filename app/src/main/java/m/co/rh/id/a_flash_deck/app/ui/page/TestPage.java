@@ -1,0 +1,195 @@
+/*
+ *     Copyright (C) 2021 Ruby Hartono
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package m.co.rh.id.a_flash_deck.app.ui.page;
+
+import android.app.Activity;
+import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import java.io.Serializable;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
+import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.constants.Routes;
+import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.model.TestState;
+import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
+import m.co.rh.id.a_flash_deck.base.ui.component.common.MessageSVDialog;
+import m.co.rh.id.alogger.ILogger;
+import m.co.rh.id.anavigator.StatefulView;
+import m.co.rh.id.anavigator.annotation.NavInject;
+import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.aprovider.Provider;
+
+public class TestPage extends StatefulView<Activity> implements View.OnClickListener {
+    private static final String TAG = TestPage.class.getName();
+
+    @NavInject
+    private transient INavigator mNavigator;
+    private transient Provider mSvProvider;
+    private transient BehaviorSubject<TestState> mTestStateSubject;
+
+    @Override
+    protected View createView(Activity activity, ViewGroup container) {
+        if (mSvProvider != null) {
+            mSvProvider.dispose();
+        }
+        mSvProvider = BaseApplication.of(activity).getProvider().get(IStatefulViewProvider.class);
+        if (mTestStateSubject == null) {
+            mTestStateSubject = BehaviorSubject.create();
+        }
+        ViewGroup rootLayout = (ViewGroup)
+                activity.getLayoutInflater().inflate(
+                        R.layout.page_test, container, false);
+        Button buttonPrev = rootLayout.findViewById(R.id.button_previous);
+        Button buttonExit = rootLayout.findViewById(R.id.button_exit);
+        Button buttonNext = rootLayout.findViewById(R.id.button_next);
+        buttonPrev.setOnClickListener(this);
+        buttonExit.setOnClickListener(this);
+        buttonNext.setOnClickListener(this);
+
+        TextView textQuestion = rootLayout.findViewById(R.id.text_question);
+        TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
+        textAnswer.setOnClickListener(this);
+        TextView textProgress = rootLayout.findViewById(R.id.text_progress);
+        Context context = mSvProvider.getContext();
+        mSvProvider.get(RxDisposer.class)
+                .add("createView_onTestState",
+                        mTestStateSubject.subscribe(
+                                testState -> {
+                                    Card card = testState.currentCard();
+                                    String progress = (testState.getCurrentCardIndex() + 1) + " / " + testState.getTotalCards();
+                                    textQuestion.setText(card.question);
+                                    textAnswer.setText(context.getString(R.string.tap_to_view_answer));
+                                    textProgress.setText(progress);
+                                    buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
+                                    buttonNext.setEnabled(testState.getCurrentCardIndex() != testState.getTotalCards() - 1);
+                                }
+                        )
+                );
+        mSvProvider.get(RxDisposer.class)
+                .add("createView_getActiveTest",
+                        mSvProvider.get(TestStateModifier.class).getActiveTest()
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe((testStateOpt, throwable) -> {
+                                    Context svContext = mSvProvider.getContext();
+                                    ILogger iLogger = mSvProvider.get(ILogger.class);
+                                    if (throwable != null) {
+                                        iLogger.e(TAG, svContext
+                                                .getString(R.string.error_loading_test), throwable);
+                                        mNavigator.pop();
+                                    } else {
+                                        if (testStateOpt.isPresent()) {
+                                            TestState testState = testStateOpt.get();
+                                            mTestStateSubject.onNext(testState);
+                                        } else {
+                                            String title = svContext.getString(R.string.title_error);
+                                            String content = svContext.getString(R.string.error_test_not_found);
+                                            mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                    MessageSVDialog.Args.newArgs(title, content));
+                                            iLogger.d(TAG, content);
+                                        }
+                                    }
+                                })
+                );
+        return rootLayout;
+    }
+
+    @Override
+    public void dispose(Activity activity) {
+        super.dispose(activity);
+        if (mSvProvider != null) {
+            mSvProvider.dispose();
+            mSvProvider = null;
+        }
+        if (mTestStateSubject != null) {
+            mTestStateSubject.onComplete();
+            mTestStateSubject = null;
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        TestState testState = mTestStateSubject.getValue();
+        ILogger iLogger = mSvProvider.get(ILogger.class);
+        Context context = mSvProvider.getContext();
+        if (id == R.id.text_answer) {
+            TextView textView = (TextView) view;
+            textView.setText(testState.currentCard().answer);
+        } else if (id == R.id.button_previous) {
+            mSvProvider.get(RxDisposer.class)
+                    .add("onCLick_buttonPrevious",
+                            mSvProvider.get(TestStateModifier.class)
+                                    .previousCard(testState).subscribe((testState1, throwable) -> {
+                                if (throwable != null) {
+                                    iLogger.e(TAG, context.getString(R.string.error_failed_to_get_previous_card));
+                                } else {
+                                    mTestStateSubject.onNext(testState1);
+                                }
+                            })
+                    );
+        } else if (id == R.id.button_exit) {
+            String title = context.getString(R.string.title_confirm);
+            String content = context.getString(R.string.confirm_exit_test);
+            mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
+                    BooleanSVDialog.Args.newArgs(title, content),
+                    (navigator, navRoute, activity, currentView) -> {
+                        Serializable serializable = navRoute.getRouteResult();
+                        if (serializable instanceof Boolean) {
+                            if ((Boolean) serializable) {
+                                CompositeDisposable compositeDisposable = new CompositeDisposable();
+                                compositeDisposable.add(mSvProvider.get(TestStateModifier.class)
+                                        .stopTest(testState)
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe((testState1, throwable) -> {
+                                            if (throwable != null) {
+                                                iLogger.e(TAG, context.getString(R.string.error_failed_to_exit_test));
+                                            }
+                                            navigator.pop();
+                                            compositeDisposable.dispose();
+                                        })
+                                );
+                            }
+                        }
+                    });
+        } else if (id == R.id.button_next) {
+            mSvProvider.get(RxDisposer.class)
+                    .add("onClick_buttonNext",
+                            mSvProvider.get(TestStateModifier.class)
+                                    .nextCard(testState)
+                                    .subscribe((testState1, throwable) -> {
+                                        if (throwable != null) {
+                                            iLogger.e(TAG, context.getString(R.string.error_failed_to_get_next_card));
+                                        } else {
+                                            mTestStateSubject.onNext(testState1);
+                                        }
+                                    })
+                    );
+        }
+    }
+}

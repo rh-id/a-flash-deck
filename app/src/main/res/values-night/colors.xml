@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="daynight_gray_700_white">@color/white</color>
+    <color name="daynight_gray_300_gray_600">@color/gray_600</color>
+    <color name="daynight_black_white">@color/white</color>
+</resources>

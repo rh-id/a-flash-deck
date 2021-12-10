@@ -28,6 +28,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -36,6 +37,7 @@ public class NewCardCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<ILogger> mLogger;
+    protected ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
     protected ProviderValue<DeckDao> mDeckDao;
     protected BehaviorSubject<String> mDeckIdValidSubject;
     protected BehaviorSubject<String> mQuestionValidSubject;
@@ -45,6 +47,7 @@ public class NewCardCmd {
         mAppContext = context.getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mLogger = provider.lazyGet(ILogger.class);
+        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
         mDeckIdValidSubject = BehaviorSubject.create();
         mQuestionValidSubject = BehaviorSubject.create();
@@ -84,6 +87,7 @@ public class NewCardCmd {
         return Single.fromFuture(
                 mExecutorService.get().submit(() -> {
                     mDeckDao.get().insertCard(card);
+                    mDeckChangeNotifier.get().cardAdded(card);
                     return card;
                 })
         );
@@ -95,17 +99,17 @@ public class NewCardCmd {
         );
     }
 
-    public String getValidationError(){
+    public String getValidationError() {
         String deckIdValid = mDeckIdValidSubject.getValue();
-        if(deckIdValid != null && !deckIdValid.isEmpty()){
+        if (deckIdValid != null && !deckIdValid.isEmpty()) {
             return deckIdValid;
         }
         String questionValid = mQuestionValidSubject.getValue();
-        if(questionValid != null && !questionValid.isEmpty()){
+        if (questionValid != null && !questionValid.isEmpty()) {
             return questionValid;
         }
         String answerValid = mAnswerValidSubject.getValue();
-        if(answerValid != null && !answerValid.isEmpty()){
+        if (answerValid != null && !answerValid.isEmpty()) {
             return answerValid;
         }
         return "";

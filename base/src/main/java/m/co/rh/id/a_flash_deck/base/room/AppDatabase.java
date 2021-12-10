@@ -20,13 +20,26 @@ package m.co.rh.id.a_flash_deck.base.room;
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
+import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
+import m.co.rh.id.a_flash_deck.base.dao.TestDao;
+import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
+import m.co.rh.id.a_flash_deck.base.entity.Test;
 
 
-@Database(entities = {Deck.class, Card.class},
+@Database(entities = {Deck.class, Card.class, Test.class,
+        AndroidNotification.class, NotificationTimer.class},
         version = 1)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract DeckDao deckDao();
+
+    public abstract TestDao testDao();
+
+    public abstract AndroidNotificationDao androidNotificationDao();
+
+    public abstract NotificationTimerDao timerNotificationDao();
 }

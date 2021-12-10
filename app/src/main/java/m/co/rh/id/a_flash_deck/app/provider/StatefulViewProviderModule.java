@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.app.provider;
 
 import android.content.Context;
 
+import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;

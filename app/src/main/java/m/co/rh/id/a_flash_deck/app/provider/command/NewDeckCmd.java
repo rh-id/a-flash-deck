@@ -28,6 +28,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -37,12 +38,14 @@ public class NewDeckCmd {
 
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
+    protected ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
     protected ProviderValue<ILogger> mLogger;
     protected ProviderValue<DeckDao> mDeckDao;
     protected final BehaviorSubject<String> mNameValidationSubject;
 
     public NewDeckCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
+        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mLogger = provider.lazyGet(ILogger.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
@@ -66,6 +69,7 @@ public class NewDeckCmd {
         return Single.fromFuture(
                 mExecutorService.get().submit(() -> {
                     mDeckDao.get().insertDeck(deck);
+                    mDeckChangeNotifier.get().deckAdded(deck);
                     return deck;
                 })
         );

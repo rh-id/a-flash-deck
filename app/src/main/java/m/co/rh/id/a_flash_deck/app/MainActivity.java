@@ -26,12 +26,36 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import m.co.rh.id.a_flash_deck.app.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
+import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.aprovider.Provider;
 
 public class MainActivity extends AppCompatActivity {
 
+    private BehaviorSubject<Boolean> mRebuildUi;
+    private Provider mActProvider;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Provider provider = BaseApplication.of(this).getProvider();
+        mActProvider = Provider.createNestedProvider("ActivityProvider", provider, this, new RxProviderModule());
+        mRebuildUi = BehaviorSubject.create();
+        // rebuild UI is expensive and error prone, avoid spam rebuild (especially due to day and night mode)
+        mActProvider.get(RxDisposer.class)
+                .add("rebuildUI", mRebuildUi.debounce(100, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(aBoolean -> {
+                            if (aBoolean) {
+                                BaseApplication.of(this).getNavigator(this).reBuildAllRoute();
+                            }
+                        })
+                );
         getOnBackPressedDispatcher().addCallback(this,
                 new OnBackPressedCallback(true) {
                     @Override
@@ -41,8 +65,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         super.onCreate(savedInstanceState);
+        mActProvider.get(AppNotificationHandler.class).processNotification(getIntent());
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mActProvider.dispose();
+        mActProvider = null;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        mActProvider.get(AppNotificationHandler.class).processNotification(intent);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -56,6 +93,6 @@ public class MainActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
         // using AppCompatDelegate.setDefaultNightMode trigger this method
         // but not triggering Application.onConfigurationChanged
-        BaseApplication.of(this).getNavigator(this).reBuildAllRoute();
+        mRebuildUi.onNext(true);
     }
 }

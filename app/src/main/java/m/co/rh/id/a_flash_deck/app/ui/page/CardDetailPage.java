@@ -32,14 +32,14 @@ import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateCardCmd;
-import m.co.rh.id.a_flash_deck.app.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.app.ui.component.AppBarSV;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -87,20 +87,28 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
         if (mSvProvider != null) {
             mSvProvider.dispose();
         }
-        mSvProvider = BaseApplication.of(activity).getProvider().get(StatefulViewProvider.class);
+        mSvProvider = BaseApplication.of(activity).getProvider().get(IStatefulViewProvider.class);
         initTextWatcher();
-        View view = activity.getLayoutInflater().inflate(R.layout.page_card_detail, container, false);
-        ViewGroup containerRoot = view.findViewById(R.id.container_root);
-        mAppBarSV.setTitle(activity.getString(R.string.new_card));
+        ViewGroup rootLayout = (ViewGroup)
+                activity.getLayoutInflater().inflate(
+                        R.layout.page_card_detail, container, false);
+        if (isUpdate()) {
+            mAppBarSV.setTitle(activity.getString(R.string.title_update_card));
+        } else {
+            mAppBarSV.setTitle(activity.getString(R.string.title_new_card));
+        }
         mAppBarSV.setMenuItemClick(this);
-        ViewGroup containerAppBar = view.findViewById(R.id.container_app_bar);
-        containerAppBar.addView(mAppBarSV.buildView(activity, containerRoot));
-        EditText editTextQuestion = view.findViewById(R.id.text_input_edit_question);
+        ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
+        containerAppBar.addView(mAppBarSV.buildView(activity, rootLayout));
+        EditText editTextQuestion = rootLayout.findViewById(R.id.text_input_edit_question);
+        EditText editTextAnswer = rootLayout.findViewById(R.id.text_input_edit_answer);
+        if (mCard != null) {
+            editTextQuestion.setText(mCard.question);
+            editTextAnswer.setText(mCard.answer);
+        }
         editTextQuestion.addTextChangedListener(mQuestionTextWatcher);
-        EditText editTextAnswer = view.findViewById(R.id.text_input_edit_answer);
         editTextAnswer.addTextChangedListener(mAnswerTextWatcher);
-        Args args = getArgs();
-        if (args != null && args.isUpdate()) {
+        if (isUpdate()) {
             mNewCardCmd = mSvProvider.get(UpdateCardCmd.class);
         } else {
             mNewCardCmd = mSvProvider.get(NewCardCmd.class);
@@ -125,7 +133,7 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
                                 editTextAnswer.setError(null);
                             }
                         }));
-        return view;
+        return rootLayout;
     }
 
     @Override
@@ -149,6 +157,11 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
 
     private Args getArgs() {
         return Args.of(mNavRoute);
+    }
+
+    private boolean isUpdate() {
+        Args args = getArgs();
+        return args != null && args.isUpdate();
     }
 
     private void initTextWatcher() {
@@ -221,7 +234,7 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
                                     } else {
                                         iLogger.i(TAG,
                                                 successMessage);
-                                        mNavigator.pop();
+                                        mNavigator.pop(Result.withCard(card));
                                     }
                                 }));
             } else {
@@ -231,6 +244,27 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
             return true;
         }
         return false;
+    }
+
+    public static class Result implements Serializable {
+        public static Result withCard(Card card) {
+            Result result = new Result();
+            result.mCard = card;
+            return result;
+        }
+
+        public static Result of(Serializable serializable) {
+            if (serializable instanceof Result) {
+                return (Result) serializable;
+            }
+            return null;
+        }
+
+        private Card mCard;
+
+        public Card getCard() {
+            return mCard;
+        }
     }
 
     /**

@@ -1,0 +1,56 @@
+<!--
+  ~     Copyright (C) 2021 Ruby Hartono
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+    <group
+        android:scaleX="0.08149607"
+        android:scaleY="0.08149607"
+        android:translateX="0.96"
+        android:translateY="0.96">
+        <path
+            android:pathData="M82.934,39.118L211.073,39.118A0.31,0.31 0,0 1,211.383 39.428L211.383,253.283A0.31,0.31 0,0 1,211.073 253.593L82.934,253.593A0.31,0.31 0,0 1,82.624 253.283L82.624,39.428A0.31,0.31 0,0 1,82.934 39.118z"
+            android:strokeWidth="9.92512"
+            android:fillColor="#00000000"
+            android:strokeColor="#008080"
+            android:fillAlpha="0.795362" />
+        <path
+            android:pathData="M71.677,27.517L199.816,27.517A0.31,0.31 0,0 1,200.126 27.827L200.126,241.682A0.31,0.31 0,0 1,199.816 241.992L71.677,241.992A0.31,0.31 0,0 1,71.367 241.682L71.367,27.827A0.31,0.31 0,0 1,71.677 27.517z"
+            android:strokeWidth="9.92512"
+            android:fillColor="#ffffff"
+            android:strokeColor="#008080"
+            android:fillAlpha="0.795362" />
+        <path
+            android:pathData="M63.617,23.632L184.912,23.632A0.293,0.293 0,0 1,185.205 23.925L185.205,226.358A0.293,0.293 0,0 1,184.912 226.651L63.617,226.651A0.293,0.293 0,0 1,63.323 226.358L63.323,23.925A0.293,0.293 0,0 1,63.617 23.632z"
+            android:strokeWidth="16.495"
+            android:fillColor="#ffffff"
+            android:strokeColor="#008080"
+            android:fillAlpha="0.795362" />
+        <path
+            android:pathData="m123.664,95.346h-8.059L115.606,88.814q0,-4.156 1.272,-7.041 1.315,-2.927 4.878,-6.404l3.817,-3.775q2.63,-2.502 3.605,-4.369 1.018,-1.866 1.018,-3.944 0,-3.775 -2.799,-6.108 -2.757,-2.333 -7.38,-2.333 -3.308,0 -7.083,1.484 -3.775,1.442 -7.931,4.326v-7.974q3.987,-2.418 8.016,-3.605 4.072,-1.188 8.483,-1.188 7.889,0 12.554,4.072 4.708,4.072 4.708,10.9 0,3.223 -1.442,6.023 -1.4,2.757 -5.386,6.659l-3.732,3.648q-2.927,2.799 -3.732,4.581 -0.806,1.781 -0.806,4.369v1.993zM115.309,101.581h8.61v10.773h-8.61z"
+            android:strokeWidth="1.01791"
+            android:fillColor="#008080" />
+        <path
+            android:pathData="m119.072,142.538h8.213v26.501l-0.85,14.444h-6.514l-0.85,-14.444zM119.072,192.668h8.213v10.277h-8.213z"
+            android:strokeWidth="0.971037"
+            android:fillColor="#008080" />
+    </group>
+</vector>

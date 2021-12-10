@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/pageBackground">
@@ -33,7 +34,7 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:gravity="center"
-                    android:text="@string/add_deck"
+                    android:text="@string/title_add_deck"
                     app:icon="@drawable/ic_note_add_black" />
 
                 <com.google.android.material.button.MaterialButton
@@ -44,17 +45,80 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:gravity="center"
-                    android:text="@string/add_card"
+                    android:text="@string/title_add_card"
                     app:icon="@drawable/ic_post_add_black" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_start_test"
+                    style="@style/Theme.Aflashdeck.HomeMenuButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:gravity="center"
+                    android:text="@string/title_start_test"
+                    app:icon="@drawable/ic_assignment_black" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_add_notification"
+                    style="@style/Theme.Aflashdeck.HomeMenuButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:gravity="center"
+                    android:text="@string/title_add_notification_timer"
+                    app:icon="@drawable/ic_add_alarm_black" />
             </GridLayout>
         </LinearLayout>
 
-        <androidx.appcompat.widget.LinearLayoutCompat
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/container_card_ongoing_test"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_gravity="bottom"
+                android:layout_margin="@dimen/text_margin"
+                android:contentDescription="@string/on_going_test"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/on_going_test"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_total_cards"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        tool:text="12/23" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <LinearLayout
             android:id="@+id/nav_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:background="?attr/colorOnPrimary"
+            android:clickable="true"
             android:orientation="vertical">
 
             <FrameLayout
@@ -63,15 +127,37 @@
                 android:background="?attr/colorSecondary" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_decks"
+                style="@style/Theme.Aflashdeck.BorderlessMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/decks"
+                app:icon="@drawable/ic_filter_none_black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_cards"
+                style="@style/Theme.Aflashdeck.BorderlessMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cards"
+                app:icon="@drawable/ic_article_black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_notification_timers"
+                style="@style/Theme.Aflashdeck.BorderlessMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_notification_timers"
+                app:icon="@drawable/ic_alarm_black" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/menu_settings"
                 style="@style/Theme.Aflashdeck.BorderlessMenuButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/settings"
                 app:icon="@drawable/ic_settings_black" />
-
-
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
     </androidx.drawerlayout.widget.DrawerLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

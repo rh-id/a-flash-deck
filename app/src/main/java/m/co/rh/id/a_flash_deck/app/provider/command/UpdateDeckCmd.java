@@ -35,6 +35,7 @@ public class UpdateDeckCmd extends NewDeckCmd {
         return Single.fromFuture(
                 mExecutorService.get().submit(() -> {
                     mDeckDao.get().updateDeck(deck);
+                    mDeckChangeNotifier.get().deckUpdated(deck);
                     return deck;
                 })
         );

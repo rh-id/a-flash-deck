@@ -22,10 +22,11 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 
 @Entity(tableName = "card")
-public class Card implements Serializable {
+public class Card implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public Long id;
 
@@ -52,4 +53,29 @@ public class Card implements Serializable {
      */
     @ColumnInfo(name = "answer")
     public String answer;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Card card = (Card) o;
+        return ordinal == card.ordinal && Objects.equals(id, card.id)
+                && Objects.equals(deckId, card.deckId)
+                && Objects.equals(question, card.question)
+                && Objects.equals(answer, card.answer);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, deckId, ordinal, question, answer);
+    }
+
+    @Override
+    public Card clone() {
+        try {
+            return (Card) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
 }

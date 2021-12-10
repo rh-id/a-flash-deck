@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id "com.cookpad.android.plugin.license-tools" version "1.2.8"
 }
 
 android {
@@ -7,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "m.co.rh.id.a_flash_deck"
-        minSdk 16
+        minSdk 21
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -36,14 +37,7 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     implementation project(path: ':base')
-
-    implementation 'androidx.appcompat:appcompat:1.4.0'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
-    implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'io.reactivex.rxjava3:rxjava:3.0.13'
+    implementation project(path: ':timer-notification')
 
     def multidex_version = "2.0.1"
     implementation "androidx.multidex:multidex:$multidex_version"

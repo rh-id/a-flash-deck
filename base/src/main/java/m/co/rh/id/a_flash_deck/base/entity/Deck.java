@@ -29,7 +29,7 @@ import m.co.rh.id.a_flash_deck.base.room.converter.Converter;
 
 
 @Entity(tableName = "deck")
-public class Deck implements Serializable {
+public class Deck implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public Long id;
 
@@ -46,6 +46,15 @@ public class Deck implements Serializable {
     @TypeConverters({Converter.class})
     @ColumnInfo(name = "updated_date_time")
     public Date updatedDateTime;
+
+    @Override
+    public Deck clone() {
+        try {
+            return (Deck) super.clone();
+        } catch (CloneNotSupportedException cloneNotSupportedException) {
+            return null;
+        }
+    }
 
     @Override
     public String toString() {

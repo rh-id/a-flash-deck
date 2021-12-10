@@ -21,7 +21,10 @@ import android.content.Context;
 
 import androidx.room.Room;
 
+import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
+import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.room.AppDatabase;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
@@ -35,7 +38,6 @@ public class DatabaseProviderModule implements ProviderModule {
     @Override
     public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
         Context appContext = context.getApplicationContext();
-        // TODO register database
         providerRegistry.registerAsync(AppDatabase.class, () ->
                 Room.databaseBuilder(appContext,
                         AppDatabase.class, "a-flash-deck.db")
@@ -43,6 +45,12 @@ public class DatabaseProviderModule implements ProviderModule {
         // register Dao separately to decouple from AppDatabase
         providerRegistry.registerAsync(DeckDao.class, () ->
                 provider.get(AppDatabase.class).deckDao());
+        providerRegistry.registerAsync(TestDao.class, () ->
+                provider.get(AppDatabase.class).testDao());
+        providerRegistry.registerLazy(AndroidNotificationDao.class, () ->
+                provider.get(AppDatabase.class).androidNotificationDao());
+        providerRegistry.registerLazy(NotificationTimerDao.class, () ->
+                provider.get(AppDatabase.class).timerNotificationDao());
     }
 
     @Override

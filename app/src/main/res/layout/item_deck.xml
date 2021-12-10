@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <FrameLayout
+        android:id="@+id/container_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/radio_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:visibility="gone" />
+
+        <CheckBox
+            android:id="@+id/checkbox_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:visibility="gone" />
+    </FrameLayout>
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_deck_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:ellipsize="end"
+        android:maxLines="5"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@id/button_edit"
+        app:layout_constraintStart_toEndOf="@id/container_select"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="English Language Memorization" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_total_cards"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/text_margin"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/text_deck_name"
+        app:layout_constraintTop_toBottomOf="@id/text_deck_name"
+        tools:text="Cards: 20" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_edit"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:icon="@drawable/ic_edit_black"
+        app:iconTint="@color/daynight_black_white"
+        app:layout_constraintBottom_toBottomOf="@id/button_delete"
+        app:layout_constraintEnd_toStartOf="@id/button_delete"
+        app:layout_constraintTop_toTopOf="@id/button_delete" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_delete"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:icon="@drawable/ic_delete_forever_black"
+        app:iconTint="@color/red"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

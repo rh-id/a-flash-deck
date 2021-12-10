@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="name_is_required">Name is required</string>
+    <string name="error_no_deck_selected">No deck selected</string>
+    <string name="title_add_notification_timer">Add Notification Timer</string>
+    <string name="save">Save</string>
+    <string name="form_name">Name</string>
+    <string name="notification_period_in_minutes">Notification period in minutes</string>
+    <string name="title_error">Error</string>
+    <string name="success_adding_new_notification_timer">Success adding notification timer %s</string>
+    <string name="error_no_card_from_deck">No card on selected deck</string>
+    <string name="error_loading_decks">Error loading decks</string>
+    <string name="title_confirm">Confirm</string>
+    <string name="confirm_delete_notification_timer">Delete notification timer %s ?</string>
+    <string name="error_deleting_notification_timer">Error deleting notification timer</string>
+    <string name="success_deleting_notification_timer">Success delete notification timer %s</string>
+    <string name="search_desc">Search: </string>
+    <string name="hint_type_to_search">Type here to search</string>
+    <string name="title_notification_timer_list">Notification Timer List</string>
+    <string name="notification_period_every_x_minutes">Every %d minutes</string>
+</resources>
