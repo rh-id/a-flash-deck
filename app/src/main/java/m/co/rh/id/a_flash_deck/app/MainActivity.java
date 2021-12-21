@@ -30,8 +30,8 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
-import m.co.rh.id.a_flash_deck.app.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.aprovider.Provider;
@@ -65,12 +65,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         super.onCreate(savedInstanceState);
-        mActProvider.get(AppNotificationHandler.class).processNotification(getIntent());
+        mActProvider.get(IAppNotificationHandler.class).processNotification(getIntent());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mActProvider.get(IAppNotificationHandler.class).clearEvent();
         mActProvider.dispose();
         mActProvider = null;
     }
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        mActProvider.get(AppNotificationHandler.class).processNotification(intent);
+        mActProvider.get(IAppNotificationHandler.class).processNotification(intent);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package m.co.rh.id.a_flash_deck.base.dao;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
@@ -29,4 +30,7 @@ public abstract class AndroidNotificationDao {
 
     @Insert
     protected abstract long insert(AndroidNotification androidNotification);
+
+    @Delete
+    public abstract void delete(AndroidNotification androidNotification);
 }

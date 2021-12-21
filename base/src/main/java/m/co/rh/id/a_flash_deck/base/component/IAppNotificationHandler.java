@@ -38,4 +38,6 @@ public interface IAppNotificationHandler {
     void processNotification(@NonNull Intent intent);
 
     Flowable<TimerNotificationEvent> getTimerNotificationEventFlow();
+
+    void clearEvent();
 }

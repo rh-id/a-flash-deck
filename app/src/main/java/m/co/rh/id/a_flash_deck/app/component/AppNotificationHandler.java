@@ -39,7 +39,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<AndroidNotificationDao> mAndroidNotificationDao;
     private final ProviderValue<NotificationTimerDao> mTimerNotificationDao;
     private final ProviderValue<DeckDao> mDeckDao;
-    private final BehaviorSubject<TimerNotificationEvent> mTimerNotificationSubject;
+    private BehaviorSubject<TimerNotificationEvent> mTimerNotificationSubject;
 
     public AppNotificationHandler(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
@@ -123,6 +123,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     NotificationTimer notificationTimer = mTimerNotificationDao.get().findById(androidNotification.refId);
                     Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
                     mTimerNotificationSubject.onNext(new TimerNotificationEvent(notificationTimer, card));
+                    // delete after process notification
+                    mAndroidNotificationDao.get().delete(androidNotification);
                 }
             });
         }
@@ -131,5 +133,11 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     @Override
     public Flowable<TimerNotificationEvent> getTimerNotificationEventFlow() {
         return Flowable.fromObservable(mTimerNotificationSubject, BackpressureStrategy.BUFFER);
+    }
+
+    @Override
+    public void clearEvent() {
+        mTimerNotificationSubject.onComplete();
+        mTimerNotificationSubject = BehaviorSubject.create();
     }
 }
