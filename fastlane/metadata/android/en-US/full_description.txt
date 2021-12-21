@@ -1,0 +1,6 @@
+A simple and easy to use flash card to help you memorize and learn
+<ul>
+  <li>Easily add deck and cards</li>
+  <li>Add notification timer to periodically asking you question</li>
+  <li>Support dark mode and light mode</li>
+</ul>
