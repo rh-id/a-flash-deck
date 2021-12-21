@@ -32,7 +32,7 @@ public class NotificationTimer implements Serializable {
     public String name;
 
     @ColumnInfo(name = "period_minutes")
-    public int periodInMinutes = 5;
+    public int periodInMinutes = 15;
 
     /**
      * JsonArray string that stores list of selected deck ids

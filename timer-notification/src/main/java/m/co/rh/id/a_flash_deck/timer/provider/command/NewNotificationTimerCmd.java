@@ -114,7 +114,6 @@ public class NewNotificationTimerCmd {
                     mNotificationTimerDao.get().insertNotificationTimer(notificationTimer);
                     mNotificationTimerChangeNotifier.get().timerAdded(notificationTimer);
 
-                    int startHour = mAppSharedPreferences.get().getNotificationStartTimeHourOfDay();
                     PeriodicWorkRequest.Builder workBuilder = new PeriodicWorkRequest.Builder(NotificationTimerWorker.class,
                             notificationTimer.periodInMinutes, TimeUnit.MINUTES);
                     workBuilder.setInputData(new Data.Builder()

@@ -80,6 +80,9 @@ public class NotificationTimerWorker extends Worker {
             return Result.success();
         }
 
+        IAppNotificationHandler iAppNotificationHandler = provider.get(IAppNotificationHandler.class);
+        iAppNotificationHandler.cancelNotificationSync(notificationTimer);
+
         try {
             JSONArray jsonArray = new JSONArray(notificationTimer.selectedDeckIds);
             int size = jsonArray.length();

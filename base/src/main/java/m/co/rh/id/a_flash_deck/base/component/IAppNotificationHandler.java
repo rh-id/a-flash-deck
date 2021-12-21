@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.base.component;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.WorkerThread;
 
 import io.reactivex.rxjava3.core.Flowable;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -28,8 +29,8 @@ import m.co.rh.id.a_flash_deck.base.model.TimerNotificationEvent;
 
 public interface IAppNotificationHandler {
     String KEY_INT_REQUEST_ID = "KEY_INT_REQUEST_ID";
-    String CHANNEL_ID_TIMER_NOTIFICATION = "CHANNEL_ID_TIMER_NOTIFICATION";
-    String GROUP_KEY_TIMER_NOTIFICATION = "GROUP_KEY_TIMER_NOTIFICATION";
+    String CHANNEL_ID_NOTIFICATION_TIMER = "CHANNEL_ID_NOTIFICATION_TIMER";
+    String GROUP_KEY_NOTIFICATION_TIMER = "GROUP_KEY_NOTIFICATION_TIMER";
 
     void postNotificationTimer(NotificationTimer notificationTimer, Card selectedCard);
 
@@ -40,4 +41,7 @@ public interface IAppNotificationHandler {
     Flowable<TimerNotificationEvent> getTimerNotificationEventFlow();
 
     void clearEvent();
+
+    @WorkerThread
+    void cancelNotificationSync(NotificationTimer notificationTimer);
 }

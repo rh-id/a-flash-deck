@@ -1,3 +1,20 @@
+/*
+ *     Copyright (C) 2021 Ruby Hartono
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package m.co.rh.id.a_flash_deck.app.component;
 
 import android.app.NotificationChannel;
@@ -55,7 +72,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     public void postNotificationTimer(NotificationTimer notificationTimer, Card selectedCard) {
         createTestNotificationChannel();
         AndroidNotification androidNotification = new AndroidNotification();
-        androidNotification.groupKey = GROUP_KEY_TIMER_NOTIFICATION;
+        androidNotification.groupKey = GROUP_KEY_NOTIFICATION_TIMER;
         androidNotification.refId = notificationTimer.id;
         mAndroidNotificationDao.get().insertNotification(androidNotification);
         Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
@@ -72,7 +89,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 intentFlag);
         String title = mAppContext.getString(R.string.notification_title_flash_question);
         String content = selectedCard.question;
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_TIMER_NOTIFICATION)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
                 .setSmallIcon(R.drawable.ic_notification_launcher)
                 .setColorized(true)
                 .setColor(mAppContext.getResources().getColor(R.color.teal_custom))
@@ -81,10 +98,10 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setDeleteIntent(deletePendingIntent)
-                .setGroup(GROUP_KEY_TIMER_NOTIFICATION)
+                .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
                 .setAutoCancel(true);
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-        notificationManagerCompat.notify(GROUP_KEY_TIMER_NOTIFICATION,
+        notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
                 androidNotification.requestId,
                 builder.build());
     }
@@ -94,7 +111,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             CharSequence name = mAppContext.getString(R.string.notification_timer_notification_name);
             String description = mAppContext.getString(R.string.notification_timer_notification_description);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID_TIMER_NOTIFICATION,
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID_NOTIFICATION_TIMER,
                     name, importance);
             channel.setDescription(description);
 
@@ -119,7 +136,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             mExecutorService.get().execute(() -> {
                 AndroidNotification androidNotification =
                         mAndroidNotificationDao.get().findByRequestId((int) serializable);
-                if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_TIMER_NOTIFICATION)) {
+                if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                     NotificationTimer notificationTimer = mTimerNotificationDao.get().findById(androidNotification.refId);
                     Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
                     mTimerNotificationSubject.onNext(new TimerNotificationEvent(notificationTimer, card));
@@ -139,5 +156,16 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     public void clearEvent() {
         mTimerNotificationSubject.onComplete();
         mTimerNotificationSubject = BehaviorSubject.create();
+    }
+
+    @Override
+    public void cancelNotificationSync(NotificationTimer notificationTimer) {
+        AndroidNotification androidNotification = mAndroidNotificationDao.get().findByGroupTagAndRefId(GROUP_KEY_NOTIFICATION_TIMER, notificationTimer.id);
+        if (androidNotification != null) {
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+            notificationManagerCompat.cancel(GROUP_KEY_NOTIFICATION_TIMER,
+                    androidNotification.requestId);
+            mAndroidNotificationDao.get().delete(androidNotification);
+        }
     }
 }

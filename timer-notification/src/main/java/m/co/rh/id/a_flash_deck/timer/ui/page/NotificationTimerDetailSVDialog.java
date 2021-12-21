@@ -79,8 +79,8 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.dialog_notification_timer_detail, container, false);
         setNameSubject();
         NumberPicker numberPickerMinute = rootLayout.findViewById(R.id.number_picker_minutes);
-        numberPickerMinute.setMinValue(5);
-        numberPickerMinute.setMaxValue(60);
+        numberPickerMinute.setMinValue(15);
+        numberPickerMinute.setMaxValue(120);
         numberPickerMinute.setOnValueChangedListener(this);
         TextView textViewTitle = rootLayout.findViewById(R.id.text_title);
         textViewTitle.setText(mTitle);
