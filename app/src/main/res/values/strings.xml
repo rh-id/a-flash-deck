@@ -89,4 +89,5 @@
     <string name="notification_title_flash_question">Flash Question</string>
     <string name="deck_is_required">Deck is required</string>
     <string name="title_notification_timers">Notification Timers</string>
+    <string name="edit">Edit</string>
 </resources>

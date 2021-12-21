@@ -21,6 +21,7 @@ public class Routes {
     public static final String HOME_PAGE = "/";
     public static final String SETTINGS_PAGE = "/settings";
     public static final String CARD_DETAIL_PAGE = "/card/detail";
+    public static final String CARD_SHOW_PAGE = "/card/show";
     public static final String DECK_DETAIL_DIALOG = "/deck/detailDialog";
     public static final String DECK_SELECT_DIALOG = "/deck/selectDialog";
     public static final String DECKS = "/decks";

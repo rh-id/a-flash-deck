@@ -32,6 +32,7 @@ import m.co.rh.id.a_flash_deck.app.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardDetailPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardListPage;
+import m.co.rh.id.a_flash_deck.app.ui.page.CardShowPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectSVDialog;
@@ -104,6 +105,7 @@ public class AppProviderModule implements ProviderModule {
         });
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
+        navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
         navMap.put(Routes.DECK_DETAIL_DIALOG, (args, activity) -> new DeckDetailSVDialog());
         navMap.put(Routes.DECK_SELECT_DIALOG, (args, activity) -> new DeckSelectSVDialog());
         navMap.put(Routes.DECKS, (args, activity) -> new DeckListPage());

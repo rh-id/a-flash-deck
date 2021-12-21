@@ -160,9 +160,13 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                 .add("createView_onTimerNotificationEvent",
                         mSvProvider.get(AppNotificationHandler.class)
                                 .getTimerNotificationEventFlow().observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(timerNotificationEvent -> mNavigator.push(Routes.CARD_DETAIL_PAGE,
-                                        CardDetailPage.Args.forUpdate
-                                                (timerNotificationEvent.getSelectedCard().clone()))));
+                                .subscribe(timerNotificationEvent -> mNavigator.push(Routes.CARD_SHOW_PAGE,
+                                        CardShowPage.Args.withCard
+                                                (timerNotificationEvent.getSelectedCard().clone()),
+                                        (navigator, navRoute, activity1, currentView) ->
+                                                navigator.finishActivity(null))
+                                )
+                );
         return view;
     }
 
