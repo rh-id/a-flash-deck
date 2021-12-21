@@ -19,10 +19,13 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.core.text.HtmlCompat;
 
 import java.io.Serializable;
 
@@ -83,7 +86,8 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                 testState -> {
                                     Card card = testState.currentCard();
                                     String progress = (testState.getCurrentCardIndex() + 1) + " / " + testState.getTotalCards();
-                                    textQuestion.setText(card.question);
+                                    textQuestion.setText(HtmlCompat.fromHtml(card.question, HtmlCompat.FROM_HTML_MODE_LEGACY));
+                                    textQuestion.setMovementMethod(LinkMovementMethod.getInstance());
                                     textAnswer.setText(context.getString(R.string.tap_to_view_answer));
                                     textProgress.setText(progress);
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
@@ -140,7 +144,8 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         Context context = mSvProvider.getContext();
         if (id == R.id.text_answer) {
             TextView textView = (TextView) view;
-            textView.setText(testState.currentCard().answer);
+            textView.setText(HtmlCompat.fromHtml(testState.currentCard().answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
+            textView.setMovementMethod(LinkMovementMethod.getInstance());
         } else if (id == R.id.button_previous) {
             mSvProvider.get(RxDisposer.class)
                     .add("onCLick_buttonPrevious",
