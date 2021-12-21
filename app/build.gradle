@@ -3,9 +3,27 @@ plugins {
     id "com.cookpad.android.plugin.license-tools" version "1.2.8"
 }
 
+def keyStoreFile = File.createTempFile("key", null)
+keyStoreFile.deleteOnExit()
+
+if (System.getenv("SIGNING_KEY") != null) {
+    println 'key exist'
+    keyStoreFile.bytes = Base64.decoder.decode(System.getenv("SIGNING_KEY"))
+} else {
+    println 'key NOT exist'
+}
+
 android {
     compileSdk 31
 
+    signingConfigs {
+        release {
+            storeFile keyStoreFile
+            storePassword System.getenv("KEY_STORE_PASSWORD")
+            keyAlias System.getenv("ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+        }
+    }
     defaultConfig {
         applicationId "m.co.rh.id.a_flash_deck"
         minSdk 21
@@ -22,6 +40,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (System.getenv("SIGNING_KEY") != null) {
+                signingConfig signingConfigs.release
+            }
         }
     }
     compileOptions {
