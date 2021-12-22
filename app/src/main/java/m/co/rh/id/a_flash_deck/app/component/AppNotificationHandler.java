@@ -36,7 +36,7 @@ import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.app.MainActivity;
+import m.co.rh.id.a_flash_deck.app.CardShowActivity;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
@@ -75,7 +75,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         androidNotification.groupKey = GROUP_KEY_NOTIFICATION_TIMER;
         androidNotification.refId = notificationTimer.id;
         mAndroidNotificationDao.get().insertNotification(androidNotification);
-        Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
+        Intent receiverIntent = new Intent(mAppContext, CardShowActivity.class);
         receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
         int intentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

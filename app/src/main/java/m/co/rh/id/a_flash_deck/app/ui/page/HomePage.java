@@ -35,7 +35,6 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.app.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
@@ -155,17 +154,6 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                         mSvProvider.get(TestChangeNotifier.class).getTestStateChangeFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(testState -> mTestStateSubject.onNext(Optional.of(testState)))
-                );
-        mSvProvider.get(RxDisposer.class)
-                .add("createView_onTimerNotificationEvent",
-                        mSvProvider.get(AppNotificationHandler.class)
-                                .getTimerNotificationEventFlow().observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(timerNotificationEvent -> mNavigator.push(Routes.CARD_SHOW_PAGE,
-                                        CardShowPage.Args.withCard
-                                                (timerNotificationEvent.getSelectedCard().clone()),
-                                        (navigator, navRoute, activity1, currentView) ->
-                                                navigator.finishActivity(null))
-                                )
                 );
         return view;
     }

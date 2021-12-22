@@ -24,6 +24,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".app.CardShowActivity"
+            android:configChanges="uiMode|locale|layoutDirection|orientation|screenSize|screenLayout|density|colorMode|fontScale|fontWeightAdjustment|keyboard|keyboardHidden|smallestScreenSize"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Aflashdeck.NoActionBar">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="m.co.rh.id.a_flash_deck.fileprovider"

@@ -31,11 +31,12 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.aprovider.Provider;
 
-public class MainActivity extends AppCompatActivity {
+public class CardShowActivity extends AppCompatActivity {
 
     private BehaviorSubject<Boolean> mRebuildUi;
     private Provider mActProvider;
@@ -59,18 +60,26 @@ public class MainActivity extends AppCompatActivity {
                 new OnBackPressedCallback(true) {
                     @Override
                     public void handleOnBackPressed() {
-                        BaseApplication.of(MainActivity.this)
-                                .getNavigator(MainActivity.this).onBackPressed();
+                        BaseApplication.of(CardShowActivity.this)
+                                .getNavigator(CardShowActivity.this).onBackPressed();
                     }
                 });
         super.onCreate(savedInstanceState);
+        mActProvider.get(IAppNotificationHandler.class).processNotification(getIntent());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mActProvider.get(IAppNotificationHandler.class).clearEvent();
         mActProvider.dispose();
         mActProvider = null;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        mActProvider.get(IAppNotificationHandler.class).processNotification(intent);
     }
 
     @Override

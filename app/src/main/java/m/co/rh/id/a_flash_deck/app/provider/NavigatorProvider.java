@@ -26,9 +26,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import m.co.rh.id.a_flash_deck.app.CardShowActivity;
 import m.co.rh.id.a_flash_deck.app.MainActivity;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardDetailPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardListPage;
+import m.co.rh.id.a_flash_deck.app.ui.page.CardShowHomePage;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardShowPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckListPage;
@@ -60,6 +62,7 @@ public class NavigatorProvider implements ProviderDisposable {
         mProvider = provider;
         mActivityNavigatorMap = new LinkedHashMap<>();
         setupMainActivityNavigator();
+        setupCardShowActivityNavigator();
     }
 
     public INavigator getNavigator(Activity activity) {
@@ -95,6 +98,29 @@ public class NavigatorProvider implements ProviderDisposable {
         NavConfiguration<Activity, StatefulView> navConfiguration = navBuilder.build();
         Navigator navigator = new Navigator(MainActivity.class, navConfiguration);
         mActivityNavigatorMap.put(MainActivity.class, navigator);
+        mApplication.registerActivityLifecycleCallbacks(navigator);
+        mApplication.registerComponentCallbacks(navigator);
+        return navigator;
+    }
+
+    private Navigator setupCardShowActivityNavigator() {
+        Map<String, StatefulViewFactory<Activity, StatefulView>> navMap = new HashMap<>();
+        navMap.put(Routes.HOME_PAGE, (args, activity) -> {
+            return new CardShowHomePage();
+        });
+        navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
+        navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
+        navMap.put(Routes.COMMON_BOOLEAN_DIALOG, (args, activity) -> new BooleanSVDialog());
+        navMap.put(Routes.COMMON_MESSAGE_DIALOG, (args, activity) -> new MessageSVDialog());
+        navMap.put(Routes.COMMON_TIMEPICKER_DIALOG, (args, activity) -> new TimePickerSVDialog());
+        NavConfiguration.Builder<Activity, StatefulView> navBuilder =
+                new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);
+        navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),
+                "anavigator/CardShowActivity.state"));
+        navBuilder.setRequiredComponent(mProvider);
+        NavConfiguration<Activity, StatefulView> navConfiguration = navBuilder.build();
+        Navigator navigator = new Navigator(CardShowActivity.class, navConfiguration);
+        mActivityNavigatorMap.put(CardShowActivity.class, navigator);
         mApplication.registerActivityLifecycleCallbacks(navigator);
         mApplication.registerComponentCallbacks(navigator);
         return navigator;
