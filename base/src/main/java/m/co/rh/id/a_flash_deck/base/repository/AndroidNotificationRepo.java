@@ -40,7 +40,7 @@ public class AndroidNotificationRepo {
     }
 
     public synchronized void deleteNotificationByRequestId(int requestId) {
-        mAndroidNotificationDao.deleteNotificationByRequestId(requestId);
+        mAndroidNotificationDao.deleteByRequestId(requestId);
     }
 
     public synchronized void deleteNotification(AndroidNotification androidNotification) {

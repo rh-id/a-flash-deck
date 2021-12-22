@@ -42,23 +42,19 @@ public abstract class AndroidNotificationDao {
     protected abstract long count();
 
     @Transaction
-    public synchronized void insertNotification(AndroidNotification androidNotification) {
+    public void insertNotification(AndroidNotification androidNotification) {
         long count = count();
         androidNotification.requestId = (int) (count % Integer.MAX_VALUE);
         androidNotification.id = insert(androidNotification);
     }
 
     @Transaction
-    public synchronized void deleteNotification(AndroidNotification androidNotification) {
+    public void deleteNotification(AndroidNotification androidNotification) {
         delete(androidNotification);
     }
 
-    public synchronized void deleteNotificationByRequestId(int requestId) {
-        deleteByRequestId(requestId);
-    }
-
     @Query("DELETE FROM android_notification WHERE request_id = :requestId")
-    protected abstract void deleteByRequestId(int requestId);
+    public abstract void deleteByRequestId(int requestId);
 
     @Insert
     protected abstract long insert(AndroidNotification androidNotification);
