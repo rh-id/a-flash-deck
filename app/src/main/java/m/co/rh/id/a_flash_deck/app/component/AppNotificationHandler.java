@@ -125,7 +125,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() ->
-                    mAndroidNotificationDao.get().deleteByRequestId((Integer) serializable));
+                    mAndroidNotificationDao.get().deleteNotificationByRequestId((Integer) serializable));
         }
     }
 
