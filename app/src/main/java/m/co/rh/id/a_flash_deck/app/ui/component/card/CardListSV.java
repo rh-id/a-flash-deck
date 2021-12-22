@@ -67,7 +67,7 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
         }
         mSvProvider = mProvider.get(IStatefulViewProvider.class);
         mSvProvider.get(PagedCardItemsCmd.class).setDeckId(mDeckId);
-        mSvProvider.get(PagedCardItemsCmd.class).load();
+        mSvProvider.get(PagedCardItemsCmd.class).refresh();
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
         }
@@ -122,7 +122,7 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemRefreshed",
                         mSvProvider.get(PagedCardItemsCmd.class).getCardsFlow()
-                                .debounce(100, TimeUnit.MILLISECONDS)
+                                .debounce(8, TimeUnit.MILLISECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(decks -> mCardRecyclerViewAdapter.notifyDataSetChanged())
                 );
@@ -173,7 +173,7 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
 
     @Override
     public void onRefresh() {
-        mSvProvider.get(PagedCardItemsCmd.class).load();
+        mSvProvider.get(PagedCardItemsCmd.class).refresh();
     }
 
     public void setDeckId(long deckId) {

@@ -38,6 +38,7 @@ public class PagedDeckItemsCmd {
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<DeckDao> mDeckDao;
     private int mLimit;
+    private String mSearch;
     private final BehaviorSubject<ArrayList<Deck>> mDeckItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final BehaviorSubject<Set<Long>> mSelectedDeckIdsSubject;
@@ -50,6 +51,10 @@ public class PagedDeckItemsCmd {
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         mSelectedDeckIdsSubject = BehaviorSubject.createDefault(new LinkedHashSet<>());
         resetPage();
+    }
+
+    private boolean isSearching() {
+        return mSearch != null && !mSearch.isEmpty();
     }
 
     public boolean isSelected(Deck deck) {
@@ -76,8 +81,9 @@ public class PagedDeckItemsCmd {
     }
 
     public void search(String search) {
+        mSearch = search;
         mExecutorService.get().execute(() -> {
-            if (search == null || search.isEmpty()) {
+            if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
@@ -98,6 +104,8 @@ public class PagedDeckItemsCmd {
     }
 
     public void loadNextPage() {
+        // no pagination for search
+        if (isSearching()) return;
         if (getAllDeckItems().size() < mLimit) {
             return;
         }
@@ -105,7 +113,19 @@ public class PagedDeckItemsCmd {
         load();
     }
 
-    public void load() {
+    public void refresh() {
+        if (isSearching()) {
+            doSearch();
+        } else {
+            load();
+        }
+    }
+
+    private void doSearch() {
+        search(mSearch);
+    }
+
+    private void load() {
         mExecutorService.get().execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {

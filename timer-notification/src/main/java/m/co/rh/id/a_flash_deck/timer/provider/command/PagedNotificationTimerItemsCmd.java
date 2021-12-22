@@ -36,6 +36,7 @@ public class PagedNotificationTimerItemsCmd {
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<NotificationTimerDao> mTimerNotificationDao;
     private int mLimit;
+    private String mSearch;
     private final BehaviorSubject<ArrayList<NotificationTimer>> mTimerNotificationItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
@@ -49,8 +50,9 @@ public class PagedNotificationTimerItemsCmd {
     }
 
     public void search(String search) {
+        mSearch = search;
         mExecutorService.get().execute(() -> {
-            if (search == null || search.isEmpty()) {
+            if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
@@ -71,6 +73,8 @@ public class PagedNotificationTimerItemsCmd {
     }
 
     public void loadNextPage() {
+        // no pagination for search
+        if (isSearching()) return;
         if (getAllTimerNotificationItems().size() < mLimit) {
             return;
         }
@@ -78,7 +82,15 @@ public class PagedNotificationTimerItemsCmd {
         load();
     }
 
-    public void load() {
+    public void refresh() {
+        if (isSearching()) {
+            doSearch();
+        } else {
+            load();
+        }
+    }
+
+    private void load() {
         mExecutorService.get().execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
@@ -90,6 +102,14 @@ public class PagedNotificationTimerItemsCmd {
                 mIsLoadingSubject.onNext(false);
             }
         });
+    }
+
+    private boolean isSearching() {
+        return mSearch != null && !mSearch.isEmpty();
+    }
+
+    private void doSearch() {
+        search(mSearch);
     }
 
     private ArrayList<NotificationTimer> loadTimerNotificationItems() {

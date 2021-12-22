@@ -43,6 +43,7 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     private ProviderValue<DeckDao> mDeckDao;
     private int mLimit;
     private Long mDeckId;
+    private String mSearch;
     private final BehaviorSubject<ArrayList<Card>> mCardItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final CompositeDisposable mCompositeDisposable;
@@ -62,7 +63,11 @@ public class PagedCardItemsCmd implements ProviderDisposable {
                         Card movedCard = moveCardEvent.getMovedCard();
                         for (Card card : cardArrayList) {
                             if (card.id.equals(movedCard.id)) {
-                                load();
+                                if (isSearching()) {
+                                    doSearch();
+                                } else {
+                                    load();
+                                }
                                 break;
                             }
                         }
@@ -70,9 +75,14 @@ public class PagedCardItemsCmd implements ProviderDisposable {
                 }));
     }
 
+    private boolean isSearching() {
+        return mSearch != null && !mSearch.isEmpty();
+    }
+
     public void search(String search) {
+        mSearch = search;
         mExecutorService.get().execute(() -> {
-            if (search == null || search.isEmpty()) {
+            if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
@@ -103,6 +113,8 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     }
 
     public void loadNextPage() {
+        // no pagination for search
+        if (isSearching()) return;
         if (getAllCardItems().size() < mLimit) {
             return;
         }
@@ -110,7 +122,19 @@ public class PagedCardItemsCmd implements ProviderDisposable {
         load();
     }
 
-    public void load() {
+    public void refresh() {
+        if (isSearching()) {
+            doSearch();
+        } else {
+            load();
+        }
+    }
+
+    private void doSearch() {
+        search(mSearch);
+    }
+
+    private void load() {
         mExecutorService.get().execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {

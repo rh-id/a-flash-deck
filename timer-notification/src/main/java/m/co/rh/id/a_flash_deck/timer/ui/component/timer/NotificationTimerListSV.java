@@ -64,7 +64,7 @@ public class NotificationTimerListSV extends StatefulView<Activity> implements S
             mSvProvider.dispose();
         }
         mSvProvider = mProvider.get(IStatefulViewProvider.class);
-        mSvProvider.get(PagedNotificationTimerItemsCmd.class).load();
+        mSvProvider.get(PagedNotificationTimerItemsCmd.class).refresh();
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
         }
@@ -119,7 +119,7 @@ public class NotificationTimerListSV extends StatefulView<Activity> implements S
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemRefreshed",
                         mSvProvider.get(PagedNotificationTimerItemsCmd.class).getTimerNotificationsFlow()
-                                .debounce(100, TimeUnit.MILLISECONDS)
+                                .debounce(8, TimeUnit.MILLISECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(decks -> mNotificationTimerRecyclerViewAdapter.notifyDataSetChanged())
                 );
@@ -164,6 +164,6 @@ public class NotificationTimerListSV extends StatefulView<Activity> implements S
 
     @Override
     public void onRefresh() {
-        mSvProvider.get(PagedNotificationTimerItemsCmd.class).load();
+        mSvProvider.get(PagedNotificationTimerItemsCmd.class).refresh();
     }
 }

@@ -76,7 +76,7 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
             mSvProvider.dispose();
         }
         mSvProvider = mProvider.get(IStatefulViewProvider.class);
-        mSvProvider.get(PagedDeckItemsCmd.class).load();
+        mSvProvider.get(PagedDeckItemsCmd.class).refresh();
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
         }
@@ -140,7 +140,7 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemRefreshed",
                         mSvProvider.get(PagedDeckItemsCmd.class).getDecksFlow()
-                                .debounce(100, TimeUnit.MILLISECONDS)
+                                .debounce(8, TimeUnit.MILLISECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(decks -> mDeckRecyclerViewAdapter.notifyDataSetChanged())
                 );
@@ -191,7 +191,7 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
 
     @Override
     public void onRefresh() {
-        mSvProvider.get(PagedDeckItemsCmd.class).load();
+        mSvProvider.get(PagedDeckItemsCmd.class).refresh();
     }
 
     public ArrayList<Deck> getSelectedDeck() {
