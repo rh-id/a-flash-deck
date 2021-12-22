@@ -39,7 +39,7 @@ public abstract class AndroidNotificationDao {
     public abstract AndroidNotification findByGroupTagAndRefId(String groupKey, Long refId);
 
     @Query("SELECT COUNT(id) FROM android_notification")
-    public abstract long count();
+    protected abstract long count();
 
     @Transaction
     public synchronized void insertNotification(AndroidNotification androidNotification) {

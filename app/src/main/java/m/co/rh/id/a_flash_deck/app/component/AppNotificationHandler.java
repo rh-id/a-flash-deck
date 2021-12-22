@@ -39,13 +39,13 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.CardShowActivity;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
-import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.model.TimerNotificationEvent;
+import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
@@ -53,7 +53,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final Context mAppContext;
     private final ProviderValue<ExecutorService> mExecutorService;
     private final ProviderValue<Handler> mHandler;
-    private final ProviderValue<AndroidNotificationDao> mAndroidNotificationDao;
+    private final ProviderValue<AndroidNotificationRepo> mAndroidNotificationRepo;
     private final ProviderValue<NotificationTimerDao> mTimerNotificationDao;
     private final ProviderValue<DeckDao> mDeckDao;
     private BehaviorSubject<TimerNotificationEvent> mTimerNotificationSubject;
@@ -62,7 +62,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mAppContext = context.getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mHandler = provider.lazyGet(Handler.class);
-        mAndroidNotificationDao = provider.lazyGet(AndroidNotificationDao.class);
+        mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);
         mTimerNotificationDao = provider.lazyGet(NotificationTimerDao.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
         mTimerNotificationSubject = BehaviorSubject.create();
@@ -74,7 +74,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         AndroidNotification androidNotification = new AndroidNotification();
         androidNotification.groupKey = GROUP_KEY_NOTIFICATION_TIMER;
         androidNotification.refId = notificationTimer.id;
-        mAndroidNotificationDao.get().insertNotification(androidNotification);
+        mAndroidNotificationRepo.get().insertNotification(androidNotification);
         Intent receiverIntent = new Intent(mAppContext, CardShowActivity.class);
         receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
         int intentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
@@ -125,7 +125,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() ->
-                    mAndroidNotificationDao.get().deleteNotificationByRequestId((Integer) serializable));
+                    mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable));
         }
     }
 
@@ -135,13 +135,13 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() -> {
                 AndroidNotification androidNotification =
-                        mAndroidNotificationDao.get().findByRequestId((int) serializable);
+                        mAndroidNotificationRepo.get().findByRequestId((int) serializable);
                 if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                     NotificationTimer notificationTimer = mTimerNotificationDao.get().findById(androidNotification.refId);
                     Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
                     mTimerNotificationSubject.onNext(new TimerNotificationEvent(notificationTimer, card));
                     // delete after process notification
-                    mAndroidNotificationDao.get().deleteNotification(androidNotification);
+                    mAndroidNotificationRepo.get().deleteNotification(androidNotification);
                 }
             });
         }
@@ -160,12 +160,12 @@ public class AppNotificationHandler implements IAppNotificationHandler {
 
     @Override
     public void cancelNotificationSync(NotificationTimer notificationTimer) {
-        AndroidNotification androidNotification = mAndroidNotificationDao.get().findByGroupTagAndRefId(GROUP_KEY_NOTIFICATION_TIMER, notificationTimer.id);
+        AndroidNotification androidNotification = mAndroidNotificationRepo.get().findByGroupTagAndRefId(GROUP_KEY_NOTIFICATION_TIMER, notificationTimer.id);
         if (androidNotification != null) {
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
             notificationManagerCompat.cancel(GROUP_KEY_NOTIFICATION_TIMER,
                     androidNotification.requestId);
-            mAndroidNotificationDao.get().deleteNotification(androidNotification);
+            mAndroidNotificationRepo.get().deleteNotification(androidNotification);
         }
     }
 }

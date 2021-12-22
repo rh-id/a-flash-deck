@@ -21,10 +21,10 @@ import android.content.Context;
 
 import androidx.room.Room;
 
-import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
+import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.a_flash_deck.base.room.AppDatabase;
 import m.co.rh.id.a_flash_deck.base.room.DbMigration;
 import m.co.rh.id.aprovider.Provider;
@@ -49,8 +49,8 @@ public class DatabaseProviderModule implements ProviderModule {
                 provider.get(AppDatabase.class).deckDao());
         providerRegistry.registerAsync(TestDao.class, () ->
                 provider.get(AppDatabase.class).testDao());
-        providerRegistry.registerLazy(AndroidNotificationDao.class, () ->
-                provider.get(AppDatabase.class).androidNotificationDao());
+        providerRegistry.registerLazy(AndroidNotificationRepo.class, () ->
+                new AndroidNotificationRepo(provider.get(AppDatabase.class).androidNotificationDao()));
         providerRegistry.registerLazy(NotificationTimerDao.class, () ->
                 provider.get(AppDatabase.class).timerNotificationDao());
     }
