@@ -25,6 +25,10 @@ import androidx.room.Transaction;
 
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 
+/**
+ * Due to how requestId is generated,
+ * use synchronized keyword whenever insert or delete operation happens to avoid inconsistency
+ */
 @Dao
 public abstract class AndroidNotificationDao {
 
@@ -42,10 +46,15 @@ public abstract class AndroidNotificationDao {
     public abstract void deleteByRequestId(int requestId);
 
     @Transaction
-    public void insertNotification(AndroidNotification androidNotification) {
+    public synchronized void insertNotification(AndroidNotification androidNotification) {
         long count = count();
         androidNotification.requestId = (int) (count % Integer.MAX_VALUE);
         androidNotification.id = insert(androidNotification);
+    }
+
+    @Transaction
+    public synchronized void deleteNotification(AndroidNotification androidNotification) {
+        delete(androidNotification);
     }
 
 
@@ -53,5 +62,5 @@ public abstract class AndroidNotificationDao {
     protected abstract long insert(AndroidNotification androidNotification);
 
     @Delete
-    public abstract void delete(AndroidNotification androidNotification);
+    protected abstract void delete(AndroidNotification androidNotification);
 }

@@ -26,6 +26,7 @@ import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.room.AppDatabase;
+import m.co.rh.id.a_flash_deck.base.room.DbMigration;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -41,6 +42,7 @@ public class DatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(AppDatabase.class, () ->
                 Room.databaseBuilder(appContext,
                         AppDatabase.class, "a-flash-deck.db")
+                        .addMigrations(DbMigration.getAllMigrations())
                         .build());
         // register Dao separately to decouple from AppDatabase
         providerRegistry.registerAsync(DeckDao.class, () ->

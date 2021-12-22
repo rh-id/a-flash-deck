@@ -141,7 +141,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
                     mTimerNotificationSubject.onNext(new TimerNotificationEvent(notificationTimer, card));
                     // delete after process notification
-                    mAndroidNotificationDao.get().delete(androidNotification);
+                    mAndroidNotificationDao.get().deleteNotification(androidNotification);
                 }
             });
         }
@@ -165,7 +165,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
             notificationManagerCompat.cancel(GROUP_KEY_NOTIFICATION_TIMER,
                     androidNotification.requestId);
-            mAndroidNotificationDao.get().delete(androidNotification);
+            mAndroidNotificationDao.get().deleteNotification(androidNotification);
         }
     }
 }
