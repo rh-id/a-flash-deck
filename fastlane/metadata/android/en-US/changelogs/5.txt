@@ -1,0 +1,4 @@
+Release 1.0.4+5
+
+Feature:
+* Show notification card in new activity
