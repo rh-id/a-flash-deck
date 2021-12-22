@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import m.co.rh.id.a_flash_deck.app.provider.AppProviderModule;
+import m.co.rh.id.a_flash_deck.app.provider.NavigatorProvider;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.component.INavigator;
@@ -66,10 +67,7 @@ public class MainApplication extends BaseApplication implements Configuration.Pr
     }
 
     public INavigator getNavigator(Activity activity) {
-        if (activity instanceof MainActivity) {
-            return mProvider.get(INavigator.class);
-        }
-        return null;
+        return mProvider.get(NavigatorProvider.class).getNavigator(activity);
     }
 
     @NonNull
