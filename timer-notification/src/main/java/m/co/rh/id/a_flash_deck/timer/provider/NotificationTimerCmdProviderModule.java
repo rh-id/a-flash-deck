@@ -23,6 +23,7 @@ import m.co.rh.id.a_flash_deck.timer.provider.command.DeleteNotificationTimerCmd
 import m.co.rh.id.a_flash_deck.timer.provider.command.NewNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NotificationTimerQueryCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.PagedNotificationTimerItemsCmd;
+import m.co.rh.id.a_flash_deck.timer.provider.command.UpdateNotificationTimerCmd;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -31,6 +32,7 @@ public class NotificationTimerCmdProviderModule implements ProviderModule {
     @Override
     public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerLazy(NewNotificationTimerCmd.class, () -> new NewNotificationTimerCmd(context, provider));
+        providerRegistry.registerLazy(UpdateNotificationTimerCmd.class, () -> new UpdateNotificationTimerCmd(context, provider));
         providerRegistry.registerLazy(NotificationTimerQueryCmd.class, () -> new NotificationTimerQueryCmd(provider));
         providerRegistry.registerLazy(DeleteNotificationTimerCmd.class, () -> new DeleteNotificationTimerCmd(provider));
         providerRegistry.registerLazy(PagedNotificationTimerItemsCmd.class, () -> new PagedNotificationTimerItemsCmd(context, provider));

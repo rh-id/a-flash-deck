@@ -25,7 +25,7 @@ import androidx.annotation.WorkerThread;
 import io.reactivex.rxjava3.core.Flowable;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
-import m.co.rh.id.a_flash_deck.base.model.TimerNotificationEvent;
+import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
 
 public interface IAppNotificationHandler {
     String KEY_INT_REQUEST_ID = "KEY_INT_REQUEST_ID";
@@ -38,7 +38,7 @@ public interface IAppNotificationHandler {
 
     void processNotification(@NonNull Intent intent);
 
-    Flowable<TimerNotificationEvent> getTimerNotificationEventFlow();
+    Flowable<NotificationTimerEvent> getTimerNotificationEventFlow();
 
     void clearEvent();
 

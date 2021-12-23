@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/text_name"
         android:layout_width="0dp"
@@ -43,6 +42,17 @@
         app:layout_constraintStart_toStartOf="@id/text_period_min"
         app:layout_constraintTop_toBottomOf="@id/text_period_min"
         tools:text="[deck1, deck2]" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_edit"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:icon="@drawable/ic_edit_black"
+        app:iconTint="@color/daynight_black_white"
+        app:layout_constraintBottom_toBottomOf="@id/button_delete"
+        app:layout_constraintEnd_toStartOf="@id/button_delete"
+        app:layout_constraintTop_toTopOf="@id/button_delete" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_delete"

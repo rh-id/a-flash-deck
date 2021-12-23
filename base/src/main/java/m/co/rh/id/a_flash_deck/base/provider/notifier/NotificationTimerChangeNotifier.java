@@ -23,31 +23,43 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 
 public class NotificationTimerChangeNotifier {
-    private PublishSubject<NotificationTimer> mAddedTimerNotificationSubject;
-    private PublishSubject<NotificationTimer> mDeletedTimerNotificationSubject;
+    private PublishSubject<NotificationTimer> mAddedNotificationTimerSubject;
+    private PublishSubject<NotificationTimer> mUpdatedNotificationTimerSubject;
+    private PublishSubject<NotificationTimer> mDeletedNotificationTimerSubject;
 
     public NotificationTimerChangeNotifier() {
-        mAddedTimerNotificationSubject = PublishSubject.create();
-        mDeletedTimerNotificationSubject = PublishSubject.create();
+        mAddedNotificationTimerSubject = PublishSubject.create();
+        mUpdatedNotificationTimerSubject = PublishSubject.create();
+        mDeletedNotificationTimerSubject = PublishSubject.create();
     }
 
     public void timerAdded(NotificationTimer notificationTimer) {
         if (notificationTimer != null) {
-            mAddedTimerNotificationSubject.onNext(notificationTimer);
+            mAddedNotificationTimerSubject.onNext(notificationTimer);
+        }
+    }
+
+    public void timerUpdated(NotificationTimer notificationTimer) {
+        if (notificationTimer != null) {
+            mUpdatedNotificationTimerSubject.onNext(notificationTimer);
         }
     }
 
     public void timerDeleted(NotificationTimer notificationTimer) {
         if (notificationTimer != null) {
-            mDeletedTimerNotificationSubject.onNext(notificationTimer);
+            mDeletedNotificationTimerSubject.onNext(notificationTimer);
         }
     }
 
     public Flowable<NotificationTimer> getAddedTimerNotificationFlow() {
-        return Flowable.fromObservable(mAddedTimerNotificationSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mAddedNotificationTimerSubject, BackpressureStrategy.BUFFER);
+    }
+
+    public Flowable<NotificationTimer> getUpdatedTimerNotificationFlow() {
+        return Flowable.fromObservable(mUpdatedNotificationTimerSubject, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<NotificationTimer> getDeletedTimerNotificationFlow() {
-        return Flowable.fromObservable(mDeletedTimerNotificationSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mDeletedNotificationTimerSubject, BackpressureStrategy.BUFFER);
     }
 }

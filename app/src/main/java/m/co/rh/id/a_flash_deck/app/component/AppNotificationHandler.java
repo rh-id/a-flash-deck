@@ -44,7 +44,7 @@ import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
-import m.co.rh.id.a_flash_deck.base.model.TimerNotificationEvent;
+import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -56,7 +56,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<AndroidNotificationRepo> mAndroidNotificationRepo;
     private final ProviderValue<NotificationTimerDao> mTimerNotificationDao;
     private final ProviderValue<DeckDao> mDeckDao;
-    private BehaviorSubject<TimerNotificationEvent> mTimerNotificationSubject;
+    private BehaviorSubject<NotificationTimerEvent> mTimerNotificationSubject;
 
     public AppNotificationHandler(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
@@ -139,7 +139,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                     NotificationTimer notificationTimer = mTimerNotificationDao.get().findById(androidNotification.refId);
                     Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                    mTimerNotificationSubject.onNext(new TimerNotificationEvent(notificationTimer, card));
+                    mTimerNotificationSubject.onNext(new NotificationTimerEvent(notificationTimer, card));
                     // delete after process notification
                     mAndroidNotificationRepo.get().deleteNotification(androidNotification);
                 }
@@ -148,7 +148,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     }
 
     @Override
-    public Flowable<TimerNotificationEvent> getTimerNotificationEventFlow() {
+    public Flowable<NotificationTimerEvent> getTimerNotificationEventFlow() {
         return Flowable.fromObservable(mTimerNotificationSubject, BackpressureStrategy.BUFFER);
     }
 

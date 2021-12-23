@@ -128,6 +128,11 @@ public class NotificationTimerListSV extends StatefulView<Activity> implements S
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mNotificationTimerRecyclerViewAdapter::notifyItemAdded));
         mSvProvider.get(RxDisposer.class)
+                .add("createView_onItemUpdated",
+                        mSvProvider.get(NotificationTimerChangeNotifier.class).getUpdatedTimerNotificationFlow()
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(mNotificationTimerRecyclerViewAdapter::notifyItemUpdated));
+        mSvProvider.get(RxDisposer.class)
                 .add("createView_onLoadingChanged",
                         mSvProvider.get(PagedNotificationTimerItemsCmd.class).getLoadingFlow()
                                 .observeOn(AndroidSchedulers.mainThread())

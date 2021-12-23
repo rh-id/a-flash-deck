@@ -37,6 +37,7 @@ import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.DeleteNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NotificationTimerQueryCmd;
+import m.co.rh.id.a_flash_deck.timer.ui.page.NotificationTimerDetailSVDialog;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -62,6 +63,8 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements V
         mSvProvider = mProvider.get(IStatefulViewProvider.class);
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.item_notification_timer, container, false);
+        Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
+        buttonEdit.setOnClickListener(this);
         Button buttonDelete = rootLayout.findViewById(R.id.button_delete);
         buttonDelete.setOnClickListener(this);
         TextView textName = rootLayout.findViewById(R.id.text_name);
@@ -153,6 +156,9 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements V
                             }
                         });
             }
+        } else if (id == R.id.button_edit) {
+            mNavigator.push(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG,
+                    NotificationTimerDetailSVDialog.Args.forUpdate(mNotificationTimer.clone()));
         }
     }
 

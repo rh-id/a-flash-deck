@@ -19,4 +19,5 @@
     <string name="hint_type_to_search">Type here to search</string>
     <string name="title_notification_timer_list">Notification Timer List</string>
     <string name="notification_period_every_x_minutes">Every %d minutes</string>
+    <string name="success_updating_new_notification_timer">Success updating notification timer %s</string>
 </resources>

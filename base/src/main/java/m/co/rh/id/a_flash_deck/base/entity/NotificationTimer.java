@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity(tableName = "notification_timer")
-public class NotificationTimer implements Serializable {
+public class NotificationTimer implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public Long id;
 
@@ -68,5 +68,14 @@ public class NotificationTimer implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, periodInMinutes, selectedDeckIds, displayedCardIds, currentCardId);
+    }
+
+    @Override
+    public NotificationTimer clone() {
+        try {
+            return (NotificationTimer) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
     }
 }

@@ -22,11 +22,11 @@ import java.io.Serializable;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 
-public class TimerNotificationEvent implements Serializable {
+public class NotificationTimerEvent implements Serializable {
     private NotificationTimer mNotificationTimer;
     private Card mSelectedCard;
 
-    public TimerNotificationEvent(NotificationTimer notificationTimer, Card selectedCard) {
+    public NotificationTimerEvent(NotificationTimer notificationTimer, Card selectedCard) {
         mNotificationTimer = notificationTimer;
         mSelectedCard = selectedCard;
     }
