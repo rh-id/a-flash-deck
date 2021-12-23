@@ -71,9 +71,13 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            ArrayList<Card> deckArrayList = mPagedCardItemsCmd.getAllCardItems();
+            ArrayList<Card> itemArrayList = mPagedCardItemsCmd.getAllCardItems();
+            Card item = itemArrayList.get(position);
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-            itemViewHolder.setItem(deckArrayList.get(position));
+            Card itemFromHolder = itemViewHolder.getItem();
+            if (itemFromHolder == null || !itemFromHolder.equals(item)) {
+                itemViewHolder.setItem(item);
+            }
         }
     }
 
@@ -152,6 +156,10 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             }
         }
         return removedIdx;
+    }
+
+    public void notifyItemRefreshed() {
+        notifyItemRangeChanged(0, getItemCount());
     }
 
     protected static class ItemViewHolder extends RecyclerView.ViewHolder {

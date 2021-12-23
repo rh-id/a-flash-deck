@@ -122,9 +122,8 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemRefreshed",
                         mSvProvider.get(PagedCardItemsCmd.class).getCardsFlow()
-                                .debounce(8, TimeUnit.MILLISECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(decks -> mCardRecyclerViewAdapter.notifyDataSetChanged())
+                                .subscribe(decks -> mCardRecyclerViewAdapter.notifyItemRefreshed())
                 );
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemAdded",

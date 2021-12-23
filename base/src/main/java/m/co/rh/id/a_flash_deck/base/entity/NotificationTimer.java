@@ -22,6 +22,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity(tableName = "notification_timer")
 public class NotificationTimer implements Serializable {
@@ -50,4 +51,22 @@ public class NotificationTimer implements Serializable {
      * Current card ID that is displayed
      */
     public Long currentCardId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NotificationTimer that = (NotificationTimer) o;
+        return periodInMinutes == that.periodInMinutes &&
+                Objects.equals(id, that.id) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(selectedDeckIds, that.selectedDeckIds) &&
+                Objects.equals(displayedCardIds, that.displayedCardIds) &&
+                Objects.equals(currentCardId, that.currentCardId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, periodInMinutes, selectedDeckIds, displayedCardIds, currentCardId);
+    }
 }

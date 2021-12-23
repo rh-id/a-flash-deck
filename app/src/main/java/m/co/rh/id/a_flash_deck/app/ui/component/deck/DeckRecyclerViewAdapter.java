@@ -73,9 +73,13 @@ public class DeckRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            ArrayList<Deck> deckArrayList = mPagedDeckItemsCmd.getAllDeckItems();
+            ArrayList<Deck> itemArrayList = mPagedDeckItemsCmd.getAllDeckItems();
+            Deck item = itemArrayList.get(position);
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-            itemViewHolder.setItem(deckArrayList.get(position));
+            Deck itemHolder = itemViewHolder.getItem();
+            if (itemHolder == null || !itemHolder.equals(item)) {
+                itemViewHolder.setItem(item);
+            }
         }
     }
 
@@ -151,6 +155,10 @@ public class DeckRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             }
         }
         return removedIdx;
+    }
+
+    public void notifyItemRefreshed() {
+        notifyItemRangeChanged(0, getItemCount());
     }
 
     protected static class ItemViewHolder extends RecyclerView.ViewHolder implements DeckItemSV.OnItemSelectListener {

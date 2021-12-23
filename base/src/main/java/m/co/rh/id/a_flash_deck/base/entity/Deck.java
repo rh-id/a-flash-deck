@@ -24,6 +24,7 @@ import androidx.room.TypeConverters;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 import m.co.rh.id.a_flash_deck.base.room.converter.Converter;
 
@@ -46,6 +47,22 @@ public class Deck implements Serializable, Cloneable {
     @TypeConverters({Converter.class})
     @ColumnInfo(name = "updated_date_time")
     public Date updatedDateTime;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Deck deck = (Deck) o;
+        return Objects.equals(id, deck.id) &&
+                Objects.equals(name, deck.name) &&
+                Objects.equals(createdDateTime, deck.createdDateTime) &&
+                Objects.equals(updatedDateTime, deck.updatedDateTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, createdDateTime, updatedDateTime);
+    }
 
     @Override
     public Deck clone() {

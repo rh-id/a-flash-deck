@@ -71,8 +71,12 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
             ArrayList<NotificationTimer> timerArrayList = mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems();
+            NotificationTimer item = timerArrayList.get(position);
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-            itemViewHolder.setItem(timerArrayList.get(position));
+            NotificationTimer itemHolder = itemViewHolder.getItem();
+            if (itemHolder == null || !itemHolder.equals(item)) {
+                itemViewHolder.setItem(item);
+            }
         }
     }
 
@@ -148,6 +152,10 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
             }
         }
         return resultIdx;
+    }
+
+    public void notifyItemRefreshed() {
+        notifyItemRangeChanged(0, getItemCount());
     }
 
     protected static class ItemViewHolder extends RecyclerView.ViewHolder {

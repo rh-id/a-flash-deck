@@ -140,9 +140,8 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemRefreshed",
                         mSvProvider.get(PagedDeckItemsCmd.class).getDecksFlow()
-                                .debounce(8, TimeUnit.MILLISECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(decks -> mDeckRecyclerViewAdapter.notifyDataSetChanged())
+                                .subscribe(decks -> mDeckRecyclerViewAdapter.notifyItemRefreshed())
                 );
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemAdded",
