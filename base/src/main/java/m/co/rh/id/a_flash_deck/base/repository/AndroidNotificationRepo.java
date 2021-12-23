@@ -17,14 +17,21 @@
 
 package m.co.rh.id.a_flash_deck.base.repository;
 
+import androidx.annotation.WorkerThread;
+
+import java.util.concurrent.atomic.AtomicLong;
+
 import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 
 public class AndroidNotificationRepo {
     private AndroidNotificationDao mAndroidNotificationDao;
+    private AtomicLong mRequestId;
 
+    @WorkerThread
     public AndroidNotificationRepo(AndroidNotificationDao androidNotificationDao) {
         mAndroidNotificationDao = androidNotificationDao;
+        mRequestId = new AtomicLong(mAndroidNotificationDao.count());
     }
 
     public synchronized AndroidNotification findByRequestId(int requestId) {
@@ -36,14 +43,17 @@ public class AndroidNotificationRepo {
     }
 
     public synchronized void insertNotification(AndroidNotification androidNotification) {
-        mAndroidNotificationDao.insertNotification(androidNotification);
+        androidNotification.requestId = (int) (mRequestId.getAndIncrement() % Integer.MAX_VALUE);
+        androidNotification.id = mAndroidNotificationDao.insert(androidNotification);
     }
 
     public synchronized void deleteNotificationByRequestId(int requestId) {
         mAndroidNotificationDao.deleteByRequestId(requestId);
+        mRequestId.decrementAndGet();
     }
 
     public synchronized void deleteNotification(AndroidNotification androidNotification) {
-        mAndroidNotificationDao.deleteNotification(androidNotification);
+        mAndroidNotificationDao.delete(androidNotification);
+        mRequestId.decrementAndGet();
     }
 }

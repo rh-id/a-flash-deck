@@ -21,7 +21,6 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.Transaction;
 
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 
@@ -39,26 +38,14 @@ public abstract class AndroidNotificationDao {
     public abstract AndroidNotification findByGroupTagAndRefId(String groupKey, Long refId);
 
     @Query("SELECT COUNT(id) FROM android_notification")
-    protected abstract long count();
-
-    @Transaction
-    public void insertNotification(AndroidNotification androidNotification) {
-        long count = count();
-        androidNotification.requestId = (int) (count % Integer.MAX_VALUE);
-        androidNotification.id = insert(androidNotification);
-    }
-
-    @Transaction
-    public void deleteNotification(AndroidNotification androidNotification) {
-        delete(androidNotification);
-    }
+    public abstract long count();
 
     @Query("DELETE FROM android_notification WHERE request_id = :requestId")
     public abstract void deleteByRequestId(int requestId);
 
     @Insert
-    protected abstract long insert(AndroidNotification androidNotification);
+    public abstract long insert(AndroidNotification androidNotification);
 
     @Delete
-    protected abstract void delete(AndroidNotification androidNotification);
+    public abstract void delete(AndroidNotification androidNotification);
 }

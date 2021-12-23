@@ -33,7 +33,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Test;
 
 @Database(entities = {Deck.class, Card.class, Test.class,
         AndroidNotification.class, NotificationTimer.class},
-        version = 4)
+        version = 5)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract DeckDao deckDao();
 
