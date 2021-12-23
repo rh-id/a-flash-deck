@@ -53,12 +53,17 @@ public class CardShowHomePage extends StatefulView<Activity> implements NavOnBac
                 .add("createView_onTimerNotificationEvent",
                         mSvProvider.get(AppNotificationHandler.class)
                                 .getTimerNotificationEventFlow().observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(timerNotificationEvent -> mNavigator.push(Routes.CARD_SHOW_PAGE,
-                                        CardShowPage.Args.withCard
-                                                (timerNotificationEvent.getSelectedCard().clone()),
-                                        (navigator, navRoute, activity1, currentView) ->
-                                                onBackPressed(currentView, activity1, navigator)
-                                        )
+                                .subscribe(timerNotificationEventOpt -> {
+                                            if (timerNotificationEventOpt.isPresent()) {
+                                                mNavigator.push(Routes.CARD_SHOW_PAGE,
+                                                        CardShowPage.Args.withCard
+                                                                (timerNotificationEventOpt.get()
+                                                                        .getSelectedCard().clone()),
+                                                        (navigator, navRoute, activity1, currentView) ->
+                                                                onBackPressed(currentView, activity1, navigator));
+                                                mSvProvider.get(AppNotificationHandler.class).clearEvent();
+                                            }
+                                        }
                                 )
                 );
         return activity.getLayoutInflater().inflate(R.layout.page_card_show_home, container, false);

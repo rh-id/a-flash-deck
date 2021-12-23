@@ -30,7 +30,9 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantLock;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
@@ -54,22 +56,25 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<ExecutorService> mExecutorService;
     private final ProviderValue<Handler> mHandler;
     private final ProviderValue<AndroidNotificationRepo> mAndroidNotificationRepo;
-    private final ProviderValue<NotificationTimerDao> mTimerNotificationDao;
+    private final ProviderValue<NotificationTimerDao> mNotificationTimerDao;
     private final ProviderValue<DeckDao> mDeckDao;
-    private BehaviorSubject<NotificationTimerEvent> mTimerNotificationSubject;
+    private BehaviorSubject<Optional<NotificationTimerEvent>> mTimerNotificationSubject;
+    private ReentrantLock mLock;
 
     public AppNotificationHandler(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mHandler = provider.lazyGet(Handler.class);
         mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);
-        mTimerNotificationDao = provider.lazyGet(NotificationTimerDao.class);
+        mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
-        mTimerNotificationSubject = BehaviorSubject.create();
+        mTimerNotificationSubject = BehaviorSubject.createDefault(Optional.empty());
+        mLock = new ReentrantLock();
     }
 
     @Override
     public void postNotificationTimer(NotificationTimer notificationTimer, Card selectedCard) {
+        mLock.lock();
         createTestNotificationChannel();
         AndroidNotification androidNotification = new AndroidNotification();
         androidNotification.groupKey = GROUP_KEY_NOTIFICATION_TIMER;
@@ -104,6 +109,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
                 androidNotification.requestId,
                 builder.build());
+        mLock.unlock();
     }
 
     private void createTestNotificationChannel() {
@@ -125,7 +131,11 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() ->
-                    mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable));
+            {
+                mLock.lock();
+                mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
+                mLock.unlock();
+            });
         }
     }
 
@@ -134,32 +144,34 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() -> {
+                mLock.lock();
                 AndroidNotification androidNotification =
                         mAndroidNotificationRepo.get().findByRequestId((int) serializable);
                 if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
-                    NotificationTimer notificationTimer = mTimerNotificationDao.get().findById(androidNotification.refId);
+                    NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
                     Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                    mTimerNotificationSubject.onNext(new NotificationTimerEvent(notificationTimer, card));
+                    mTimerNotificationSubject.onNext(Optional.of(new NotificationTimerEvent(notificationTimer, card)));
                     // delete after process notification
                     mAndroidNotificationRepo.get().deleteNotification(androidNotification);
                 }
+                mLock.unlock();
             });
         }
     }
 
     @Override
-    public Flowable<NotificationTimerEvent> getTimerNotificationEventFlow() {
+    public Flowable<Optional<NotificationTimerEvent>> getTimerNotificationEventFlow() {
         return Flowable.fromObservable(mTimerNotificationSubject, BackpressureStrategy.BUFFER);
     }
 
     @Override
     public void clearEvent() {
-        mTimerNotificationSubject.onComplete();
-        mTimerNotificationSubject = BehaviorSubject.create();
+        mTimerNotificationSubject.onNext(Optional.empty());
     }
 
     @Override
     public void cancelNotificationSync(NotificationTimer notificationTimer) {
+        mLock.lock();
         AndroidNotification androidNotification = mAndroidNotificationRepo.get().findByGroupTagAndRefId(GROUP_KEY_NOTIFICATION_TIMER, notificationTimer.id);
         if (androidNotification != null) {
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
@@ -167,5 +179,6 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     androidNotification.requestId);
             mAndroidNotificationRepo.get().deleteNotification(androidNotification);
         }
+        mLock.unlock();
     }
 }

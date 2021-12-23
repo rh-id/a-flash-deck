@@ -71,7 +71,6 @@ public class CardShowActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mActProvider.get(IAppNotificationHandler.class).clearEvent();
         mActProvider.dispose();
         mActProvider = null;
     }

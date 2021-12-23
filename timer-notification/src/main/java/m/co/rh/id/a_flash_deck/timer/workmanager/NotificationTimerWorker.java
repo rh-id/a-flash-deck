@@ -132,9 +132,9 @@ public class NotificationTimerWorker extends Worker {
                     }
                 }
             }
+            notificationTimerDao.update(notificationTimer);
             provider.get(IAppNotificationHandler.class)
                     .postNotificationTimer(notificationTimer, selectedCard);
-            notificationTimerDao.update(notificationTimer);
             provider.get(ILogger.class)
                     .d(TAG, "Notification timer " + notificationTimer.name + " executed");
         } catch (JSONException jsonException) {
