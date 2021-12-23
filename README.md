@@ -1,5 +1,9 @@
 # a-flash-deck
 
+![Android CI](https://github.com/rh-id/a-flash-deck/actions/workflows/gradlew-build.yml/badge.svg)
+![Release Build](https://github.com/rh-id/a-flash-deck/actions/workflows/android-release.yml/badge.svg)
+![Emulator Test](https://github.com/rh-id/a-flash-deck/actions/workflows/android-emulator-test.yml/badge.svg)
+
 A simple Flash Card application to assist in learning and remembering something.
 
 This project is intended for demo app for [a-navigator](https://github.com/rh-id/a-navigator) and [a-provider](https://github.com/rh-id/a-provider) library usage.
