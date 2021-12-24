@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.base.provider;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.room.Room;
 
 import java.util.concurrent.ExecutorService;
@@ -34,6 +35,7 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
+import m.co.rh.id.aprovider.ProviderValue;
 
 /**
  * Provider module for database configuration
@@ -43,11 +45,7 @@ public class DatabaseProviderModule implements ProviderModule {
     @Override
     public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
         Context appContext = context.getApplicationContext();
-        providerRegistry.registerAsync(AppDatabase.class, () ->
-                Room.databaseBuilder(appContext,
-                        AppDatabase.class, "a-flash-deck.db")
-                        .addMigrations(DbMigration.getAllMigrations())
-                        .build());
+        providerRegistry.registerAsync(AppDatabase.class, getAppDatabaseProviderValue(appContext));
         // register Dao separately to decouple from AppDatabase
         providerRegistry.registerAsync(DeckDao.class, () ->
                 provider.get(AppDatabase.class).deckDao());
@@ -68,6 +66,15 @@ public class DatabaseProviderModule implements ProviderModule {
         );
         providerRegistry.registerLazy(NotificationTimerDao.class, () ->
                 provider.get(AppDatabase.class).timerNotificationDao());
+    }
+
+    @NonNull
+    protected ProviderValue<AppDatabase> getAppDatabaseProviderValue(Context appContext) {
+        return () ->
+                Room.databaseBuilder(appContext,
+                        AppDatabase.class, "a-flash-deck.db")
+                        .addMigrations(DbMigration.getAllMigrations())
+                        .build();
     }
 
     @Override

@@ -23,6 +23,7 @@ import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteDeckCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.MoveCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewDeckCmd;
@@ -50,6 +51,7 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(DeleteCardCmd.class, () -> new DeleteCardCmd(provider));
         providerRegistry.registerLazy(MoveCardCmd.class, () -> new MoveCardCmd(provider));
         providerRegistry.registerLazy(CopyCardCmd.class, () -> new CopyCardCmd(provider));
+        providerRegistry.registerLazy(ExportImportCmd.class, () -> new ExportImportCmd(context, provider));
         providerRegistry.registerModule(new NotificationTimerCmdProviderModule());
     }
 

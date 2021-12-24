@@ -30,6 +30,7 @@ import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 
 /**
  * DAO that handles deck and cards
@@ -89,6 +90,9 @@ public abstract class DeckDao {
     @Query("SELECT * FROM card WHERE deck_id=:deckId ORDER BY ordinal ASC LIMIT :limit")
     public abstract List<Card> getCardByDeckIdWithLimit(long deckId, int limit);
 
+    @Query("SELECT * FROM card WHERE deck_id=:deckId ORDER BY ordinal")
+    public abstract List<Card> getCardByDeckId(long deckId);
+
     @Query("SELECT * FROM card WHERE question LIKE '%'||:search||'%' " +
             "OR answer LIKE '%'||:search||'%' ORDER BY ordinal")
     public abstract List<Card> searchCard(String search);
@@ -108,6 +112,29 @@ public abstract class DeckDao {
 
     @Query("SELECT * FROM deck WHERE id IN (:deckIds)")
     public abstract List<Deck> getDeckByIds(List<Long> deckIds);
+
+    @Query("SELECT * FROM deck")
+    public abstract List<Deck> getAllDecks();
+
+    @Transaction
+    public void importDecks(List<DeckModel> deckModels) {
+        if (deckModels == null || deckModels.isEmpty()) return;
+        for (DeckModel deckModel : deckModels) {
+            Deck deck = deckModel.getDeck();
+            // imported deck id and our deck id must not same
+            deck.id = null;
+            deck.id = insert(deck);
+            List<Card> cardList = deckModel.getCardList();
+            if (cardList != null && !cardList.isEmpty()) {
+                for (Card card : cardList) {
+                    // replace imported deck id with our deck id
+                    card.deckId = deck.id;
+                    card.id = null;
+                    card.id = insert(card);
+                }
+            }
+        }
+    }
 
     public List<Card> getCardsByDecks(List<Deck> decks) {
         if (decks == null || decks.isEmpty()) return new ArrayList<>();

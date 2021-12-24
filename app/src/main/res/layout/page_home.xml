@@ -69,6 +69,17 @@
                     android:gravity="center"
                     android:text="@string/title_add_notification_timer"
                     app:icon="@drawable/ic_add_alarm_black" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_export_deck"
+                    style="@style/Theme.Aflashdeck.HomeMenuButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:gravity="center"
+                    android:text="@string/tittle_export_deck"
+                    app:icon="@drawable/ic_unarchive_black" />
             </GridLayout>
         </LinearLayout>
 

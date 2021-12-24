@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package m.co.rh.id.a_flash_deck.base.util;
+package m.co.rh.id.a_flash_deck.util;
 
 import android.app.Activity;
 import android.content.Context;
@@ -39,7 +39,9 @@ public class UiUtils {
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
         shareIntent.setType("*/*");
-        context.startActivity(Intent.createChooser(shareIntent, chooserMessage));
+        shareIntent = Intent.createChooser(shareIntent, chooserMessage);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(shareIntent);
     }
 
     public static Activity getActivity(View view) {

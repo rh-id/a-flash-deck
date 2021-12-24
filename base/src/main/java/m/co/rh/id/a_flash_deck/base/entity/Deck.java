@@ -22,6 +22,9 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
@@ -81,5 +84,35 @@ public class Deck implements Serializable, Cloneable {
                 ", createdDateTime=" + createdDateTime +
                 ", updatedDateTime=" + updatedDateTime +
                 '}';
+    }
+
+    public JSONObject toJson() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", id);
+        jsonObject.put("name", name);
+        String createdDateTimeStr = "";
+        if (createdDateTime != null) {
+            createdDateTimeStr = Long.toString(createdDateTime.getTime());
+        }
+        String updatedDateTimeStr = "";
+        if (updatedDateTime != null) {
+            updatedDateTimeStr = Long.toString(updatedDateTime.getTime());
+        }
+        jsonObject.put("createdDateTime", createdDateTimeStr);
+        jsonObject.put("updatedDateTime", updatedDateTimeStr);
+        return jsonObject;
+    }
+
+    public void fromJson(JSONObject jsonObject) throws JSONException {
+        id = jsonObject.getLong("id");
+        name = jsonObject.getString("name");
+        String createdDateTimeMilis = jsonObject.getString("createdDateTime");
+        if (!createdDateTimeMilis.isEmpty()) {
+            createdDateTime = new Date(Long.parseLong(createdDateTimeMilis));
+        }
+        String updatedDateTimeMilis = jsonObject.getString("updatedDateTime");
+        if (!updatedDateTimeMilis.isEmpty()) {
+            updatedDateTime = new Date(Long.parseLong(updatedDateTimeMilis));
+        }
     }
 }

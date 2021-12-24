@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
-import m.co.rh.id.a_flash_deck.base.util.UiUtils;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.PagedNotificationTimerItemsCmd;
+import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 

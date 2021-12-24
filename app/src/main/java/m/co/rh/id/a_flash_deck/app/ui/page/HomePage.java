@@ -35,6 +35,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
@@ -47,6 +48,7 @@ import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.MessageSVDialog;
+import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -104,10 +106,12 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
         Button addCardButton = view.findViewById(R.id.button_add_card);
         Button startTestButton = view.findViewById(R.id.button_start_test);
         Button addNotificationButton = view.findViewById(R.id.button_add_notification);
+        Button exportDeckButton = view.findViewById(R.id.button_export_deck);
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
         addNotificationButton.setOnClickListener(this);
+        exportDeckButton.setOnClickListener(this);
         ViewGroup cardOnGoingTest = view.findViewById(R.id.container_card_ongoing_test);
         cardOnGoingTest.setOnClickListener(this);
         mSvProvider.get(RxDisposer.class)
@@ -263,6 +267,37 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
 
         } else if (id == R.id.button_add_notification) {
             NotificationTimerListPage.addNewNotificationTimerWorkflow(mNavigator);
+        } else if (id == R.id.button_export_deck) {
+            mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+                    (navigator, navRoute, activity, currentView) -> {
+                        DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute);
+                        if (result != null) {
+                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                            Context context = provider.getContext();
+                            CompositeDisposable compositeDisposable = new CompositeDisposable();
+                            compositeDisposable.add(provider.get(ExportImportCmd.class)
+                                    .exportFile(result.getSelectedDeck())
+                                    .subscribe((file, throwable) -> {
+                                        if (throwable != null) {
+                                            if (throwable.getCause() instanceof ValidationException) {
+                                                String title = context.getString(R.string.error);
+                                                navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                        MessageSVDialog.Args.newArgs(title,
+                                                                throwable.getCause().getMessage()));
+                                            } else {
+                                                provider.get(ILogger.class)
+                                                        .e(TAG, throwable.getMessage(), throwable);
+                                            }
+                                        } else {
+                                            provider.get(ILogger.class)
+                                                    .d(TAG, "File exported: " + file.getAbsolutePath());
+                                            UiUtils.shareFile(context, file, file.getName());
+                                        }
+                                        compositeDisposable.dispose();
+                                    })
+                            );
+                        }
+                    });
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
         } else if (id == R.id.menu_decks) {

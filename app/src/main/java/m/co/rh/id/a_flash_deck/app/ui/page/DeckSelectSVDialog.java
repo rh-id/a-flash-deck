@@ -116,6 +116,13 @@ public class DeckSelectSVDialog extends StatefulViewDialog<Activity> implements 
             return result;
         }
 
+        public static Result of(NavRoute navRoute) {
+            if (navRoute != null) {
+                return of(navRoute.getRouteResult());
+            }
+            return null;
+        }
+
         public static Result of(Serializable serializable) {
             if (serializable instanceof Result) {
                 return (Result) serializable;

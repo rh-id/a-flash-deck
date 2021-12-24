@@ -21,6 +21,9 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -77,5 +80,23 @@ public class Card implements Serializable, Cloneable {
         } catch (CloneNotSupportedException e) {
             return null;
         }
+    }
+
+    public JSONObject toJson() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", id);
+        jsonObject.put("deckId", deckId);
+        jsonObject.put("ordinal", ordinal);
+        jsonObject.put("question", question);
+        jsonObject.put("answer", answer);
+        return jsonObject;
+    }
+
+    public void fromJson(JSONObject jsonObject) throws JSONException {
+        id = jsonObject.getLong("id");
+        deckId = jsonObject.getLong("deckId");
+        ordinal = jsonObject.getInt("ordinal");
+        question = jsonObject.getString("question");
+        answer = jsonObject.getString("answer");
     }
 }

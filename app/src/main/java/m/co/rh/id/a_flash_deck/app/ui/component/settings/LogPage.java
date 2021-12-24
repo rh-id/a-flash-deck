@@ -39,7 +39,7 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.provider.FileProvider;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.util.UiUtils;
+import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
