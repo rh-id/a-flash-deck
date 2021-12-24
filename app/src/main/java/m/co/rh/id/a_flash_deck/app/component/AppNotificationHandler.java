@@ -114,8 +114,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
 
     private void createTestNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = mAppContext.getString(R.string.notification_timer_notification_name);
-            String description = mAppContext.getString(R.string.notification_timer_notification_description);
+            CharSequence name = mAppContext.getString(R.string.notification_notification_timer_name);
+            String description = mAppContext.getString(R.string.notification_notification_timer_description);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID_NOTIFICATION_TIMER,
                     name, importance);

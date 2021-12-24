@@ -84,8 +84,8 @@
     <string name="title_start_time">Start Time</string>
     <string name="title_end_time">End Time</string>
     <string name="notification_time_updated">Notification time updated</string>
-    <string name="notification_timer_notification_name">Timer notification</string>
-    <string name="notification_timer_notification_description">Notify selected cards to test you</string>
+    <string name="notification_notification_timer_name">Notification Timer</string>
+    <string name="notification_notification_timer_description">Notify selected cards to test you</string>
     <string name="notification_title_flash_question">Flash Question</string>
     <string name="deck_is_required">Deck is required</string>
     <string name="title_notification_timers">Notification Timers</string>
