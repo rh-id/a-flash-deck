@@ -18,6 +18,7 @@
 package m.co.rh.id.a_flash_deck.app;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -122,28 +123,55 @@ public class ExportImportCmdTest {
         File exportedFile = cmd.exportFile(Collections.singletonList(deck)).blockingGet();
         assertTrue(exportedFile.exists());
 
-        // delete database after export
-        appContext.deleteDatabase(DBNAME);
+        // delete record after export
+        deckDao.deleteDeck(deck);
 
         List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
 
         assertEquals(1, deckModelList.size());
         Deck deckResult = deckModelList.get(0).getDeck();
         assertNotNull(deckResult);
-        assertEquals(deck, deckResult);
+        assertNotEquals(deck.id, deckResult.id);
+        assertEquals(deck.name, deckResult.name);
+        assertEquals(deck.createdDateTime, deckResult.createdDateTime);
+        assertEquals(deck.updatedDateTime, deckResult.updatedDateTime);
         ArrayList<Card> cardArrayListResult = deckModelList.get(0).getCardList();
         assertEquals(2, cardArrayListResult.size());
-        assertEquals(card, cardArrayListResult.get(0));
-        assertEquals(card2, cardArrayListResult.get(1));
+        Card resultCard = cardArrayListResult.get(0);
+        Card resultCard2 = cardArrayListResult.get(1);
+        assertNotEquals(card.id, resultCard.id);
+        assertNotEquals(card.deckId, deckResult.id);
+        assertEquals(card.ordinal, resultCard.ordinal);
+        assertEquals(card.question, resultCard.question);
+        assertEquals(card.answer, resultCard.answer);
+        assertNotEquals(card.id, resultCard2.id);
+        assertNotEquals(card2.deckId, deckResult.id);
+        assertEquals(card2.ordinal, resultCard2.ordinal);
+        assertEquals(card2.question, resultCard2.question);
+        assertEquals(card2.answer, resultCard2.answer);
 
         // check database
         List<Deck> deckList = deckDao.getAllDecks();
         assertEquals(1, deckList.size());
-        assertEquals(deck, deckList.get(0));
+        Deck dbDeck = deckList.get(0);
+        assertNotEquals(deck.id, dbDeck.id);
+        assertEquals(deck.name, dbDeck.name);
+        assertEquals(deck.createdDateTime, dbDeck.createdDateTime);
+        assertEquals(deck.updatedDateTime, dbDeck.updatedDateTime);
 
-        List<Card> cardList = deckDao.getCardByDeckId(deck.id);
+        List<Card> cardList = deckDao.getCardByDeckId(dbDeck.id);
         assertEquals(2, cardList.size());
-        assertEquals(card, cardList.get(0));
-        assertEquals(card2, cardList.get(1));
+        Card dbCard = cardList.get(0);
+        Card dbCard2 = cardList.get(1);
+        assertNotEquals(card.id, dbCard.id);
+        assertNotEquals(card.deckId, dbDeck.id);
+        assertEquals(card.ordinal, dbCard.ordinal);
+        assertEquals(card.question, dbCard.question);
+        assertEquals(card.answer, dbCard.answer);
+        assertNotEquals(card2.id, dbCard2.id);
+        assertNotEquals(card2.deckId, dbDeck.id);
+        assertEquals(card2.ordinal, dbCard2.ordinal);
+        assertEquals(card2.question, dbCard2.question);
+        assertEquals(card2.answer, dbCard2.answer);
     }
 }
