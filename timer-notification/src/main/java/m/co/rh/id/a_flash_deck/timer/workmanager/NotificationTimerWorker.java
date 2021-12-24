@@ -58,6 +58,7 @@ public class NotificationTimerWorker extends Worker {
                 -1);
         Provider provider = BaseApplication.of(getApplicationContext()).getProvider();
         AppSharedPreferences appSharedPreferences = provider.get(AppSharedPreferences.class);
+        ILogger iLogger = provider.get(ILogger.class);
         int startHour = appSharedPreferences.getNotificationStartTimeHourOfDay();
         int startMin = appSharedPreferences.getNotificationStartTimeMinute();
         int endHour = appSharedPreferences.getNotificationEndTimeHourOfDay();
@@ -75,7 +76,7 @@ public class NotificationTimerWorker extends Worker {
         NotificationTimerDao notificationTimerDao = provider.get(NotificationTimerDao.class);
         NotificationTimer notificationTimer = notificationTimerDao.findById(notificationTimerId);
         if (currentLocalTime.isBefore(startLocalTime) || currentLocalTime.isAfter(endLocalTime)) {
-            provider.get(ILogger.class)
+            iLogger
                     .d(TAG, "Notification timer " + notificationTimer.name + " is outside notification time config");
             return Result.success();
         }
@@ -91,6 +92,10 @@ public class NotificationTimerWorker extends Worker {
                 deckIds.add(jsonArray.getLong(i));
             }
             List<Card> cards = provider.get(DeckDao.class).getCardByDeckIds(deckIds);
+            if (cards.isEmpty()) {
+                iLogger.d(TAG, "cards is empty");
+                return Result.success();
+            }
             Collections.shuffle(cards);
             Card selectedCard = null;
             if (notificationTimer.displayedCardIds == null) {
@@ -135,10 +140,10 @@ public class NotificationTimerWorker extends Worker {
             notificationTimerDao.update(notificationTimer);
             provider.get(IAppNotificationHandler.class)
                     .postNotificationTimer(notificationTimer, selectedCard);
-            provider.get(ILogger.class)
+            iLogger
                     .d(TAG, "Notification timer " + notificationTimer.name + " executed");
         } catch (JSONException jsonException) {
-            provider.get(ILogger.class)
+            iLogger
                     .e(TAG, jsonException.getMessage(), jsonException);
             return Result.failure();
         }
