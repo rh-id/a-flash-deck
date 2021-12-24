@@ -1,0 +1,9 @@
+Release 1.2.0+13
+
+Fix:
+* Notification timer channel name and description incorrect
+* Log notification timer when there are no cards
+
+Feature:
+* Export & share decks to JSON file
+* Import decks JSON file
