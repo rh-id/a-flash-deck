@@ -109,6 +109,17 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
                 androidNotification.requestId,
                 builder.build());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            NotificationCompat.Builder summaryBuilder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
+                    .setSmallIcon(R.drawable.ic_notification_launcher)
+                    .setColorized(true)
+                    .setColor(mAppContext.getColor(R.color.teal_custom))
+                    .setContentTitle(mAppContext.getString(R.string.notification_title_flash_question))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
+                    .setGroupSummary(true);
+            notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER, GROUP_SUMMARY_ID_NOTIFICATION_TIMER, summaryBuilder.build());
+        }
         mLock.unlock();
     }
 
