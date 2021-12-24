@@ -40,7 +40,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
-import m.co.rh.id.a_flash_deck.base.provider.FileProvider;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -52,14 +52,14 @@ public class ExportImportCmd {
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<ILogger> mLogger;
     protected ProviderValue<DeckDao> mDeckDao;
-    protected ProviderValue<FileProvider> mFileProvider;
+    protected ProviderValue<FileHelper> mFileProvider;
 
     public ExportImportCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mLogger = provider.lazyGet(ILogger.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
-        mFileProvider = provider.lazyGet(FileProvider.class);
+        mFileProvider = provider.lazyGet(FileHelper.class);
     }
 
     public Single<File> exportFile(List<Deck> deckList) {
@@ -79,7 +79,6 @@ public class ExportImportCmd {
                             bufferedWriter.close();
                             return file;
                         } catch (IOException e) {
-                            mLogger.get().e(TAG, e.getMessage(), e);
                             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_create_file));
                         }
                     } else {
@@ -104,12 +103,11 @@ public class ExportImportCmd {
                             deckModel.fromJson(jsonObject);
                             deckModelList.add(deckModel);
                         }
+                        mDeckDao.get().importDecks(deckModelList);
                         return deckModelList;
                     } catch (FileNotFoundException e) {
-                        mLogger.get().e(TAG, e.getMessage(), e);
                         throw new ValidationException(mAppContext.getString(R.string.error_failed_to_open_file));
                     } catch (Exception e) {
-                        mLogger.get().e(TAG, e.getMessage(), e);
                         throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
                     }
                 })

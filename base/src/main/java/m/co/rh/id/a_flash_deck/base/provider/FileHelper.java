@@ -36,15 +36,15 @@ import m.co.rh.id.aprovider.ProviderValue;
 /**
  * Class to provide files through this app
  */
-public class FileProvider {
-    private static final String TAG = FileProvider.class.getName();
+public class FileHelper {
+    private static final String TAG = FileHelper.class.getName();
 
     private Context mAppContext;
     private ProviderValue<ILogger> mLogger;
     private File mLogFile;
     private File mTempFileRoot;
 
-    public FileProvider(Provider provider, Context context) {
+    public FileHelper(Provider provider, Context context) {
         mAppContext = context.getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         File cacheDir = context.getCacheDir();

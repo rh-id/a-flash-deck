@@ -36,7 +36,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.base.provider.FileProvider;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.util.UiUtils;
@@ -61,7 +61,7 @@ public class LogPage extends StatefulView<Activity> implements View.OnClickListe
         }
         mSvProvider = mProvider.get(IStatefulViewProvider.class);
         if (mLogFileSubject == null) {
-            mLogFileSubject = BehaviorSubject.createDefault(mSvProvider.get(FileProvider.class).getLogFile());
+            mLogFileSubject = BehaviorSubject.createDefault(mSvProvider.get(FileHelper.class).getLogFile());
         }
         View view = activity.getLayoutInflater().inflate(R.layout.page_log,
                 container, false);
@@ -116,8 +116,8 @@ public class LogPage extends StatefulView<Activity> implements View.OnClickListe
     @Override
     public void onClick(View view) {
         Activity activity = UiUtils.getActivity(view);
-        FileProvider fileProvider = mSvProvider.get(FileProvider.class);
-        File logFile = fileProvider.getLogFile();
+        FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+        File logFile = fileHelper.getLogFile();
 
         int id = view.getId();
         if (id == R.id.fab_share) {
@@ -128,7 +128,7 @@ public class LogPage extends StatefulView<Activity> implements View.OnClickListe
                         .e(TAG, activity.getString(R.string.error_sharing_log_file), e);
             }
         } else if (id == R.id.fab_clear) {
-            fileProvider.clearLogFile();
+            fileHelper.clearLogFile();
             mSvProvider.get(ILogger.class).i(TAG, activity.getString(R.string.log_file_deleted));
             mSvProvider.get(Handler.class)
                     .post(() -> mLogFileSubject.onNext(logFile));

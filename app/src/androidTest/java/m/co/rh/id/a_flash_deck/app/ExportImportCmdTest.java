@@ -45,7 +45,7 @@ import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
-import m.co.rh.id.a_flash_deck.base.provider.FileProvider;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -72,7 +72,7 @@ public class ExportImportCmdTest {
                 providerRegistry.registerModule(new TestDatabaseProviderModule(DBNAME));
                 providerRegistry.register(ExecutorService.class, Executors.newSingleThreadExecutor());
                 providerRegistry.register(ILogger.class, new AndroidLogger(ILogger.VERBOSE));
-                providerRegistry.register(FileProvider.class, new FileProvider(provider, context));
+                providerRegistry.register(FileHelper.class, new FileHelper(provider, context));
             }
 
             @Override

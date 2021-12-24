@@ -95,4 +95,5 @@
     <string name="error_failed_to_open_file">Failed to open file</string>
     <string name="error_failed_to_parse_file">Failed to parse file</string>
     <string name="error">Error</string>
+    <string name="success_import_file">Success import file, %d deck(s) were added</string>
 </resources>

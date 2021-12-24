@@ -17,8 +17,10 @@
 
 package m.co.rh.id.a_flash_deck.app;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -26,17 +28,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.model.DeckModel;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final String TAG = MainActivity.class.getName();
     private BehaviorSubject<Boolean> mRebuildUi;
     private Provider mActProvider;
 
@@ -64,6 +74,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         super.onCreate(savedInstanceState);
+        handleJsonFile(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleJsonFile(intent);
     }
 
     @Override
@@ -86,5 +103,31 @@ public class MainActivity extends AppCompatActivity {
         // using AppCompatDelegate.setDefaultNightMode trigger this method
         // but not triggering Application.onConfigurationChanged
         mRebuildUi.onNext(true);
+    }
+
+    private void handleJsonFile(Intent intent) {
+        // handle open JSON file
+        String intentAction = intent.getAction();
+        if (Intent.ACTION_VIEW.equals(intentAction)) {
+            Context context = getApplicationContext();
+            Uri fileData = intent.getData();
+            String errorMessage = getString(R.string.error_failed_to_open_file);
+            mActProvider.get(ILogger.class).d(TAG, "begin import file");
+            mActProvider.get(ExecutorService.class)
+                    .execute(() -> {
+                        try {
+                            File file = mActProvider.get(FileHelper.class)
+                                    .createTempFile("Deck-Import.json", fileData);
+                            List<DeckModel> deckModelList = mActProvider.get(ExportImportCmd.class)
+                                    .importFile(file).blockingGet();
+                            mActProvider.get(ILogger.class).i(TAG,
+                                    context.getString(R.string.success_import_file, deckModelList.size()));
+                        } catch (Throwable throwable) {
+                            mActProvider.get(ILogger.class)
+                                    .e(TAG, errorMessage
+                                            , throwable);
+                        }
+                    });
+        }
     }
 }
