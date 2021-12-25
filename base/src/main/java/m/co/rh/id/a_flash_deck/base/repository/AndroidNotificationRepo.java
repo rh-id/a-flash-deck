@@ -20,8 +20,6 @@ package m.co.rh.id.a_flash_deck.base.repository;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import androidx.annotation.WorkerThread;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
@@ -36,7 +34,6 @@ public class AndroidNotificationRepo {
     private AtomicInteger mRequestId;
     private String mRequestIdKey;
 
-    @WorkerThread
     public AndroidNotificationRepo(Context context,
                                    AndroidNotificationDao androidNotificationDao) {
         mSharedPreferences = context.getSharedPreferences(

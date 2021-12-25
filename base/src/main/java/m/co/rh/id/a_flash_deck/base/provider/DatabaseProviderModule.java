@@ -22,16 +22,12 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.room.Room;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.a_flash_deck.base.room.AppDatabase;
 import m.co.rh.id.a_flash_deck.base.room.DbMigration;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -52,17 +48,7 @@ public class DatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(TestDao.class, () ->
                 provider.get(AppDatabase.class).testDao());
         providerRegistry.registerAsync(AndroidNotificationRepo.class, () ->
-                {
-                    // ensure that this is initialized in background thread due to SQLite logic
-                    Future<AndroidNotificationRepo> androidNotificationRepoFuture = provider.get(ExecutorService.class)
-                            .submit(() -> new AndroidNotificationRepo(context, provider.get(AppDatabase.class).androidNotificationDao()));
-                    try {
-                        return androidNotificationRepoFuture.get();
-                    } catch (Exception e) {
-                        provider.get(ILogger.class).e("DatabaseProviderModule", "failed to init AndroidNotificationRepo", e);
-                        throw new RuntimeException(e);
-                    }
-                }
+                new AndroidNotificationRepo(context, provider.get(AppDatabase.class).androidNotificationDao())
         );
         providerRegistry.registerLazy(NotificationTimerDao.class, () ->
                 provider.get(AppDatabase.class).timerNotificationDao());
