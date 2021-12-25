@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -130,6 +131,7 @@ public class TestStateModifier {
                         if (cardList.isEmpty()) {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         } else {
+                            Collections.shuffle(cardList);
                             String uuid = UUID.randomUUID().toString();
                             File stateFileParent = new File(mAppContext.getFilesDir(),
                                     "test/state");
