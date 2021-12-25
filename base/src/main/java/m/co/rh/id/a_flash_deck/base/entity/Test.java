@@ -29,9 +29,6 @@ import m.co.rh.id.a_flash_deck.base.room.converter.Converter;
 
 @Entity(tableName = "test")
 public class Test implements Serializable {
-    public static int TEST_STARTED = 0;
-    public static int TEST_ENDED = 1;
-
     @PrimaryKey(autoGenerate = true)
     public Long id;
 
@@ -41,14 +38,7 @@ public class Test implements Serializable {
     @ColumnInfo(name = "state_file_location")
     public String stateFileLocation;
 
-    @ColumnInfo(name = "current_state")
-    public int currentState;
-
     @TypeConverters({Converter.class})
     @ColumnInfo(name = "created_date_time")
     public Date createdDateTime;
-
-    public boolean isEnded() {
-        return currentState == TEST_ENDED;
-    }
 }
