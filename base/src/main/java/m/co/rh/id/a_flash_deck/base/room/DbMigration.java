@@ -6,7 +6,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 public class DbMigration {
     public static Migration[] getAllMigrations() {
         return new Migration[]{MIGRATION_1_2, MIGRATION_2_3,
-                MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6};
+                MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+                MIGRATION_6_7};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -42,6 +43,14 @@ public class DbMigration {
     };
 
     public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // cleanup android notification that are not deleted due to bug
+            database.execSQL("DELETE FROM android_notification");
+        }
+    };
+
+    public static final Migration MIGRATION_6_7 = new Migration(6, 7) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
             // cleanup android notification that are not deleted due to bug

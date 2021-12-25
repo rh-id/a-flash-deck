@@ -55,7 +55,7 @@ public class DatabaseProviderModule implements ProviderModule {
                 {
                     // ensure that this is initialized in background thread due to SQLite logic
                     Future<AndroidNotificationRepo> androidNotificationRepoFuture = provider.get(ExecutorService.class)
-                            .submit(() -> new AndroidNotificationRepo(provider.get(AppDatabase.class).androidNotificationDao()));
+                            .submit(() -> new AndroidNotificationRepo(context, provider.get(AppDatabase.class).androidNotificationDao()));
                     try {
                         return androidNotificationRepoFuture.get();
                     } catch (Exception e) {
