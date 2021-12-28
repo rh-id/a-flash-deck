@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -29,17 +30,21 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class DeleteCardCmd {
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<DeckDao> mDeckDao;
+    private ProviderValue<FileHelper> mFileHelper;
     private ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
 
     public DeleteCardCmd(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
+        mFileHelper = provider.lazyGet(FileHelper.class);
         mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
     }
 
     public Single<Card> execute(Card card) {
         return Single.fromFuture(mExecutorService.get().submit(() -> {
             mDeckDao.get().deleteCard(card);
+            mFileHelper.get().deleteCardQuestionImage(card.questionImage);
+            mFileHelper.get().deleteCardAnswerImage(card.answerImage);
             mDeckChangeNotifier.get().cardDeleted(card);
             return card;
         }));

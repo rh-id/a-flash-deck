@@ -6,6 +6,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <ImageView
+        android:id="@+id/image_question"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:adjustViewBounds="true"
+        android:maxHeight="100dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/text_question"
         android:layout_width="0dp"
@@ -18,7 +30,7 @@
         android:textSize="18sp"
         app:layout_constraintEnd_toStartOf="@id/button_edit"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/image_question"
         tools:text="Q: What is the meaning of life?" />
 
     <com.google.android.material.textview.MaterialTextView
@@ -79,7 +91,7 @@
         app:icon="@drawable/ic_delete_forever_black"
         app:iconTint="@color/red"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/image_question" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_more_action"

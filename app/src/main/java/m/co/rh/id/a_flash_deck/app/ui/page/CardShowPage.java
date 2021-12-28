@@ -18,14 +18,17 @@
 package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.core.text.HtmlCompat;
 
+import java.io.File;
 import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -34,7 +37,9 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.anavigator.NavRoute;
@@ -73,6 +78,10 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
         ViewGroup rootLayout = (ViewGroup)
                 activity.getLayoutInflater().inflate(
                         R.layout.page_card_show, container, false);
+        ImageView questionImageView = rootLayout.findViewById(R.id.image_question);
+        questionImageView.setOnClickListener(this);
+        ImageView answerImageView = rootLayout.findViewById(R.id.image_answer);
+        answerImageView.setOnClickListener(this);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
         buttonEdit.setOnClickListener(this);
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
@@ -87,6 +96,22 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                                     textAnswer.setText(HtmlCompat.fromHtml(card.answer,
                                             HtmlCompat.FROM_HTML_MODE_LEGACY));
                                     textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
+                                    if (card.questionImage != null) {
+                                        File file = mSvProvider.get(FileHelper.class).getCardQuestionImage(card.questionImage);
+                                        questionImageView.setImageURI(Uri.fromFile(file));
+                                        questionImageView.setVisibility(View.VISIBLE);
+                                    } else {
+                                        questionImageView.setImageURI(null);
+                                        questionImageView.setVisibility(View.GONE);
+                                    }
+                                    if (card.answerImage != null) {
+                                        File file = mSvProvider.get(FileHelper.class).getCardAnswerImage(card.answerImage);
+                                        answerImageView.setImageURI(Uri.fromFile(file));
+                                        answerImageView.setVisibility(View.VISIBLE);
+                                    } else {
+                                        answerImageView.setImageURI(null);
+                                        answerImageView.setVisibility(View.GONE);
+                                    }
                                 }
                         )
                 );
@@ -132,6 +157,18 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
         if (id == R.id.button_edit) {
             mNavigator.push(Routes.CARD_DETAIL_PAGE,
                     CardDetailPage.Args.forUpdate(mCard));
+        } else if (id == R.id.image_question) {
+            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
+            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+            mNavigator.push(Routes.COMMON_IMAGEVIEW,
+                    commonNavConfig.args_commonImageView(
+                            fileHelper.getCardQuestionImage(mCard.questionImage)));
+        } else if (id == R.id.image_answer) {
+            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
+            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+            mNavigator.push(Routes.COMMON_IMAGEVIEW,
+                    commonNavConfig.args_commonImageView(
+                            fileHelper.getCardAnswerImage(mCard.answerImage)));
         }
     }
 

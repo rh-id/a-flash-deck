@@ -40,8 +40,8 @@ import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.MessageSVDialog;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NewNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.UpdateNotificationTimerCmd;
@@ -170,8 +170,9 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
                                             errorMessage = throwable.getMessage();
                                         }
                                         String title = context.getString(R.string.title_error);
+                                        CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
                                         getNavigator().push(Routes.COMMON_MESSAGE_DIALOG,
-                                                MessageSVDialog.Args.newArgs(title, errorMessage));
+                                                commonNavConfig.args_commonMessageDialog(title, errorMessage));
                                     } else {
                                         String successMessage;
                                         if (isUpdate()) {
@@ -188,8 +189,9 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
                 Context context = view.getContext();
                 String title = context.getString(R.string.title_error);
                 String content = mNewNotificationTimerCmd.getValidationError();
+                CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
                 getNavigator().push(Routes.COMMON_MESSAGE_DIALOG,
-                        MessageSVDialog.Args.newArgs(title, content));
+                        commonNavConfig.args_commonMessageDialog(title, content));
             }
         } else if (id == R.id.button_cancel) {
             getNavigator().pop();

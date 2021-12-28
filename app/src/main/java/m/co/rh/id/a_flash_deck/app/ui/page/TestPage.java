@@ -19,10 +19,12 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.core.text.HtmlCompat;
@@ -38,10 +40,10 @@ import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.MessageSVDialog;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -55,6 +57,7 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
     private transient BehaviorSubject<TestState> mTestStateSubject;
+    private transient BehaviorSubject<TestState> mShowTestAnswerSubject;
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
@@ -65,6 +68,9 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         if (mTestStateSubject == null) {
             mTestStateSubject = BehaviorSubject.create();
         }
+        if (mShowTestAnswerSubject == null) {
+            mShowTestAnswerSubject = BehaviorSubject.create();
+        }
         ViewGroup rootLayout = (ViewGroup)
                 activity.getLayoutInflater().inflate(
                         R.layout.page_test, container, false);
@@ -74,12 +80,14 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         buttonPrev.setOnClickListener(this);
         buttonExit.setOnClickListener(this);
         buttonNext.setOnClickListener(this);
-
+        ImageView questionImageView = rootLayout.findViewById(R.id.image_question);
+        ImageView answerImageView = rootLayout.findViewById(R.id.image_answer);
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         textAnswer.setOnClickListener(this);
         TextView textProgress = rootLayout.findViewById(R.id.text_progress);
         Context context = mSvProvider.getContext();
+        FileHelper fileHelper = mSvProvider.get(FileHelper.class);
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onTestState",
                         mTestStateSubject.subscribe(
@@ -88,7 +96,18 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                     String progress = (testState.getCurrentCardIndex() + 1) + " / " + testState.getTotalCards();
                                     textQuestion.setText(HtmlCompat.fromHtml(card.question, HtmlCompat.FROM_HTML_MODE_LEGACY));
                                     textQuestion.setMovementMethod(LinkMovementMethod.getInstance());
+                                    answerImageView.setImageURI(null);
+                                    answerImageView.setVisibility(View.GONE);
                                     textAnswer.setText(context.getString(R.string.tap_to_view_answer));
+                                    if (card.questionImage != null) {
+                                        questionImageView.setImageURI(Uri.fromFile(
+                                                fileHelper.getCardQuestionImage(card.questionImage)
+                                        ));
+                                        questionImageView.setVisibility(View.VISIBLE);
+                                    } else {
+                                        questionImageView.setImageURI(null);
+                                        questionImageView.setVisibility(View.GONE);
+                                    }
                                     textProgress.setText(progress);
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
                                     buttonNext.setEnabled(testState.getCurrentCardIndex() != testState.getTotalCards() - 1);
@@ -113,13 +132,32 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                         } else {
                                             String title = svContext.getString(R.string.title_error);
                                             String content = svContext.getString(R.string.error_test_not_found);
+                                            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
                                             mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    MessageSVDialog.Args.newArgs(title, content));
+                                                    commonNavConfig.args_commonMessageDialog(title, content));
                                             iLogger.d(TAG, content);
                                         }
                                     }
                                 })
                 );
+        mSvProvider.get(RxDisposer.class)
+                .add("createView_onShowAnswer",
+                        mShowTestAnswerSubject.subscribe(
+                                testState -> {
+                                    Card card = testState.currentCard();
+                                    if (card.answerImage != null) {
+                                        answerImageView.setImageURI(Uri.fromFile(
+                                                fileHelper.getCardQuestionImage(card.questionImage)
+                                        ));
+                                        answerImageView.setVisibility(View.VISIBLE);
+                                    } else {
+                                        answerImageView.setImageURI(null);
+                                        answerImageView.setVisibility(View.GONE);
+                                    }
+                                    textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
+                                    textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
+                                }
+                        ));
         return rootLayout;
     }
 
@@ -134,6 +172,10 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
             mTestStateSubject.onComplete();
             mTestStateSubject = null;
         }
+        if (mShowTestAnswerSubject != null) {
+            mShowTestAnswerSubject.onComplete();
+            mShowTestAnswerSubject = null;
+        }
     }
 
     @Override
@@ -143,9 +185,7 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         ILogger iLogger = mSvProvider.get(ILogger.class);
         Context context = mSvProvider.getContext();
         if (id == R.id.text_answer) {
-            TextView textView = (TextView) view;
-            textView.setText(HtmlCompat.fromHtml(testState.currentCard().answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
-            textView.setMovementMethod(LinkMovementMethod.getInstance());
+            mShowTestAnswerSubject.onNext(testState);
         } else if (id == R.id.button_previous) {
             mSvProvider.get(RxDisposer.class)
                     .add("onCLick_buttonPrevious",
@@ -161,8 +201,9 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         } else if (id == R.id.button_exit) {
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_exit_test);
+            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                    BooleanSVDialog.Args.newArgs(title, content),
+                    commonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
                         Serializable serializable = navRoute.getRouteResult();
                         if (serializable instanceof Boolean) {

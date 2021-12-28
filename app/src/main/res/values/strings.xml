@@ -96,4 +96,8 @@
     <string name="error_failed_to_parse_file">Failed to parse file</string>
     <string name="error">Error</string>
     <string name="success_import_file">Success import file, %d deck(s) were added</string>
+    <string name="title_add_image">Add Image</string>
+    <string name="error_failed_to_save_question_image">Failed to save question image</string>
+    <string name="error_failed_to_save_answer_image">Failed to save answer image</string>
+    <string name="title_add_photo">Add Photo</string>
 </resources>

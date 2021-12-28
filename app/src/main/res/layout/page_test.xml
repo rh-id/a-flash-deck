@@ -24,6 +24,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <ImageView
+                android:id="@+id/image_question"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_question"
                 android:layout_width="match_parent"
@@ -32,6 +41,15 @@
                 android:gravity="center"
                 android:textSize="26sp"
                 tool:text="What is the answer to everything?" />
+
+            <ImageView
+                android:id="@+id/image_answer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_answer"

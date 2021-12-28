@@ -18,7 +18,9 @@
 package m.co.rh.id.a_flash_deck.app.provider.command;
 
 import android.content.Context;
+import android.net.Uri;
 
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
@@ -28,17 +30,21 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 public class NewCardCmd {
+    private static final String TAG = NewCardCmd.class.getName();
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<ILogger> mLogger;
     protected ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
     protected ProviderValue<DeckDao> mDeckDao;
+    protected ProviderValue<FileHelper> mFileHelper;
     protected BehaviorSubject<String> mDeckIdValidSubject;
     protected BehaviorSubject<String> mQuestionValidSubject;
     protected BehaviorSubject<String> mAnswerValidSubject;
@@ -49,6 +55,7 @@ public class NewCardCmd {
         mLogger = provider.lazyGet(ILogger.class);
         mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
+        mFileHelper = provider.lazyGet(FileHelper.class);
         mDeckIdValidSubject = BehaviorSubject.create();
         mQuestionValidSubject = BehaviorSubject.create();
         mAnswerValidSubject = BehaviorSubject.create();
@@ -88,6 +95,41 @@ public class NewCardCmd {
                 mExecutorService.get().submit(() -> {
                     mDeckDao.get().insertCard(card);
                     mDeckChangeNotifier.get().cardAdded(card);
+                    return card;
+                })
+        );
+    }
+
+    public Single<Card> saveImage(Card card, Uri questionImage, Uri answerImage) {
+        return Single.fromFuture(mExecutorService.get().submit(() -> {
+                    if (questionImage != null) {
+                        try {
+                            File questionImageFile = mFileHelper.get().createCardQuestionImage(questionImage);
+                            card.questionImage = questionImageFile.getName();
+                            mFileHelper.get().createCardQuestionImageThumbnail(questionImage,
+                                    questionImageFile.getName());
+                        } catch (Exception e) {
+                            mLogger.get().d(TAG, e.getMessage(), e);
+                            throw new ValidationException(mAppContext.getString(R.string.error_failed_to_save_question_image));
+                        }
+                    } else {
+                        card.questionImage = null;
+                    }
+                    if (answerImage != null) {
+                        try {
+                            File answerImageFile = mFileHelper.get().createCardAnswerImage(answerImage);
+                            card.answerImage = answerImageFile.getName();
+                            mFileHelper.get().createCardAnswerImageThumbnail(answerImage,
+                                    answerImageFile.getName());
+                        } catch (Exception e) {
+                            mLogger.get().d(TAG, e.getMessage(), e);
+                            throw new ValidationException(mAppContext.getString(R.string.error_failed_to_save_answer_image));
+                        }
+                    } else {
+                        card.answerImage = null;
+                    }
+                    mDeckDao.get().updateCard(card);
+                    mDeckChangeNotifier.get().cardUpdated(card);
                     return card;
                 })
         );

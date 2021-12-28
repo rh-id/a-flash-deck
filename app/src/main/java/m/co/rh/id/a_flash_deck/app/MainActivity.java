@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                     .execute(() -> {
                         try {
                             File file = mActProvider.get(FileHelper.class)
-                                    .createTempFile("Deck-Import.json", fileData);
+                                    .createTempFile("Deck-Import", fileData);
                             List<DeckModel> deckModelList = mActProvider.get(ExportImportCmd.class)
                                     .importFile(file).blockingGet();
                             mActProvider.get(ILogger.class).i(TAG,

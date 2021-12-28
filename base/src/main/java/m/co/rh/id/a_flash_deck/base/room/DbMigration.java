@@ -7,7 +7,7 @@ public class DbMigration {
     public static Migration[] getAllMigrations() {
         return new Migration[]{MIGRATION_1_2, MIGRATION_2_3,
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-                MIGRATION_6_7, MIGRATION_7_8};
+                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -71,6 +71,16 @@ public class DbMigration {
                     "created_date_time FROM test");
             database.execSQL("DROP TABLE test");
             database.execSQL("ALTER TABLE test_new RENAME TO test");
+        }
+    };
+
+    public static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // remove unused current_state field
+            database.execSQL("ALTER TABLE card ADD COLUMN `question_image` TEXT");
+            database.execSQL("ALTER TABLE card ADD COLUMN `answer_image` TEXT");
+            database.execSQL("DELETE FROM test");
         }
     };
 }

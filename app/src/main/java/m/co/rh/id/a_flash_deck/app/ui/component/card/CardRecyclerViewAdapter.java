@@ -105,7 +105,7 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public void notifyItemAdded(Card card) {
-        int existingIdx = findDeck(card);
+        int existingIdx = findItem(card);
         if (existingIdx == -1) {
             Long deckId = mPagedCardItemsCmd.getDeckId();
             if (deckId == null || deckId.equals(card.deckId)) {
@@ -117,7 +117,7 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public void notifyItemUpdated(Card card) {
-        int existingIdx = findDeck(card);
+        int existingIdx = findItem(card);
         if (existingIdx != -1) {
             ArrayList<Card> cards = mPagedCardItemsCmd.getAllCardItems();
             cards.remove(existingIdx);
@@ -127,7 +127,7 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public void notifyItemDeleted(Card card) {
-        int removedIdx = findDeck(card);
+        int removedIdx = findItem(card);
         if (removedIdx != -1) {
             mPagedCardItemsCmd.getAllCardItems()
                     .remove(removedIdx);
@@ -144,7 +144,7 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
-    private int findDeck(Card card) {
+    private int findItem(Card card) {
         ArrayList<Card> cards =
                 mPagedCardItemsCmd.getAllCardItems();
         int size = cards.size();

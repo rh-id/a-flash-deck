@@ -29,9 +29,12 @@ public class Routes {
     public static final String TEST = "/test";
     public static final String NOTIFICATION_TIMERS = "/notificationTimers";
     public static final String NOTIFICATION_TIMER_DETAIL_DIALOG = "/notificationTimer/detailDialog";
+
+    //Use CommonNavConfig.java to handle arguments and result return by common routes
     public static final String COMMON_BOOLEAN_DIALOG = "/common/booleanDialog";
     public static final String COMMON_MESSAGE_DIALOG = "/common/messageDialog";
     public static final String COMMON_TIMEPICKER_DIALOG = "/common/timePickerDialog";
+    public static final String COMMON_IMAGEVIEW = "/common/imageView";
 
     private Routes() {
     }

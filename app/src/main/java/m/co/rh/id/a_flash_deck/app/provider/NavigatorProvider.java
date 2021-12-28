@@ -40,9 +40,7 @@ import m.co.rh.id.a_flash_deck.app.ui.page.SettingsPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SplashPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.TestPage;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.MessageSVDialog;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.TimePickerSVDialog;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.timer.ui.page.NotificationTimerDetailSVDialog;
 import m.co.rh.id.anavigator.NavConfiguration;
 import m.co.rh.id.anavigator.Navigator;
@@ -52,15 +50,18 @@ import m.co.rh.id.anavigator.component.StatefulViewFactory;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 
+@SuppressWarnings("rawtypes")
 public class NavigatorProvider implements ProviderDisposable {
     private Application mApplication;
     private Provider mProvider;
+    private CommonNavConfig mCommonNavConfig;
     private Map<Class<? extends Activity>, Navigator> mActivityNavigatorMap;
 
     public NavigatorProvider(Application application, Provider provider) {
         mApplication = application;
         mProvider = provider;
         mActivityNavigatorMap = new LinkedHashMap<>();
+        mCommonNavConfig = mProvider.get(CommonNavConfig.class);
         setupMainActivityNavigator();
         setupCardShowActivityNavigator();
     }
@@ -69,6 +70,7 @@ public class NavigatorProvider implements ProviderDisposable {
         return mActivityNavigatorMap.get(activity.getClass());
     }
 
+    @SuppressWarnings("unchecked")
     private Navigator setupMainActivityNavigator() {
         Map<String, StatefulViewFactory<Activity, StatefulView>> navMap = new HashMap<>();
         navMap.put(Routes.HOME_PAGE, (args, activity) -> {
@@ -87,9 +89,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.TEST, (args, activity) -> new TestPage());
         navMap.put(Routes.NOTIFICATION_TIMERS, (args, activity) -> new NotificationTimerListPage());
         navMap.put(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG, (args, activity) -> new NotificationTimerDetailSVDialog());
-        navMap.put(Routes.COMMON_BOOLEAN_DIALOG, (args, activity) -> new BooleanSVDialog());
-        navMap.put(Routes.COMMON_MESSAGE_DIALOG, (args, activity) -> new MessageSVDialog());
-        navMap.put(Routes.COMMON_TIMEPICKER_DIALOG, (args, activity) -> new TimePickerSVDialog());
+        navMap.putAll(mCommonNavConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
                 new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);
         navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),
@@ -103,16 +103,13 @@ public class NavigatorProvider implements ProviderDisposable {
         return navigator;
     }
 
+    @SuppressWarnings("unchecked")
     private Navigator setupCardShowActivityNavigator() {
         Map<String, StatefulViewFactory<Activity, StatefulView>> navMap = new HashMap<>();
-        navMap.put(Routes.HOME_PAGE, (args, activity) -> {
-            return new CardShowHomePage();
-        });
+        navMap.put(Routes.HOME_PAGE, (args, activity) -> new CardShowHomePage());
         navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
         navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
-        navMap.put(Routes.COMMON_BOOLEAN_DIALOG, (args, activity) -> new BooleanSVDialog());
-        navMap.put(Routes.COMMON_MESSAGE_DIALOG, (args, activity) -> new MessageSVDialog());
-        navMap.put(Routes.COMMON_TIMEPICKER_DIALOG, (args, activity) -> new TimePickerSVDialog());
+        navMap.putAll(mCommonNavConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
                 new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);
         navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),

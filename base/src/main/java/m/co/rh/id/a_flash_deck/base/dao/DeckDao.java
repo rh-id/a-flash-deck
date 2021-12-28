@@ -116,6 +116,12 @@ public abstract class DeckDao {
     @Query("SELECT * FROM deck")
     public abstract List<Deck> getAllDecks();
 
+    @Query("SELECT * FROM card WHERE question_image=:questionImage")
+    public abstract Card findCardByQuestionImage(String questionImage);
+
+    @Query("SELECT * FROM card WHERE answer_image=:answerImage")
+    public abstract Card findCardByAnswerImage(String answerImage);
+
     @Transaction
     public void importDecks(List<DeckModel> deckModels) {
         if (deckModels == null || deckModels.isEmpty()) return;

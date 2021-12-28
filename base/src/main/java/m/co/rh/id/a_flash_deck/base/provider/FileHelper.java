@@ -19,14 +19,23 @@ package m.co.rh.id.a_flash_deck.base.provider;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
+
+import androidx.annotation.NonNull;
+import androidx.exifinterface.media.ExifInterface;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.UUID;
 
 import m.co.rh.id.alogger.ILogger;
@@ -43,14 +52,27 @@ public class FileHelper {
     private ProviderValue<ILogger> mLogger;
     private File mLogFile;
     private File mTempFileRoot;
+    private File mCardQuestionImageParent;
+    private File mCardAnswerImageParent;
+    private File mCardQuestionImageThumbnailParent;
+    private File mCardAnswerImageThumbnailParent;
 
     public FileHelper(Provider provider, Context context) {
         mAppContext = context.getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         File cacheDir = context.getCacheDir();
+        File fileDir = context.getFilesDir();
         mLogFile = new File(cacheDir, "alogger/app.log");
         mTempFileRoot = new File(cacheDir, "/tmp");
         mTempFileRoot.mkdirs();
+        mCardQuestionImageParent = new File(fileDir, "app/card/question/image");
+        mCardQuestionImageParent.mkdirs();
+        mCardAnswerImageParent = new File(fileDir, "app/card/answer/image");
+        mCardAnswerImageParent.mkdirs();
+        mCardQuestionImageThumbnailParent = new File(fileDir, "app/card/question/image/thumbnail");
+        mCardQuestionImageThumbnailParent.mkdirs();
+        mCardAnswerImageThumbnailParent = new File(fileDir, "app/card/answer/image/thumbnail");
+        mCardAnswerImageThumbnailParent.mkdirs();
     }
 
     public File createTempFile(String fileName) throws IOException {
@@ -74,7 +96,241 @@ public class FileHelper {
         }
         File tmpFile = new File(parent, fName);
         tmpFile.createNewFile();
+        copyFile(content, tmpFile);
+        return tmpFile;
+    }
 
+    public void clearLogFile() {
+        if (mLogFile.exists()) {
+            mLogFile.delete();
+            try {
+                mLogFile.createNewFile();
+            } catch (Throwable throwable) {
+                mLogger.get().e(TAG, "Failed to create new file for log", throwable);
+            }
+        }
+    }
+
+    public File getLogFile() {
+        return mLogFile;
+    }
+
+    public File createImageTempFile() throws IOException {
+        File parent = new File(mTempFileRoot, UUID.randomUUID().toString());
+        parent.mkdirs();
+        File tmpFile = new File(parent, UUID.randomUUID().toString() + ".jpg");
+        tmpFile.createNewFile();
+        return tmpFile;
+    }
+
+    public File createImageTempFile(Uri content) throws IOException {
+        File outFile = createImageTempFile();
+        try {
+            copyImage(content, outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File createCardQuestionImage(File inFile, String fileName) throws IOException {
+        File outFile = new File(mCardQuestionImageParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyImage(Uri.fromFile(inFile), outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File createCardQuestionImage(Uri content) throws IOException {
+        File outFile = newCardQuestionImage();
+        try {
+            outFile.createNewFile();
+            copyImage(content, outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File createCardQuestionImageThumbnail(Uri content, String fileName) throws IOException {
+        File outFile = new File(mCardQuestionImageThumbnailParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyImage(content, outFile, 320, 180);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File createCardAnswerImageThumbnail(Uri content, String fileName) throws IOException {
+        File outFile = new File(mCardAnswerImageThumbnailParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyImage(content, outFile, 320, 180);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public void deleteCardQuestionImage(String fileName) {
+        if (fileName != null && !fileName.isEmpty()) {
+            File file = new File(mCardQuestionImageParent, fileName);
+            file.delete();
+            File thumbnail = new File(mCardQuestionImageThumbnailParent, fileName);
+            thumbnail.delete();
+        }
+    }
+
+    public void deleteCardAnswerImage(String fileName) {
+        if (fileName != null && !fileName.isEmpty()) {
+            File file = new File(mCardAnswerImageParent, fileName);
+            file.delete();
+            File thumbnail = new File(mCardAnswerImageThumbnailParent, fileName);
+            thumbnail.delete();
+        }
+    }
+
+    public File getCardQuestionImage(String fileName) {
+        return new File(mCardQuestionImageParent, fileName);
+    }
+
+    public File getCardAnswerImage(String fileName) {
+        return new File(mCardAnswerImageParent, fileName);
+    }
+
+    public File getCardQuestionImageThumbnail(String fileName) {
+        return new File(mCardQuestionImageThumbnailParent, fileName);
+    }
+
+    public File getCardAnswerImageThumbnail(String fileName) {
+        return new File(mCardAnswerImageThumbnailParent, fileName);
+    }
+
+    public File createCardAnswerImage(File inFile, String fileName) throws IOException {
+        File outFile = new File(mCardAnswerImageParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyImage(Uri.fromFile(inFile), outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File createCardAnswerImage(Uri content) throws IOException {
+        File tmpFile = newCardAnswerImage();
+        try {
+            tmpFile.createNewFile();
+            copyImage(content, tmpFile);
+            return tmpFile;
+        } catch (Exception e) {
+            tmpFile.delete();
+            throw e;
+        }
+    }
+
+    @NonNull
+    private File newCardQuestionImage() {
+        String ext = ".jpg";
+        String fName = UUID.randomUUID().toString();
+        return new File(mCardQuestionImageParent, fName + ext);
+    }
+
+    @NonNull
+    private File newCardAnswerImage() {
+        String ext = ".jpg";
+        String fName = UUID.randomUUID().toString();
+        return new File(mCardAnswerImageParent, fName + ext);
+    }
+
+    private void copyImage(Uri content, File outFile) throws IOException {
+        copyImage(content, outFile, 1280, 720);
+    }
+
+    private void copyImage(Uri content, File outFile, int width, int height) throws IOException {
+        ContentResolver contentResolver = mAppContext.getContentResolver();
+        FileDescriptor fd = contentResolver.openFileDescriptor(
+                content, "r").getFileDescriptor();
+        InputStream fis = new FileInputStream(fd);
+        BitmapFactory.Options bmOptions = getBitmapOptionForCompression(fis, width, height);
+        OutputStream fileOutputStream = new BufferedOutputStream(
+                new FileOutputStream(outFile), 10240);
+        Bitmap bitmap = processExifAttr(mAppContext, content, bmOptions);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
+        fileOutputStream.flush();
+        fileOutputStream.close();
+    }
+
+    private BitmapFactory.Options getBitmapOptionForCompression(InputStream fis, int width, int height) {
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(fis, null, bmOptions);
+        int inWidth = bmOptions.outWidth;
+        int inHeight = bmOptions.outHeight;
+        int outWidth = width;
+        int outHeight = height;
+        if (inHeight > inWidth) {
+            outHeight = width;
+            outWidth = height;
+        }
+        int scaleFactor = Math.max(1, Math.min(inWidth / outWidth, inHeight / outHeight));
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+        return bmOptions;
+    }
+
+    private Bitmap processExifAttr(Context context, Uri imageUri, BitmapFactory.Options bmOptions) throws IOException {
+        ContentResolver contentResolver = context.getContentResolver();
+        FileDescriptor fd = contentResolver.openFileDescriptor(
+                imageUri, "r").getFileDescriptor();
+        ExifInterface exifInterface = new ExifInterface(fd);
+        int rotation = getRotation(exifInterface);
+
+        // get fd again
+        fd = contentResolver.openFileDescriptor(
+                imageUri, "r").getFileDescriptor();
+        Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fd, null, bmOptions);
+        if (rotation != 0) {
+            Matrix matrix = new Matrix();
+            matrix.setRotate(rotation);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                    matrix, true);
+        }
+        return bitmap;
+    }
+
+    private int getRotation(ExifInterface exifInterface) {
+        int rotation = 0;
+        int exifRotation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+
+        if (exifRotation != ExifInterface.ORIENTATION_UNDEFINED) {
+            switch (exifRotation) {
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotation = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotation = 270;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotation = 90;
+                    break;
+            }
+        }
+        return rotation;
+    }
+
+    private void copyFile(Uri content, File tmpFile) throws IOException {
         if (content != null) {
             ContentResolver cr = mAppContext.getContentResolver();
             InputStream inputStream = cr.openInputStream(content);
@@ -93,21 +349,21 @@ public class FileHelper {
             bufferedInputStream.close();
             inputStream.close();
         }
-        return tmpFile;
     }
 
-    public void clearLogFile() {
-        if (mLogFile.exists()) {
-            mLogFile.delete();
-            try {
-                mLogFile.createNewFile();
-            } catch (Throwable throwable) {
-                mLogger.get().e(TAG, "Failed to create new file for log", throwable);
-            }
+    public void copyStream(InputStream in, OutputStream out) throws IOException {
+        byte[] buf = new byte[5000];
+        int length;
+        while ((length = in.read(buf)) > 0) {
+            out.write(buf, 0, length);
         }
     }
 
-    public File getLogFile() {
-        return mLogFile;
+    public File getCardQuestionImageParent() {
+        return mCardQuestionImageParent;
+    }
+
+    public File getCardAnswerImageParent() {
+        return mCardAnswerImageParent;
     }
 }

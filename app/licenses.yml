@@ -303,6 +303,12 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: http://developer.android.com/tools/extras/support-library.html
+- artifact: androidx.exifinterface:exifinterface:+
+  name: exifinterface
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/jetpack/androidx/releases/exifinterface#1.3.3
 - artifact: com.github.rh-id:a-logger:+
   name: a-logger
   copyrightHolder: Ruby Hartono
@@ -321,6 +327,12 @@
   license: MIT License
   licenseUrl: https://api.github.com/licenses/mit
   url: https://github.com/rh-id/a-provider
+- artifact: com.github.chrisbanes:PhotoView:+
+  name: PhotoView
+  copyrightHolder: Chris Banes
+  license: Apache License 2.0
+  licenseUrl: https://api.github.com/licenses/apache-2.0
+  url: https://baseflow.com
 - artifact: com.google.android.material:material:+
   name: material
   copyrightHolder: The Android Open Source Project

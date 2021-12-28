@@ -43,11 +43,10 @@ import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.MessageSVDialog;
 import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
@@ -208,7 +207,7 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                                                                     String title = provider.getContext().getString(R.string.title_error);
                                                                     String content = provider.getContext().getString(R.string.error_no_deck_selected);
                                                                     navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                                            MessageSVDialog.Args.newArgs(title,
+                                                                            provider.get(CommonNavConfig.class).args_commonMessageDialog(title,
                                                                                     content));
                                                                 }
                                                             }
@@ -223,10 +222,11 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                             mSvProvider.get(TestStateModifier.class).getActiveTest()
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((testStateOpt, throwable) -> {
+                                        CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
                                         if (throwable != null) {
                                             String title = mSvProvider.getContext().getString(R.string.title_error);
                                             mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    MessageSVDialog.Args.newArgs(title, throwable.getMessage()));
+                                                    commonNavConfig.args_commonMessageDialog(title, throwable.getMessage()));
                                             mSvProvider.get(ILogger.class).e(TAG, throwable.getMessage(), throwable);
                                         } else {
                                             if (testStateOpt.isPresent()) {
@@ -234,28 +234,26 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                                                 String title = svContext.getString(R.string.title_confirm);
                                                 String content = svContext.getString(R.string.test_session_exist_confirm_start_new);
                                                 mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                                                        BooleanSVDialog.Args.newArgs(title, content),
+                                                        commonNavConfig.args_commonBooleanDialog(title, content),
                                                         (navigator, navRoute, activity, currentView) -> {
-                                                            Serializable serializableResult = navRoute.getRouteResult();
-                                                            if (serializableResult instanceof Boolean) {
-                                                                if ((Boolean) serializableResult) {
-                                                                    Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                                                                    CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                                                    compositeDisposable.add(provider.get(TestStateModifier.class).stopActiveTest()
-                                                                            .observeOn(AndroidSchedulers.mainThread())
-                                                                            .subscribe((testState, throwable1) -> {
-                                                                                if (throwable1 != null) {
-                                                                                    String title1 = provider.getContext().getString(R.string.title_error);
-                                                                                    navigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                                                                                            BooleanSVDialog.Args.newArgs(title1, throwable1.getMessage()));
-                                                                                    provider.get(ILogger.class).e(TAG, throwable1.getMessage(), throwable1);
-                                                                                } else {
-                                                                                    startTestWorkflow(navigator);
-                                                                                }
-                                                                                compositeDisposable.dispose();
-                                                                            })
-                                                                    );
-                                                                }
+                                                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                                                            CommonNavConfig commonNavConfig1 = provider.get(CommonNavConfig.class);
+                                                            if (commonNavConfig1.result_commonBooleanDialog(navRoute)) {
+                                                                CompositeDisposable compositeDisposable = new CompositeDisposable();
+                                                                compositeDisposable.add(provider.get(TestStateModifier.class).stopActiveTest()
+                                                                        .observeOn(AndroidSchedulers.mainThread())
+                                                                        .subscribe((testState, throwable1) -> {
+                                                                            if (throwable1 != null) {
+                                                                                String title1 = provider.getContext().getString(R.string.title_error);
+                                                                                navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                                                        commonNavConfig1.args_commonMessageDialog(title1, throwable1.getMessage()));
+                                                                                provider.get(ILogger.class).e(TAG, throwable1.getMessage(), throwable1);
+                                                                            } else {
+                                                                                startTestWorkflow(navigator);
+                                                                            }
+                                                                            compositeDisposable.dispose();
+                                                                        })
+                                                                );
                                                             }
                                                         });
                                             } else {
@@ -282,7 +280,7 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                                             if (throwable.getCause() instanceof ValidationException) {
                                                 String title = context.getString(R.string.error);
                                                 navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                        MessageSVDialog.Args.newArgs(title,
+                                                        provider.get(CommonNavConfig.class).args_commonMessageDialog(title,
                                                                 throwable.getCause().getMessage()));
                                             } else {
                                                 provider.get(ILogger.class)
@@ -331,8 +329,9 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                                         Context context = provider.getContext();
                                         if (throwable.getCause() instanceof ValidationException) {
                                             String title = context.getString(R.string.title_error);
+                                            CommonNavConfig commonNavConfig = provider.get(CommonNavConfig.class);
                                             navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    MessageSVDialog.Args.newArgs(title,
+                                                    commonNavConfig.args_commonMessageDialog(title,
                                                             throwable.getCause().getMessage()),
                                                     (navigator1, navRoute1, activity1, currentView1) -> startTestWorkflow(navigator1));
                                         } else {

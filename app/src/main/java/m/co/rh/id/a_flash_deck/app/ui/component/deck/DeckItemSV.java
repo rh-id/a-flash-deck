@@ -40,9 +40,9 @@ import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -253,34 +253,32 @@ public class DeckItemSV extends StatefulView<Activity> implements View.OnClickLi
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_deck, mDeck.name);
+            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                    BooleanSVDialog.Args.newArgs(title, content),
+                    commonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
-                        Serializable serializable = navRoute.getRouteResult();
-                        if (serializable instanceof Boolean) {
-                            if ((Boolean) serializable) {
-                                Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                                CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                compositeDisposable.add(provider.get(DeleteDeckCmd.class)
-                                        .execute(mDeck)
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe((deck, throwable) -> {
-                                            Context deleteContext = provider.getContext();
-                                            if (throwable != null) {
-                                                provider.get(ILogger.class)
-                                                        .e(TAG,
-                                                                deleteContext.getString(
-                                                                        R.string.error_deleting_deck),
-                                                                throwable);
-                                            } else {
-                                                provider.get(ILogger.class)
-                                                        .i(TAG,
-                                                                deleteContext.getString(
-                                                                        R.string.success_deleting_deck, deck.name));
-                                            }
-                                        })
-                                );
-                            }
+                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                        if (provider.get(CommonNavConfig.class).result_commonBooleanDialog(navRoute)) {
+                            CompositeDisposable compositeDisposable = new CompositeDisposable();
+                            compositeDisposable.add(provider.get(DeleteDeckCmd.class)
+                                    .execute(mDeck)
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe((deck, throwable) -> {
+                                        Context deleteContext = provider.getContext();
+                                        if (throwable != null) {
+                                            provider.get(ILogger.class)
+                                                    .e(TAG,
+                                                            deleteContext.getString(
+                                                                    R.string.error_deleting_deck),
+                                                            throwable);
+                                        } else {
+                                            provider.get(ILogger.class)
+                                                    .i(TAG,
+                                                            deleteContext.getString(
+                                                                    R.string.success_deleting_deck, deck.name));
+                                        }
+                                    })
+                            );
                         }
                     });
         }

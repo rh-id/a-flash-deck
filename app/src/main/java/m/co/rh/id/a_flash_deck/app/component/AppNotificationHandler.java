@@ -22,13 +22,15 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.os.Handler;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -47,6 +49,7 @@ import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
+import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -54,20 +57,20 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class AppNotificationHandler implements IAppNotificationHandler {
     private final Context mAppContext;
     private final ProviderValue<ExecutorService> mExecutorService;
-    private final ProviderValue<Handler> mHandler;
     private final ProviderValue<AndroidNotificationRepo> mAndroidNotificationRepo;
     private final ProviderValue<NotificationTimerDao> mNotificationTimerDao;
     private final ProviderValue<DeckDao> mDeckDao;
+    private final ProviderValue<FileHelper> mFileHelper;
     private BehaviorSubject<Optional<NotificationTimerEvent>> mTimerNotificationSubject;
     private ReentrantLock mLock;
 
     public AppNotificationHandler(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
-        mHandler = provider.lazyGet(Handler.class);
         mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);
         mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
+        mFileHelper = provider.lazyGet(FileHelper.class);
         mTimerNotificationSubject = BehaviorSubject.createDefault(Optional.empty());
         mLock = new ReentrantLock();
     }
@@ -105,6 +108,17 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 .setDeleteIntent(deletePendingIntent)
                 .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
                 .setAutoCancel(true);
+        if (selectedCard.questionImage != null) {
+            File questionImageFile = mFileHelper.get().getCardQuestionImage(selectedCard.questionImage);
+            File questionImageThumbnailFile = mFileHelper.get().getCardQuestionImageThumbnail(selectedCard.questionImage);
+            Bitmap questionImage = BitmapFactory.decodeFile(questionImageFile.getAbsolutePath());
+            Bitmap questionImageThumbnail = BitmapFactory.decodeFile(questionImageThumbnailFile.getAbsolutePath());
+            builder.setLargeIcon(questionImageThumbnail);
+            builder.setStyle(new NotificationCompat.BigPictureStyle()
+                    .setSummaryText(selectedCard.question)
+                    .bigPicture(questionImage));
+        }
+
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
         notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
                 androidNotification.requestId,

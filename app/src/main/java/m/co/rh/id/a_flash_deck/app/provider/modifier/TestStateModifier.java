@@ -44,15 +44,19 @@ import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.TestEvent;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 public class TestStateModifier {
+    private static final String TAG = TestStateModifier.class.getName();
+
     protected Context mAppContext;
     private ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<TestChangeNotifier> mTestChangeNotifier;
     protected ProviderValue<DeckDao> mDeckDao;
     private ProviderValue<TestDao> mTestDao;
+    private ProviderValue<ILogger> mLogger;
 
     public TestStateModifier(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
@@ -60,6 +64,7 @@ public class TestStateModifier {
         mTestChangeNotifier = provider.lazyGet(TestChangeNotifier.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
         mTestDao = provider.lazyGet(TestDao.class);
+        mLogger = provider.lazyGet(ILogger.class);
     }
 
     public Single<TestState> previousCard(TestState testState) {
@@ -116,7 +121,13 @@ public class TestStateModifier {
         TestState testState;
         Test test = mTestDao.get().getCurrentTest();
         if (test != null) {
-            testState = deserializeTest(test);
+            try {
+                testState = deserializeTest(test);
+            } catch (Exception e) {
+                mLogger.get().d(TAG, "Failed to load test state", e);
+                mExecutorService.get().execute(() -> mTestDao.get().delete(test));
+                throw e;
+            }
         } else {
             testState = null;
         }

@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -31,9 +32,9 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimeChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.TimePickerSVDialog;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -50,8 +51,8 @@ public class NotificationTimeMenuSV extends StatefulView<Activity> implements Vi
     private transient Provider mSvProvider;
 
     private DateFormat mTimeFormat;
-    private TimePickerSVDialog.Result mStartTimeResult;
-    private TimePickerSVDialog.Result mEndTimeResult;
+    private Serializable mStartTimeResult;
+    private Serializable mEndTimeResult;
 
     public NotificationTimeMenuSV() {
         mTimeFormat = new SimpleDateFormat("HH:mm");
@@ -64,7 +65,7 @@ public class NotificationTimeMenuSV extends StatefulView<Activity> implements Vi
         }
         mSvProvider = mProvider.get(IStatefulViewProvider.class);
         View view = activity.getLayoutInflater().inflate(R.layout.menu_notification_time, container, false);
-        AppSharedPreferences appSharedPreferences = mProvider.get(AppSharedPreferences.class);
+        AppSharedPreferences appSharedPreferences = mSvProvider.get(AppSharedPreferences.class);
         String startTime = mTimeFormat.format(appSharedPreferences.getNotificationStartTime());
         String endTime = mTimeFormat.format(appSharedPreferences.getNotificationEndTime());
         TextView titleText = view.findViewById(R.id.text_title);
@@ -89,37 +90,42 @@ public class NotificationTimeMenuSV extends StatefulView<Activity> implements Vi
 
     @Override
     public void onClick(View view) {
-        AppSharedPreferences appSharedPreferences = mProvider.get(AppSharedPreferences.class);
+        AppSharedPreferences appSharedPreferences = mSvProvider.get(AppSharedPreferences.class);
         String startTimeTitle = view.getContext().getString(R.string.title_start_time);
         int startTimeHourOfDay = appSharedPreferences.getNotificationStartTimeHourOfDay();
         int startTimeMinute = appSharedPreferences.getNotificationStartTimeMinute();
         mNavigator.push(Routes.COMMON_TIMEPICKER_DIALOG,
-                TimePickerSVDialog.Args.newArgs(startTimeTitle,
-                        startTimeHourOfDay, startTimeMinute, true),
+                mSvProvider.get(CommonNavConfig.class)
+                        .args_commonTimePickerDialog(startTimeTitle,
+                                startTimeHourOfDay, startTimeMinute, true),
                 (navigator, navRoute, activity, currentView) -> {
-                    TimePickerSVDialog.Result startTimeResult =
-                            TimePickerSVDialog.Result.of(navRoute.getRouteResult());
+                    Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                    Serializable startTimeResult = provider.get(CommonNavConfig.class).result_commonTimePickerDialog(navRoute);
                     if (startTimeResult != null) {
                         mStartTimeResult = startTimeResult;
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                         AppSharedPreferences appSharedPreferencesEndTime = provider.get(AppSharedPreferences.class);
-                        String endTimeTitle = view.getContext().getString(R.string.title_end_time);
+                        String endTimeTitle = provider.getContext().getString(R.string.title_end_time);
                         int endTimeHourOfDay = appSharedPreferencesEndTime.getNotificationEndTimeHourOfDay();
                         int endTimeMinute = appSharedPreferencesEndTime.getNotificationEndTimeMinute();
                         navigator.push(Routes.COMMON_TIMEPICKER_DIALOG,
-                                TimePickerSVDialog.Args.newArgs(endTimeTitle,
+                                provider.get(CommonNavConfig.class).args_commonTimePickerDialog(endTimeTitle,
                                         endTimeHourOfDay, endTimeMinute, true),
                                 (navigator1, navRoute1, activity1, currentView1) -> {
-                                    TimePickerSVDialog.Result endTimeResult =
-                                            TimePickerSVDialog.Result.of(navRoute1.getRouteResult());
+                                    Provider provider1 = (Provider) navigator1.getNavConfiguration().getRequiredComponent();
+                                    CommonNavConfig commonNavConfig = provider1.get(CommonNavConfig.class);
+                                    Serializable endTimeResult =
+                                            commonNavConfig.result_commonTimePickerDialog(navRoute1);
                                     if (endTimeResult != null) {
                                         mEndTimeResult = endTimeResult;
-                                        Provider provider1 = (Provider) navigator1.getNavConfiguration().getRequiredComponent();
+                                        int startHourOfDay = commonNavConfig.result_commonTimePickerDialog_hourOfDay(mStartTimeResult);
+                                        int startMinute = commonNavConfig.result_commonTimePickerDialog_minute(mStartTimeResult);
+                                        int endHourOfDay = commonNavConfig.result_commonTimePickerDialog_hourOfDay(mEndTimeResult);
+                                        int endMinute = commonNavConfig.result_commonTimePickerDialog_minute(mEndTimeResult);
                                         AppSharedPreferences appSharedPreferences1 = provider1.get(AppSharedPreferences.class);
                                         appSharedPreferences1
-                                                .setNotificationStartTime(mStartTimeResult.getHourOfDay(), mStartTimeResult.getMinute());
+                                                .setNotificationStartTime(startHourOfDay, startMinute);
                                         appSharedPreferences1
-                                                .setNotificationEndTime(mEndTimeResult.getHourOfDay(), mEndTimeResult.getMinute());
+                                                .setNotificationEndTime(endHourOfDay, endMinute);
                                         provider1.get(NotificationTimeChangeNotifier.class)
                                                 .onDateChanged(appSharedPreferences1.getNotificationStartTime(),
                                                         appSharedPreferences1.getNotificationEndTime());

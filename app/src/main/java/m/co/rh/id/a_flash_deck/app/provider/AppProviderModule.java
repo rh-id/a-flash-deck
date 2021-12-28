@@ -33,7 +33,6 @@ import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimeChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimerChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
-import m.co.rh.id.anavigator.Navigator;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -41,7 +40,6 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 public class AppProviderModule implements ProviderModule {
 
     private Application mApplication;
-    private Navigator mNavigator;
 
     public AppProviderModule(Application application) {
         mApplication = application;
@@ -63,6 +61,9 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerLazy(NotificationTimeChangeNotifier.class, NotificationTimeChangeNotifier::new);
         providerRegistry.registerLazy(TestStateModifier.class, () -> new TestStateModifier(context, provider));
         providerRegistry.registerAsync(AppNotificationHandler.class, () -> new AppNotificationHandler(context, provider));
+
+        // clean up undeleted file
+        providerRegistry.registerAsync(FileCleanUpTask.class, () -> new FileCleanUpTask(provider));
 
         // Timer notification
         providerRegistry.registerLazy(NotificationTimerChangeNotifier.class, NotificationTimerChangeNotifier::new);

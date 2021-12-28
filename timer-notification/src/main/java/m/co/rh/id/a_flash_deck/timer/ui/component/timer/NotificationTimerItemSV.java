@@ -32,8 +32,8 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.DeleteNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NotificationTimerQueryCmd;
@@ -125,8 +125,9 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements V
                 Context context = mSvProvider.getContext();
                 String title = context.getString(R.string.title_confirm);
                 String content = context.getString(R.string.confirm_delete_notification_timer, mNotificationTimer.name);
+                CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
                 mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                        BooleanSVDialog.Args.newArgs(title, content),
+                        commonNavConfig.args_commonBooleanDialog(title, content),
                         (navigator, navRoute, activity, currentView) -> {
                             Serializable serializable = navRoute.getRouteResult();
                             if (serializable instanceof Boolean) {
