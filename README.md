@@ -21,4 +21,5 @@ and finally RxAndroid to handle UI use cases.
 <img src="https://github.com/rh-id/a-flash-deck/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" height="512"/>
 <img src="https://github.com/rh-id/a-flash-deck/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" height="512"/>
 <img src="https://github.com/rh-id/a-flash-deck/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" height="512"/>
+<img src="https://github.com/rh-id/a-flash-deck/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" height="512"/>
 
