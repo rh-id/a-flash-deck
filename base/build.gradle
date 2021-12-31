@@ -42,7 +42,7 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
-    api 'com.github.rh-id:a-provider:v0.0.14'
+    api 'com.github.rh-id:a-provider:v0.0.16'
     api 'com.github.rh-id:a-navigator:v0.0.41'
     api 'com.github.rh-id:a-logger:v0.0.3'
     api 'io.reactivex.rxjava3:rxandroid:3.0.0'

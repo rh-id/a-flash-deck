@@ -22,10 +22,12 @@ import android.content.Context;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
+import m.co.rh.id.aprovider.ProviderIsDisposed;
 import m.co.rh.id.aprovider.ProviderValue;
 
-public class StatefulViewProvider implements IStatefulViewProvider, ProviderDisposable {
+public class StatefulViewProvider implements IStatefulViewProvider, ProviderDisposable, ProviderIsDisposed {
     private Provider mProvider;
+    private boolean mIsDisposed;
 
     public StatefulViewProvider(Provider parentProvider) {
         mProvider = Provider.createNestedProvider("StatefulViewProvider", parentProvider,
@@ -59,6 +61,8 @@ public class StatefulViewProvider implements IStatefulViewProvider, ProviderDisp
 
     @Override
     public void dispose() {
+        if (mIsDisposed) return;
+        mIsDisposed = true;
         if (mProvider != null) {
             mProvider.dispose();
             mProvider = null;
@@ -68,5 +72,10 @@ public class StatefulViewProvider implements IStatefulViewProvider, ProviderDisp
     @Override
     public void dispose(Context context) {
         dispose();
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return mIsDisposed;
     }
 }
