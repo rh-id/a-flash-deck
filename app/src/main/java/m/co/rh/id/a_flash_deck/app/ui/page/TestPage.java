@@ -45,6 +45,7 @@ import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
+import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
@@ -55,6 +56,9 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
 
     @NavInject
     private transient INavigator mNavigator;
+    @NavInject
+    private transient NavRoute mNavRoute;
+
     private transient Provider mSvProvider;
     private transient BehaviorSubject<TestState> mTestStateSubject;
     private transient BehaviorSubject<TestState> mShowTestAnswerSubject;
@@ -144,18 +148,7 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                 .add("createView_onShowAnswer",
                         mShowTestAnswerSubject.subscribe(
                                 testState -> {
-                                    Card card = testState.currentCard();
-                                    if (card.answerImage != null) {
-                                        answerImageView.setImageURI(Uri.fromFile(
-                                                fileHelper.getCardQuestionImage(card.questionImage)
-                                        ));
-                                        answerImageView.setVisibility(View.VISIBLE);
-                                    } else {
-                                        answerImageView.setImageURI(null);
-                                        answerImageView.setVisibility(View.GONE);
-                                    }
-                                    textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
-                                    textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
+
                                 }
                         ));
         return rootLayout;
@@ -185,7 +178,22 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         ILogger iLogger = mSvProvider.get(ILogger.class);
         Context context = mSvProvider.getContext();
         if (id == R.id.text_answer) {
-            mShowTestAnswerSubject.onNext(testState);
+            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+            View rootView = mNavigator.findView(mNavRoute);
+            ImageView answerImageView = rootView.findViewById(R.id.image_answer);
+            TextView textAnswer = rootView.findViewById(R.id.text_answer);
+            Card card = testState.currentCard();
+            if (card.answerImage != null) {
+                answerImageView.setImageURI(Uri.fromFile(
+                        fileHelper.getCardAnswerImage(card.answerImage)
+                ));
+                answerImageView.setVisibility(View.VISIBLE);
+            } else {
+                answerImageView.setImageURI(null);
+                answerImageView.setVisibility(View.GONE);
+            }
+            textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
+            textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
         } else if (id == R.id.button_previous) {
             mSvProvider.get(RxDisposer.class)
                     .add("onCLick_buttonPrevious",
