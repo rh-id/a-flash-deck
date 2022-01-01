@@ -1,0 +1,14 @@
+Release 1.3.4+20
+
+Fix:
+* Black and white animation flicker when transition to new page on android 8 and below
+
+------ 1.3.3+19 Highlights ------
+
+Fix:
+* App sometimes crash for no reason
+
+------ 1.3.2+18 Highlights ------
+
+Fix:
+* Optimize memory usage
