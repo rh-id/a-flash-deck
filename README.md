@@ -1,4 +1,4 @@
-# a-flash-deck
+# Flash Deck
 
 ![Android CI](https://github.com/rh-id/a-flash-deck/actions/workflows/gradlew-build.yml/badge.svg)
 ![Release Build](https://github.com/rh-id/a-flash-deck/actions/workflows/android-release.yml/badge.svg)
@@ -8,6 +8,10 @@ A simple Flash Card application to assist in learning and remembering something.
 
 This project is intended for demo app for [a-navigator](https://github.com/rh-id/a-navigator) and [a-provider](https://github.com/rh-id/a-provider) library usage.
 The app still works as production even though it is demo app.
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/m.co.rh.id.a_flash_deck/)
 
 ## Project Structure
 
