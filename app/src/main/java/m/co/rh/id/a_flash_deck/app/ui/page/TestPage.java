@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import androidx.core.text.HtmlCompat;
 
+import java.io.File;
 import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -37,6 +38,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
@@ -89,6 +91,8 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         textAnswer.setOnClickListener(this);
+        Button buttonQuestionVoice = rootLayout.findViewById(R.id.button_question_voice);
+        buttonQuestionVoice.setOnClickListener(this);
         TextView textProgress = rootLayout.findViewById(R.id.text_progress);
         Context context = mSvProvider.getContext();
         FileHelper fileHelper = mSvProvider.get(FileHelper.class);
@@ -111,6 +115,11 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                     } else {
                                         questionImageView.setImageURI(null);
                                         questionImageView.setVisibility(View.GONE);
+                                    }
+                                    if (card.questionVoice != null) {
+                                        buttonQuestionVoice.setVisibility(View.VISIBLE);
+                                    } else {
+                                        buttonQuestionVoice.setVisibility(View.GONE);
                                     }
                                     textProgress.setText(progress);
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
@@ -244,6 +253,11 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                         }
                                     })
                     );
+        } else if (id == R.id.button_question_voice) {
+            Card card = testState.currentCard();
+            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+            File file = fileHelper.getCardQuestionVoice(card.questionVoice);
+            mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(file));
         }
     }
 }

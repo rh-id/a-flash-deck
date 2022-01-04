@@ -58,6 +58,12 @@ public class Card implements Serializable, Cloneable {
     public String questionImage;
 
     /**
+     * Question voice file name, the file name only
+     */
+    @ColumnInfo(name = "question_voice")
+    public String questionVoice;
+
+    /**
      * Answer part of card, usually at the bottom or back side of card
      */
     @ColumnInfo(name = "answer")
@@ -79,13 +85,14 @@ public class Card implements Serializable, Cloneable {
                 Objects.equals(deckId, card.deckId) &&
                 Objects.equals(question, card.question) &&
                 Objects.equals(questionImage, card.questionImage) &&
+                Objects.equals(questionVoice, card.questionVoice) &&
                 Objects.equals(answer, card.answer) &&
                 Objects.equals(answerImage, card.answerImage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, deckId, ordinal, question, questionImage, answer, answerImage);
+        return Objects.hash(id, deckId, ordinal, question, questionImage, questionVoice, answer, answerImage);
     }
 
     @Override
@@ -108,6 +115,11 @@ public class Card implements Serializable, Cloneable {
             questionImageStr = "";
         }
         jsonObject.put("questionImage", questionImageStr);
+        String questionVoiceStr = questionVoice;
+        if (questionVoiceStr == null) {
+            questionVoiceStr = "";
+        }
+        jsonObject.put("questionVoice", questionVoiceStr);
         jsonObject.put("answer", answer);
         String answerImageStr = answerImage;
         if (answerImageStr == null) {
@@ -126,6 +138,14 @@ public class Card implements Serializable, Cloneable {
             questionImage = jsonObject.getString("questionImage");
             if (questionImage.isEmpty()) {
                 questionImage = null;
+            }
+        } catch (JSONException jsonException) {
+            // leave blank
+        }
+        try {
+            questionVoice = jsonObject.getString("questionVoice");
+            if (questionVoice.isEmpty()) {
+                questionVoice = null;
             }
         } catch (JSONException jsonException) {
             // leave blank

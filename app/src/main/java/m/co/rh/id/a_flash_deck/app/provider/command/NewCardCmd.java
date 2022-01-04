@@ -100,7 +100,7 @@ public class NewCardCmd {
         );
     }
 
-    public Single<Card> saveImage(Card card, Uri questionImage, Uri answerImage) {
+    public Single<Card> saveFiles(Card card, Uri questionImage, Uri answerImage, Uri questionVoice) {
         return Single.fromFuture(mExecutorService.get().submit(() -> {
                     if (questionImage != null) {
                         try {
@@ -127,6 +127,17 @@ public class NewCardCmd {
                         }
                     } else {
                         card.answerImage = null;
+                    }
+                    if (questionVoice != null) {
+                        try {
+                            File file = mFileHelper.get().createCardQuestionVoice(questionVoice);
+                            card.questionVoice = file.getName();
+                        } catch (Exception e) {
+                            mLogger.get().d(TAG, e.getMessage(), e);
+                            throw new ValidationException(mAppContext.getString(R.string.error_failed_to_save_question_voice));
+                        }
+                    } else {
+                        card.questionVoice = null;
                     }
                     mDeckDao.get().updateCard(card);
                     mDeckChangeNotifier.get().cardUpdated(card);

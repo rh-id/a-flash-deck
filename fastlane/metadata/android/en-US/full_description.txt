@@ -4,4 +4,5 @@ A simple and easy to use flash card to help you memorize and learn
   <li>Add notification timer to periodically asking you question</li>
   <li>Support dark mode and light mode</li>
   <li>Easily export & share your decks to your friends</li>
+  <li>Record voices and attach images for the cards</li>
 </ul>

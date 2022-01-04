@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -42,6 +43,8 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.CardShowActivity;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationDeleteReceiver;
+import m.co.rh.id.a_flash_deck.app.receiver.NotificationPlayVoiceReceiver;
+import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
@@ -61,6 +64,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<NotificationTimerDao> mNotificationTimerDao;
     private final ProviderValue<DeckDao> mDeckDao;
     private final ProviderValue<FileHelper> mFileHelper;
+    private final ProviderValue<AudioPlayer> mAudioPlayer;
     private BehaviorSubject<Optional<NotificationTimerEvent>> mTimerNotificationSubject;
     private ReentrantLock mLock;
 
@@ -71,6 +75,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
         mFileHelper = provider.lazyGet(FileHelper.class);
+        mAudioPlayer = provider.lazyGet(AudioPlayer.class);
         mTimerNotificationSubject = BehaviorSubject.createDefault(Optional.empty());
         mLock = new ReentrantLock();
     }
@@ -118,7 +123,13 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     .setSummaryText(selectedCard.question)
                     .bigPicture(questionImage));
         }
-
+        if (selectedCard.questionVoice != null) {
+            Intent questionVoiceIntent = new Intent(mAppContext, NotificationPlayVoiceReceiver.class);
+            questionVoiceIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+            PendingIntent questionVoicePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, questionVoiceIntent,
+                    intentFlag);
+            builder.addAction(R.drawable.ic_keyboard_voice_black, mAppContext.getString(R.string.play_voice), questionVoicePendingIntent);
+        }
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
         notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
                 androidNotification.requestId,
@@ -205,5 +216,25 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             mAndroidNotificationRepo.get().deleteNotification(androidNotification);
         }
         mLock.unlock();
+    }
+
+    @Override
+    public void playVoice(Intent intent) {
+        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
+        if (serializable instanceof Integer) {
+            mExecutorService.get().execute(() -> {
+                mLock.lock();
+                AndroidNotification androidNotification =
+                        mAndroidNotificationRepo.get().findByRequestId((int) serializable);
+                if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
+                    NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
+                    Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                    if (card.questionVoice != null) {
+                        mAudioPlayer.get().play(Uri.fromFile(mFileHelper.get().getCardQuestionVoice(card.questionVoice)));
+                    }
+                }
+                mLock.unlock();
+            });
+        }
     }
 }

@@ -46,6 +46,7 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateCardCmd;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -90,6 +91,7 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
     private transient BehaviorSubject<Optional<File>> mQuestionImageFileSubject;
     private transient BehaviorSubject<Optional<File>> mAnswerImageFileSubject;
     private File mTempCameraFile;
+    private transient BehaviorSubject<Optional<File>> mQuestionVoiceSubject;
 
     public CardDetailPage() {
         mAppBarSV = new AppBarSV(R.menu.page_card_detail);
@@ -117,19 +119,27 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
             mSvProvider.dispose();
         }
         mSvProvider = BaseApplication.of(activity).getProvider().get(IStatefulViewProvider.class);
+        FileHelper fileHelper = mSvProvider.get(FileHelper.class);
         initTextWatcher();
         if (mCard.questionImage != null && !mCard.questionImage.isEmpty()) {
-            setQuestionImageFileSubject(mSvProvider.get(FileHelper.class).getCardQuestionImage(mCard.questionImage));
+            setQuestionImageFileSubject(fileHelper.getCardQuestionImage(mCard.questionImage));
         } else {
             if (mQuestionImageFileSubject == null) {
                 setQuestionImageFileSubject(null);
             }
         }
         if (mCard.answerImage != null && !mCard.answerImage.isEmpty()) {
-            setAnswerImageFileSubject(mSvProvider.get(FileHelper.class).getCardAnswerImage(mCard.answerImage));
+            setAnswerImageFileSubject(fileHelper.getCardAnswerImage(mCard.answerImage));
         } else {
             if (mAnswerImageFileSubject == null) {
                 setAnswerImageFileSubject(null);
+            }
+        }
+        if (mCard.questionVoice != null && !mCard.questionVoice.isEmpty()) {
+            setQuestionVoiceSubject(fileHelper.getCardQuestionVoice(mCard.questionVoice));
+        } else {
+            if (mQuestionVoiceSubject == null) {
+                setQuestionVoiceSubject(null);
             }
         }
         ViewGroup rootLayout = (ViewGroup)
@@ -157,6 +167,11 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
         questionMoreActionButton.setOnClickListener(this);
         Button answerMoreActionButton = rootLayout.findViewById(R.id.button_answer_more_action);
         answerMoreActionButton.setOnClickListener(this);
+        Button questionVoiceButton = rootLayout.findViewById(R.id.button_question_voice);
+        questionVoiceButton.setOnClickListener(this);
+        Button questionDeleteVoiceButton = rootLayout.findViewById(R.id.button_question_delete_voice);
+        questionDeleteVoiceButton.setOnClickListener(this);
+        ViewGroup voiceQuestionContainer = rootLayout.findViewById(R.id.container_voice_question);
         EditText editTextQuestion = rootLayout.findViewById(R.id.text_input_edit_question);
         EditText editTextAnswer = rootLayout.findViewById(R.id.text_input_edit_answer);
         if (mCard != null) {
@@ -216,6 +231,16 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
                                         containerImageAnswer.setVisibility(View.GONE);
                                     }
                                 }));
+        mSvProvider.get(RxDisposer.class)
+                .add("createView_questionVoiceChanged",
+                        mQuestionVoiceSubject.observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(fileOpt -> {
+                                    if (fileOpt.isPresent()) {
+                                        voiceQuestionContainer.setVisibility(View.VISIBLE);
+                                    } else {
+                                        voiceQuestionContainer.setVisibility(View.GONE);
+                                    }
+                                }));
         return rootLayout;
     }
 
@@ -259,6 +284,14 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
             mAnswerImageFileSubject = BehaviorSubject.createDefault(Optional.ofNullable(file));
         } else {
             mAnswerImageFileSubject.onNext(Optional.ofNullable(file));
+        }
+    }
+
+    private void setQuestionVoiceSubject(File file) {
+        if (mQuestionVoiceSubject == null) {
+            mQuestionVoiceSubject = BehaviorSubject.createDefault(Optional.ofNullable(file));
+        } else {
+            mQuestionVoiceSubject.onNext(Optional.ofNullable(file));
         }
     }
 
@@ -332,8 +365,10 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
                 }
                 File questionImageFile = mQuestionImageFileSubject.getValue().orElse(null);
                 File answerImageFile = mAnswerImageFileSubject.getValue().orElse(null);
+                File questionVoiceFile = mQuestionVoiceSubject.getValue().orElse(null);
                 Uri questionImageUri = questionImageFile != null ? Uri.fromFile(questionImageFile) : null;
                 Uri answerImageUri = answerImageFile != null ? Uri.fromFile(answerImageFile) : null;
+                Uri questionVoiceUri = questionVoiceFile != null ? Uri.fromFile(questionVoiceFile) : null;
                 mSvProvider.get(RxDisposer.class).add("onClick_newCardCmd_execute",
                         mNewCardCmd.execute(mCard)
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -347,8 +382,8 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
                                                 successMessage);
                                         CompositeDisposable compositeDisposable = new CompositeDisposable();
                                         compositeDisposable.add(
-                                                mNewCardCmd.saveImage(card, questionImageUri,
-                                                        answerImageUri)
+                                                mNewCardCmd.saveFiles(card, questionImageUri,
+                                                        answerImageUri, questionVoiceUri)
                                                         .subscribe((card1, throwable1) -> {
                                                             if (throwable1 != null) {
                                                                 String message = throwable1.getMessage();
@@ -382,6 +417,17 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
             } catch (Exception e) {
                 mSvProvider.get(ILogger.class).e(TAG, e.getMessage(), e);
             }
+        } else if (id == R.id.menu_question_add_voice) {
+            mNavigator.push(Routes.COMMON_VOICERECORD, (navigator, navRoute, activity, currentView) -> {
+                Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                File resultFile = provider.get(CommonNavConfig.class).result_commonVoiceRecord_file(navRoute.getRouteResult());
+                if (resultFile != null) {
+                    StatefulView sv = navigator.getCurrentRoute().getStatefulView();
+                    if (sv instanceof CardDetailPage) {
+                        ((CardDetailPage) sv).setQuestionVoiceSubject(resultFile);
+                    }
+                }
+            });
         } else if (id == R.id.menu_answer_add_image) {
             UiUtils.browseImage(mNavigator.getActivity(), BROWSE_FOR_ANSWER_IMAGE);
         } else if (id == R.id.menu_answer_add_photo) {
@@ -428,6 +474,10 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
                 mNavigator.push(Routes.COMMON_IMAGEVIEW,
                         mSvProvider.get(CommonNavConfig.class).args_commonImageView(file));
             }
+        } else if (id == R.id.button_question_voice) {
+            mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(mQuestionVoiceSubject.getValue().get()));
+        } else if (id == R.id.button_question_delete_voice) {
+            setQuestionVoiceSubject(null);
         }
     }
 

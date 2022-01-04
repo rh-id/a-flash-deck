@@ -62,6 +62,7 @@ public class ExportImportCmd {
     private static final String ZIP_CONTENT_DECKS_JSON = "Decks.json";
     private static final String ZIP_CONTENT_IMAGE_QUESTION_DIR = "media/image/question/";
     private static final String ZIP_CONTENT_IMAGE_ANSWER_DIR = "media/image/answer/";
+    private static final String ZIP_CONTENT_VOICE_QUESTION_DIR = "media/voice/question/";
 
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
@@ -114,6 +115,13 @@ public class ExportImportCmd {
                                     mFileHelper.get().copyStream(new FileInputStream(answerImage), zipOutputStream);
                                     zipOutputStream.closeEntry();
                                 }
+                                if (card.questionVoice != null) {
+                                    File file = mFileHelper.get().getCardQuestionVoice(card.questionVoice);
+                                    ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_QUESTION_DIR + card.questionVoice);
+                                    zipOutputStream.putNextEntry(zipEntry);
+                                    mFileHelper.get().copyStream(new FileInputStream(file), zipOutputStream);
+                                    zipOutputStream.closeEntry();
+                                }
                             }
                             zipOutputStream.close();
                             return zipFile;
@@ -163,6 +171,16 @@ public class ExportImportCmd {
                                 bos.close();
                                 mFileHelper.get().createCardAnswerImage(imageTempFile, fileName);
                                 mFileHelper.get().createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
+                            }
+                            if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_QUESTION_DIR)) {
+                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length() - 1);
+                                BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                File tempFile = mFileHelper.get().createTempFile(fileName);
+                                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));
+                                mFileHelper.get().copyStream(bis, bos);
+                                bis.close();
+                                bos.close();
+                                mFileHelper.get().createCardQuestionVoice(tempFile, fileName);
                             }
                         }
 

@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="m.co.rh.id.a_flash_deck">
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:name=".app.MainApplication"
         android:allowBackup="true"
@@ -10,7 +12,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Aflashdeck" >
+        android:theme="@style/Theme.Aflashdeck">
         <activity
             android:name=".app.MainActivity"
             android:configChanges="uiMode|locale|layoutDirection|orientation|screenSize|screenLayout|density|colorMode|fontScale|fontWeightAdjustment|keyboard|keyboardHidden|smallestScreenSize"
@@ -56,6 +58,7 @@
                 android:resource="@xml/filepaths" />
         </provider>
         <receiver android:name=".app.receiver.NotificationDeleteReceiver" />
+        <receiver android:name=".app.receiver.NotificationPlayVoiceReceiver" />
         <!--WorkManager will be initialized by provider instead of its own initializer-->
         <provider
             android:name="androidx.startup.InitializationProvider"

@@ -8,12 +8,12 @@ import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.aprovider.Provider;
 
-public class NotificationDeleteReceiver extends BroadcastReceiver {
+public class NotificationPlayVoiceReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Provider provider = BaseApplication.of(context).getProvider();
         IAppNotificationHandler appNotificationHandler = provider.get(IAppNotificationHandler.class);
-        appNotificationHandler.removeNotification(intent);
+        appNotificationHandler.playVoice(intent);
     }
 }

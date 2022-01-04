@@ -31,6 +31,8 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
+import m.co.rh.id.a_flash_deck.base.component.AudioRecorder;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.CompositeLogger;
@@ -84,6 +86,8 @@ public class BaseProviderModule implements ProviderModule {
         });
         providerRegistry.register(FileHelper.class, new FileHelper(provider, context));
         providerRegistry.register(CommonNavConfig.class, new CommonNavConfig());
+        providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(context, provider));
+        providerRegistry.registerLazy(AudioPlayer.class, () -> new AudioPlayer(context, provider));
     }
 
     @Override

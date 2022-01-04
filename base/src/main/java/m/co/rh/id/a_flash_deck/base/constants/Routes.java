@@ -35,6 +35,7 @@ public class Routes {
     public static final String COMMON_MESSAGE_DIALOG = "/common/messageDialog";
     public static final String COMMON_TIMEPICKER_DIALOG = "/common/timePickerDialog";
     public static final String COMMON_IMAGEVIEW = "/common/imageView";
+    public static final String COMMON_VOICERECORD = "/common/voiceRecord";
 
     private Routes() {
     }

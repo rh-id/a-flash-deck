@@ -15,5 +15,10 @@
             android:icon="@drawable/ic_add_a_photo_black"
             android:title="@string/title_add_photo"
             app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/menu_question_add_voice"
+            android:icon="@drawable/ic_keyboard_voice_black"
+            android:title="@string/title_add_voice"
+            app:showAsAction="ifRoom" />
     </group>
 </menu>

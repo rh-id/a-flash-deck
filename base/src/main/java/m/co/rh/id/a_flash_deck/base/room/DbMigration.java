@@ -7,7 +7,8 @@ public class DbMigration {
     public static Migration[] getAllMigrations() {
         return new Migration[]{MIGRATION_1_2, MIGRATION_2_3,
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9};
+                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
+                MIGRATION_9_10};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -81,6 +82,13 @@ public class DbMigration {
             database.execSQL("ALTER TABLE card ADD COLUMN `question_image` TEXT");
             database.execSQL("ALTER TABLE card ADD COLUMN `answer_image` TEXT");
             database.execSQL("DELETE FROM test");
+        }
+    };
+
+    public static final Migration MIGRATION_9_10 = new Migration(9, 10) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE card ADD COLUMN `question_voice` TEXT");
         }
     };
 }

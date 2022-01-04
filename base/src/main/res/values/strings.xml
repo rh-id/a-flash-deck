@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="no_record">No record</string>
+    <string name="press_and_hold_to_record">Press and hold to record</string>
+    <string name="speak_now">Speak now !</string>
+    <string name="permission_denied_record_audio">Record audio permission denied</string>
+    <string name="error">Error</string>
 </resources>

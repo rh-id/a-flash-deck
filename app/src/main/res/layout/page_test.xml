@@ -42,6 +42,16 @@
                 android:textSize="26sp"
                 tool:text="What is the answer to everything?" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_question_voice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:text="@string/play_voice"
+                app:icon="@drawable/ic_keyboard_voice_black"
+                app:iconTint="@color/daynight_white_black" />
+
             <ImageView
                 android:id="@+id/image_answer"
                 android:layout_width="match_parent"

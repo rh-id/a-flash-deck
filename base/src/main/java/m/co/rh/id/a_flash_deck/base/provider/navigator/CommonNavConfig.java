@@ -29,6 +29,7 @@ import m.co.rh.id.a_flash_deck.base.ui.component.common.BooleanSVDialog;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.CommonImageViewPage;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.MessageSVDialog;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.TimePickerSVDialog;
+import m.co.rh.id.a_flash_deck.base.ui.component.common.VoiceRecordSVDialog;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.StatefulViewFactory;
@@ -43,6 +44,7 @@ public class CommonNavConfig {
         mNavMap.put(Routes.COMMON_MESSAGE_DIALOG, (args, activity) -> new MessageSVDialog());
         mNavMap.put(Routes.COMMON_TIMEPICKER_DIALOG, (args, activity) -> new TimePickerSVDialog());
         mNavMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new CommonImageViewPage());
+        mNavMap.put(Routes.COMMON_VOICERECORD, (args, activity) -> new VoiceRecordSVDialog());
     }
 
     public Map<String, StatefulViewFactory<Activity, StatefulView>> getNavMap() {
@@ -87,5 +89,10 @@ public class CommonNavConfig {
 
     public Serializable args_commonImageView(File file) {
         return CommonImageViewPage.Args.withFileAbsolutePath(file.getAbsolutePath());
+    }
+
+    public File result_commonVoiceRecord_file(Serializable serializable) {
+        if (!(serializable instanceof VoiceRecordSVDialog.Result)) return null;
+        return ((VoiceRecordSVDialog.Result) serializable).getFile();
     }
 }

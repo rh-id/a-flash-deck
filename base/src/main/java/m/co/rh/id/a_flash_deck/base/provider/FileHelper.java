@@ -56,6 +56,7 @@ public class FileHelper {
     private File mCardAnswerImageParent;
     private File mCardQuestionImageThumbnailParent;
     private File mCardAnswerImageThumbnailParent;
+    private File mCardQuestionVoiceParent;
 
     public FileHelper(Provider provider, Context context) {
         mAppContext = context.getApplicationContext();
@@ -73,6 +74,8 @@ public class FileHelper {
         mCardQuestionImageThumbnailParent.mkdirs();
         mCardAnswerImageThumbnailParent = new File(fileDir, "app/card/answer/image/thumbnail");
         mCardAnswerImageThumbnailParent.mkdirs();
+        mCardQuestionVoiceParent = new File(fileDir, "app/card/question/voice");
+        mCardQuestionVoiceParent.mkdirs();
     }
 
     public File createTempFile(String fileName) throws IOException {
@@ -200,6 +203,38 @@ public class FileHelper {
         }
     }
 
+    public File createCardQuestionVoice(File inFile, String fileName) throws IOException {
+        File outFile = new File(mCardQuestionVoiceParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyFile(Uri.fromFile(inFile), outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File createCardQuestionVoice(Uri content) throws IOException {
+        String fName = UUID.randomUUID().toString();
+        File outFile = new File(mCardQuestionVoiceParent, fName);
+        try {
+            outFile.createNewFile();
+            copyFile(content, outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public void deleteCardQuestionVoice(String fileName) {
+        if (fileName != null && !fileName.isEmpty()) {
+            File file = new File(mCardQuestionVoiceParent, fileName);
+            file.delete();
+        }
+    }
+
     public File getCardQuestionImage(String fileName) {
         return new File(mCardQuestionImageParent, fileName);
     }
@@ -214,6 +249,10 @@ public class FileHelper {
 
     public File getCardAnswerImageThumbnail(String fileName) {
         return new File(mCardAnswerImageThumbnailParent, fileName);
+    }
+
+    public File getCardQuestionVoice(String fileName) {
+        return new File(mCardQuestionVoiceParent, fileName);
     }
 
     public File createCardAnswerImage(File inFile, String fileName) throws IOException {
@@ -365,5 +404,9 @@ public class FileHelper {
 
     public File getCardAnswerImageParent() {
         return mCardAnswerImageParent;
+    }
+
+    public File getCardQuestionVoiceParent() {
+        return mCardQuestionVoiceParent;
     }
 }

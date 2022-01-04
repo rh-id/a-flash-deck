@@ -70,10 +70,25 @@ public class FileCleanUpTask {
                     return fileNames;
                 }
         );
+        Future<List<String>> questionVoiceFileList = mExecutorService.get().submit(
+                () -> {
+                    File questionVoiceParent = mFileHelper.get().getCardQuestionVoiceParent();
+                    File[] files = questionVoiceParent.listFiles();
+                    List<String> fileNames = new ArrayList<>();
+                    if (files != null && files.length > 0) {
+                        for (File file : files) {
+                            if (!file.isDirectory()) {
+                                fileNames.add(file.getName());
+                            }
+                        }
+                    }
+                    return fileNames;
+                }
+        );
         Future<List<String>> answerImageFileList = mExecutorService.get().submit(
                 () -> {
-                    File questionImageParent = mFileHelper.get().getCardAnswerImageParent();
-                    File[] files = questionImageParent.listFiles();
+                    File answerImageParent = mFileHelper.get().getCardAnswerImageParent();
+                    File[] files = answerImageParent.listFiles();
                     List<String> fileNames = new ArrayList<>();
                     if (files != null && files.length > 0) {
                         for (File file : files) {
@@ -98,6 +113,20 @@ public class FileCleanUpTask {
                                         Card card = mDeckDao.get().findCardByQuestionImage(questionImage);
                                         if (card == null) {
                                             mFileHelper.get().deleteCardQuestionImage(questionImage);
+                                        }
+                                    }
+                                }
+                                return true;
+                            })
+                    );
+                    taskList.add(
+                            mExecutorService.get().submit(() -> {
+                                List<String> questionVoiceNames = questionVoiceFileList.get();
+                                if (!questionVoiceNames.isEmpty()) {
+                                    for (String questionVoiceName : questionVoiceNames) {
+                                        Card card = mDeckDao.get().findCardByQuestionVoice(questionVoiceName);
+                                        if (card == null) {
+                                            mFileHelper.get().deleteCardQuestionVoice(questionVoiceName);
                                         }
                                     }
                                 }

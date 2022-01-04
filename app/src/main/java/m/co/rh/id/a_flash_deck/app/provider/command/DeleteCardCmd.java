@@ -43,8 +43,6 @@ public class DeleteCardCmd {
     public Single<Card> execute(Card card) {
         return Single.fromFuture(mExecutorService.get().submit(() -> {
             mDeckDao.get().deleteCard(card);
-            mFileHelper.get().deleteCardQuestionImage(card.questionImage);
-            mFileHelper.get().deleteCardAnswerImage(card.answerImage);
             mDeckChangeNotifier.get().cardDeleted(card);
             return card;
         }));

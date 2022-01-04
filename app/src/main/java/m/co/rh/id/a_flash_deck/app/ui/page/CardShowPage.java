@@ -35,6 +35,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
@@ -84,6 +85,8 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
         answerImageView.setOnClickListener(this);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
         buttonEdit.setOnClickListener(this);
+        Button questionVoiceButton = rootLayout.findViewById(R.id.button_question_voice);
+        questionVoiceButton.setOnClickListener(this);
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         mSvProvider.get(RxDisposer.class)
@@ -111,6 +114,11 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                                     } else {
                                         answerImageView.setImageURI(null);
                                         answerImageView.setVisibility(View.GONE);
+                                    }
+                                    if (card.questionVoice != null) {
+                                        questionVoiceButton.setVisibility(View.VISIBLE);
+                                    } else {
+                                        questionVoiceButton.setVisibility(View.GONE);
                                     }
                                 }
                         )
@@ -169,6 +177,10 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(
                             fileHelper.getCardAnswerImage(mCard.answerImage)));
+        } else if (id == R.id.button_question_voice) {
+            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+            File file = fileHelper.getCardQuestionVoice(mCard.questionVoice);
+            mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(file));
         }
     }
 

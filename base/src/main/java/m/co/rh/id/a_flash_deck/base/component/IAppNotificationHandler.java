@@ -48,4 +48,6 @@ public interface IAppNotificationHandler {
 
     @WorkerThread
     void cancelNotificationSync(NotificationTimer notificationTimer);
+
+    void playVoice(Intent intent);
 }
