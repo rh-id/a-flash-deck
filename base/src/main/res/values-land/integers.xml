@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--0 for horizontal,1 for vertical-->
+    <integer name="orientation_portland_vertical_horizontal">0</integer>
+</resources>
