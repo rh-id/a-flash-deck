@@ -87,7 +87,9 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         buttonExit.setOnClickListener(this);
         buttonNext.setOnClickListener(this);
         ImageView questionImageView = rootLayout.findViewById(R.id.image_question);
+        questionImageView.setOnClickListener(this);
         ImageView answerImageView = rootLayout.findViewById(R.id.image_answer);
+        answerImageView.setOnClickListener(this);
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         textAnswer.setOnClickListener(this);
@@ -184,14 +186,15 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
     public void onClick(View view) {
         int id = view.getId();
         TestState testState = mTestStateSubject.getValue();
+        Card card = testState.currentCard();
         ILogger iLogger = mSvProvider.get(ILogger.class);
+        CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
+        FileHelper fileHelper = mSvProvider.get(FileHelper.class);
         Context context = mSvProvider.getContext();
         if (id == R.id.text_answer) {
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
             View rootView = mNavigator.findView(mNavRoute);
             ImageView answerImageView = rootView.findViewById(R.id.image_answer);
             TextView textAnswer = rootView.findViewById(R.id.text_answer);
-            Card card = testState.currentCard();
             if (card.answerImage != null) {
                 answerImageView.setImageURI(Uri.fromFile(
                         fileHelper.getCardAnswerImage(card.answerImage)
@@ -218,7 +221,6 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         } else if (id == R.id.button_exit) {
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_exit_test);
-            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
                     commonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
@@ -253,9 +255,15 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                         }
                                     })
                     );
+        } else if (id == R.id.image_question) {
+            mNavigator.push(Routes.COMMON_IMAGEVIEW,
+                    commonNavConfig.args_commonImageView(
+                            fileHelper.getCardQuestionImage(card.questionImage)));
+        } else if (id == R.id.image_answer) {
+            mNavigator.push(Routes.COMMON_IMAGEVIEW,
+                    commonNavConfig.args_commonImageView(
+                            fileHelper.getCardAnswerImage(card.answerImage)));
         } else if (id == R.id.button_question_voice) {
-            Card card = testState.currentCard();
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
             File file = fileHelper.getCardQuestionVoice(card.questionVoice);
             mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(file));
         }
