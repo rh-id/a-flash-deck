@@ -5,4 +5,5 @@
     <string name="speak_now">Speak now !</string>
     <string name="permission_denied_record_audio">Record audio permission denied</string>
     <string name="error">Error</string>
+    <string name="cancel">Cancel</string>
 </resources>

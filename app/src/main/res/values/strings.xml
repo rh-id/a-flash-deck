@@ -72,7 +72,7 @@
     <string name="error_failed_to_get_previous_card">Failed to get previous card</string>
     <string name="error_failed_to_exit_test">Failed to exit test</string>
     <string name="error_failed_to_get_next_card">Failed to get next card</string>
-    <string name="test_session_exist_confirm_start_new">There is a test currently running would you like to stop and start new test?</string>
+    <string name="test_session_exist_confirm_start_new">There is a test currently running, would you like to stop and start new test?</string>
     <string name="confirm_exit_test">Do you want to stop test ?</string>
     <string name="on_going_test">On going test</string>
     <string name="theme_setting">Theme Setting</string>
@@ -94,7 +94,6 @@
     <string name="error_failed_to_create_file">Failed to create file</string>
     <string name="error_failed_to_open_file">Failed to open file</string>
     <string name="error_failed_to_parse_file">Failed to parse file</string>
-    <string name="error">Error</string>
     <string name="success_import_file">Success import file, %d deck(s) were added</string>
     <string name="title_add_image">Add Image</string>
     <string name="error_failed_to_save_question_image">Failed to save question image</string>

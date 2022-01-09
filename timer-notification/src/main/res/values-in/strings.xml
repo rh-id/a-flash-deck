@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="name_is_required">Nama diperlukan</string>
+    <string name="error_no_deck_selected">Tidak ada dek yang dipilih</string>
+    <string name="title_add_notification_timer">Tambah pengatur waktu notifikasi</string>
+    <string name="save">Simpan</string>
+    <string name="form_name">Nama</string>
+    <string name="notification_period_in_minutes">Periode notifikasi dalam hitungan menit</string>
+    <string name="title_error">Error</string>
+    <string name="success_adding_new_notification_timer">Berhasil menambahkan pengatur waktu notifikasi %s</string>
+    <string name="error_no_card_from_deck">Tidak ada kartu di dek yang dipilih</string>
+    <string name="error_loading_decks">Terjadi kesalahan saat memuat dek</string>
+    <string name="title_confirm">Konfirmasi</string>
+    <string name="confirm_delete_notification_timer">Hapus pengatur waktu notifikasi %s ?</string>
+    <string name="error_deleting_notification_timer">Error menghapus pengatur waktu notifikasi</string>
+    <string name="success_deleting_notification_timer">Sukses menghapus pengatur waktu notifikasi %s</string>
+    <string name="search_desc">Cari: </string>
+    <string name="hint_type_to_search">Ketik di sini untuk mencari</string>
+    <string name="title_notification_timer_list">Daftar Pengatur Waktu</string>
+    <string name="notification_period_every_x_minutes">Setiap %d menit</string>
+    <string name="success_updating_new_notification_timer">Sukses memperbarui pengatur waktu notifikasi %s</string>
+</resources>
