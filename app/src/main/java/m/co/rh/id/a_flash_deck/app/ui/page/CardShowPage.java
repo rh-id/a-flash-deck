@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -47,9 +48,10 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavActivityLifecycle;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardShowPage extends StatefulView<Activity> implements View.OnClickListener {
+public class CardShowPage extends StatefulView<Activity> implements NavActivityLifecycle, View.OnClickListener {
     private static final String TAG = CardShowPage.class.getName();
 
     @NavInject
@@ -63,6 +65,7 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
     @Override
     protected void initState(Activity activity) {
         super.initState(activity);
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Args args = Args.of(mNavRoute);
         if (args != null) {
             mCard = args.mCard;
@@ -149,6 +152,7 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -164,7 +168,9 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
         int id = view.getId();
         if (id == R.id.button_edit) {
             mNavigator.push(Routes.CARD_DETAIL_PAGE,
-                    CardDetailPage.Args.forUpdate(mCard));
+                    CardDetailPage.Args.forUpdate(mCard), (navigator, navRoute, activity, currentView) -> {
+                        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    });
         } else if (id == R.id.image_question) {
             CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             FileHelper fileHelper = mSvProvider.get(FileHelper.class);
@@ -182,6 +188,16 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
             File file = fileHelper.getCardQuestionVoice(mCard.questionVoice);
             mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(file));
         }
+    }
+
+    @Override
+    public void onResume(Activity activity) {
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    public void onPause(Activity activity) {
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     public static class Args implements Serializable {

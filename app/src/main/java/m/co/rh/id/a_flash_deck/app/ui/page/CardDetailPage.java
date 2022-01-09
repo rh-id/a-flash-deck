@@ -26,6 +26,7 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -62,10 +63,11 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavActivityLifecycle;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardDetailPage extends StatefulView<Activity> implements Toolbar.OnMenuItemClickListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener, NavOnActivityResult {
+public class CardDetailPage extends StatefulView<Activity> implements NavOnActivityResult, NavActivityLifecycle, Toolbar.OnMenuItemClickListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = CardDetailPage.class.getName();
 
     // browse and select image for question image
@@ -100,6 +102,7 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
     @Override
     protected void initState(Activity activity) {
         super.initState(activity);
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mCard = new Card();
         mCard.question = "";
         mCard.answer = "";
@@ -247,6 +250,7 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -519,6 +523,16 @@ public class CardDetailPage extends StatefulView<Activity> implements Toolbar.On
             setAnswerImageFileSubject(file);
             mTempCameraFile = null;
         }
+    }
+
+    @Override
+    public void onResume(Activity activity) {
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    public void onPause(Activity activity) {
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     public static class Result implements Serializable {
