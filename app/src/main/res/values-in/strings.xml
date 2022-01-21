@@ -50,7 +50,7 @@
     <string name="confirm_delete_card">Hapus kartu \'%s\'?</string>
     <string name="title_card_list">Daftar Kartu</string>
     <string name="title_update_card">Card Diperbarui</string>
-    <string name="cards">Karty</string>
+    <string name="cards">Kartu</string>
     <string name="error_loading_deck">Error memuat dek</string>
     <string name="move_card">Pindahkan kartu</string>
     <string name="copy_card">Salin kartu</string>
