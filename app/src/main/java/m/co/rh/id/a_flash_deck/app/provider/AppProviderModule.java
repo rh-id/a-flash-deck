@@ -22,7 +22,7 @@ import android.content.Context;
 
 import androidx.work.WorkManager;
 
-import m.co.rh.id.a_flash_deck.app.component.AppNotificationHandler;
+import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.provider.BaseProviderModule;

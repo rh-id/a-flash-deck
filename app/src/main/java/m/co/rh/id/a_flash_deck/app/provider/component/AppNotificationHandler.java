@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package m.co.rh.id.a_flash_deck.app.component;
+package m.co.rh.id.a_flash_deck.app.provider.component;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -83,7 +83,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     @Override
     public void postNotificationTimer(NotificationTimer notificationTimer, Card selectedCard) {
         mLock.lock();
-        createTestNotificationChannel();
+        createNotificationTimerNotificationChannel();
         AndroidNotification androidNotification = new AndroidNotification();
         androidNotification.groupKey = GROUP_KEY_NOTIFICATION_TIMER;
         androidNotification.refId = notificationTimer.id;
@@ -148,7 +148,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mLock.unlock();
     }
 
-    private void createTestNotificationChannel() {
+    private void createNotificationTimerNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = mAppContext.getString(R.string.notification_notification_timer_name);
             String description = mAppContext.getString(R.string.notification_notification_timer_description);

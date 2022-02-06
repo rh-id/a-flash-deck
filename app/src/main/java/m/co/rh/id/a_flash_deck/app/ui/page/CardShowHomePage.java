@@ -23,7 +23,7 @@ import android.view.ViewGroup;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.app.component.AppNotificationHandler;
+import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
