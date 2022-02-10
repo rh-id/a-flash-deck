@@ -11,13 +11,14 @@
         android:layout_margin="@dimen/text_margin"
         android:textSize="@dimen/text_nav_menu"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/container_edit_text_name"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/container_edit_text_name"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
@@ -30,7 +31,8 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_text_name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:maxLines="10" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
