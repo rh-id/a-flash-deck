@@ -28,6 +28,8 @@ jobs:
         with:
           draft: false
           prerelease: false
+          body_path: ./app/build/changelog.txt
           files: |
             ./app/build/outputs/apk/debug/app-debug.apk
             ./app/build/outputs/apk/release/app-release.apk
+            ./app/build/changelog.txt
