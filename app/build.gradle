@@ -28,8 +28,8 @@ android {
         applicationId "m.co.rh.id.a_flash_deck"
         minSdk 21
         targetSdk 31
-        versionCode 22
-        versionName "1.4.1"
+        versionCode 23
+        versionName "1.4.2"
         multiDexEnabled = true
         vectorDrawables.useSupportLibrary = true
 
