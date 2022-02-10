@@ -31,12 +31,11 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class PagedDeckItemsCmd {
     private Context mAppContext;
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<DeckDao> mDeckDao;
+    private ExecutorService mExecutorService;
+    private DeckDao mDeckDao;
     private int mLimit;
     private String mSearch;
     private final BehaviorSubject<ArrayList<Deck>> mDeckItemsSubject;
@@ -45,8 +44,8 @@ public class PagedDeckItemsCmd {
 
     public PagedDeckItemsCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mDeckDao = provider.get(DeckDao.class);
         mDeckItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         mSelectedDeckIdsSubject = BehaviorSubject.createDefault(new LinkedHashSet<>());
@@ -82,13 +81,13 @@ public class PagedDeckItemsCmd {
 
     public void search(String search) {
         mSearch = search;
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
-                    List<Deck> deckList = mDeckDao.get().searchDeck(search);
+                    List<Deck> deckList = mDeckDao.searchDeck(search);
                     ArrayList<Deck> deckArrayList = new ArrayList<>();
                     if (deckList != null && !deckList.isEmpty()) {
                         deckArrayList.addAll(deckList);
@@ -126,7 +125,7 @@ public class PagedDeckItemsCmd {
     }
 
     private void load() {
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
                 mDeckItemsSubject.onNext(
@@ -140,7 +139,7 @@ public class PagedDeckItemsCmd {
     }
 
     private ArrayList<Deck> loadDeckItems() {
-        List<Deck> deckList = mDeckDao.get().getDeckWithLimit(mLimit);
+        List<Deck> deckList = mDeckDao.getDeckWithLimit(mLimit);
         ArrayList<Deck> deckArrayList = new ArrayList<>();
         if (deckList != null && !deckList.isEmpty()) {
             deckArrayList.addAll(deckList);

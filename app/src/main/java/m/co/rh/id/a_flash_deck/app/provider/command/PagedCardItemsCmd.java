@@ -35,12 +35,11 @@ import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class PagedCardItemsCmd implements ProviderDisposable {
     private Context mAppContext;
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<DeckDao> mDeckDao;
+    private ExecutorService mExecutorService;
+    private DeckDao mDeckDao;
     private int mLimit;
     private Long mDeckId;
     private String mSearch;
@@ -50,8 +49,8 @@ public class PagedCardItemsCmd implements ProviderDisposable {
 
     public PagedCardItemsCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mDeckDao = provider.get(DeckDao.class);
         mCardItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
@@ -81,7 +80,7 @@ public class PagedCardItemsCmd implements ProviderDisposable {
 
     public void search(String search) {
         mSearch = search;
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             if (!isSearching()) {
                 load();
             } else {
@@ -89,13 +88,13 @@ public class PagedCardItemsCmd implements ProviderDisposable {
                 try {
                     Set<Card> cardSet = new LinkedHashSet<>();
                     if (mDeckId == null) {
-                        cardSet.addAll(mDeckDao.get().searchCard(search));
+                        cardSet.addAll(mDeckDao.searchCard(search));
                     } else {
-                        cardSet.addAll(mDeckDao.get().searchCardByDeckId(mDeckId, search));
+                        cardSet.addAll(mDeckDao.searchCardByDeckId(mDeckId, search));
                     }
                     // also search the deck name and append it altogether
-                    List<Deck> deckList = mDeckDao.get().searchDeck(search);
-                    List<Card> cardFromDeck = mDeckDao.get().getCardsByDecks(deckList);
+                    List<Deck> deckList = mDeckDao.searchDeck(search);
+                    List<Card> cardFromDeck = mDeckDao.getCardsByDecks(deckList);
                     cardSet.addAll(cardFromDeck);
 
                     ArrayList<Card> cardArrayList = new ArrayList<>();
@@ -135,7 +134,7 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     }
 
     private void load() {
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
                 mCardItemsSubject.onNext(
@@ -151,9 +150,9 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     private ArrayList<Card> loadCardItems() {
         List<Card> cardList;
         if (mDeckId == null) {
-            cardList = mDeckDao.get().getCardWithLimit(mLimit);
+            cardList = mDeckDao.getCardWithLimit(mLimit);
         } else {
-            cardList = mDeckDao.get().getCardByDeckIdWithLimit(mDeckId, mLimit);
+            cardList = mDeckDao.getCardByDeckIdWithLimit(mDeckId, mLimit);
         }
         ArrayList<Card> cardArrayList = new ArrayList<>();
         if (cardList != null && !cardList.isEmpty()) {

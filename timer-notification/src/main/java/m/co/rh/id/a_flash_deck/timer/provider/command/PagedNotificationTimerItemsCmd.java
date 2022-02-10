@@ -29,42 +29,41 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class PagedNotificationTimerItemsCmd {
     private Context mAppContext;
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<NotificationTimerDao> mTimerNotificationDao;
+    private ExecutorService mExecutorService;
+    private NotificationTimerDao mNotificationTimerDao;
     private int mLimit;
     private String mSearch;
-    private final BehaviorSubject<ArrayList<NotificationTimer>> mTimerNotificationItemsSubject;
+    private final BehaviorSubject<ArrayList<NotificationTimer>> mNotificationTimerItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
     public PagedNotificationTimerItemsCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mTimerNotificationDao = provider.lazyGet(NotificationTimerDao.class);
-        mTimerNotificationItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
+        mExecutorService = provider.get(ExecutorService.class);
+        mNotificationTimerDao = provider.get(NotificationTimerDao.class);
+        mNotificationTimerItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
     }
 
     public void search(String search) {
         mSearch = search;
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
-                    List<NotificationTimer> timerList = mTimerNotificationDao.get().search(search);
+                    List<NotificationTimer> timerList = mNotificationTimerDao.search(search);
                     ArrayList<NotificationTimer> timerArrayList = new ArrayList<>();
                     if (timerList != null && !timerList.isEmpty()) {
                         timerArrayList.addAll(timerList);
                     }
-                    mTimerNotificationItemsSubject.onNext(timerArrayList);
+                    mNotificationTimerItemsSubject.onNext(timerArrayList);
                 } catch (Throwable throwable) {
-                    mTimerNotificationItemsSubject.onError(throwable);
+                    mNotificationTimerItemsSubject.onError(throwable);
                 } finally {
                     mIsLoadingSubject.onNext(false);
                 }
@@ -75,7 +74,7 @@ public class PagedNotificationTimerItemsCmd {
     public void loadNextPage() {
         // no pagination for search
         if (isSearching()) return;
-        if (getAllTimerNotificationItems().size() < mLimit) {
+        if (getAllNotificationTimerItems().size() < mLimit) {
             return;
         }
         mLimit += mLimit;
@@ -91,13 +90,13 @@ public class PagedNotificationTimerItemsCmd {
     }
 
     private void load() {
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
-                mTimerNotificationItemsSubject.onNext(
-                        loadTimerNotificationItems());
+                mNotificationTimerItemsSubject.onNext(
+                        loadNotificationTimerItems());
             } catch (Throwable throwable) {
-                mTimerNotificationItemsSubject.onError(throwable);
+                mNotificationTimerItemsSubject.onError(throwable);
             } finally {
                 mIsLoadingSubject.onNext(false);
             }
@@ -112,8 +111,8 @@ public class PagedNotificationTimerItemsCmd {
         search(mSearch);
     }
 
-    private ArrayList<NotificationTimer> loadTimerNotificationItems() {
-        List<NotificationTimer> timerList = mTimerNotificationDao.get().getAllWithLimit(mLimit);
+    private ArrayList<NotificationTimer> loadNotificationTimerItems() {
+        List<NotificationTimer> timerList = mNotificationTimerDao.getAllWithLimit(mLimit);
         ArrayList<NotificationTimer> timerArrayList = new ArrayList<>();
         if (timerList != null && !timerList.isEmpty()) {
             timerArrayList.addAll(timerList);
@@ -121,12 +120,12 @@ public class PagedNotificationTimerItemsCmd {
         return timerArrayList;
     }
 
-    public ArrayList<NotificationTimer> getAllTimerNotificationItems() {
-        return mTimerNotificationItemsSubject.getValue();
+    public ArrayList<NotificationTimer> getAllNotificationTimerItems() {
+        return mNotificationTimerItemsSubject.getValue();
     }
 
-    public Flowable<ArrayList<NotificationTimer>> getTimerNotificationsFlow() {
-        return Flowable.fromObservable(mTimerNotificationItemsSubject, BackpressureStrategy.BUFFER);
+    public Flowable<ArrayList<NotificationTimer>> getNotificationTimersFlow() {
+        return Flowable.fromObservable(mNotificationTimerItemsSubject, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<Boolean> getLoadingFlow() {

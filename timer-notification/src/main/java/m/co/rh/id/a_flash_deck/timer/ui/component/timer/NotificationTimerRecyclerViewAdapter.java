@@ -34,6 +34,7 @@ import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int VIEW_TYPE_DECK_ITEM = 0;
     public static final int VIEW_TYPE_EMPTY_TEXT = 1;
@@ -70,7 +71,7 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            ArrayList<NotificationTimer> timerArrayList = mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems();
+            ArrayList<NotificationTimer> timerArrayList = mPagedNotificationTimerItemsCmd.getAllNotificationTimerItems();
             NotificationTimer item = timerArrayList.get(position);
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
             NotificationTimer itemHolder = itemViewHolder.getItem();
@@ -85,7 +86,7 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
         if (isEmpty()) {
             return 1;
         }
-        return mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems().size();
+        return mPagedNotificationTimerItemsCmd.getAllNotificationTimerItems().size();
     }
 
     @Override
@@ -100,13 +101,13 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
         if (mPagedNotificationTimerItemsCmd == null) {
             return true;
         }
-        return mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems().size() == 0;
+        return mPagedNotificationTimerItemsCmd.getAllNotificationTimerItems().size() == 0;
     }
 
     public void notifyItemAdded(NotificationTimer notificationTimer) {
         int existingIdx = findDeck(notificationTimer);
         if (existingIdx == -1) {
-            mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems()
+            mPagedNotificationTimerItemsCmd.getAllNotificationTimerItems()
                     .add(0, notificationTimer);
             notifyItemInserted(0);
         }
@@ -115,7 +116,7 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
     public void notifyItemUpdated(NotificationTimer notificationTimer) {
         int existingIdx = findDeck(notificationTimer);
         if (existingIdx != -1) {
-            ArrayList<NotificationTimer> timers = mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems();
+            ArrayList<NotificationTimer> timers = mPagedNotificationTimerItemsCmd.getAllNotificationTimerItems();
             timers.remove(existingIdx);
             timers.add(existingIdx, notificationTimer);
             notifyItemChanged(existingIdx);
@@ -125,7 +126,7 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
     public void notifyItemDeleted(NotificationTimer notificationTimer) {
         int removedIdx = findDeck(notificationTimer);
         if (removedIdx != -1) {
-            mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems()
+            mPagedNotificationTimerItemsCmd.getAllNotificationTimerItems()
                     .remove(removedIdx);
             notifyItemRemoved(removedIdx);
         }
@@ -142,7 +143,7 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
 
     private int findDeck(NotificationTimer notificationTimer) {
         ArrayList<NotificationTimer> timers =
-                mPagedNotificationTimerItemsCmd.getAllTimerNotificationItems();
+                mPagedNotificationTimerItemsCmd.getAllNotificationTimerItems();
         int size = timers.size();
         int resultIdx = -1;
         for (int i = 0; i < size; i++) {
