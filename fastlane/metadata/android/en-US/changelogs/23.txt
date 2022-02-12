@@ -1,5 +1,4 @@
-Release 1.4.2+23
+Release 1.4.3+24
 
 Fixes:
-* UI update
-* Source code maintenance & performance optimization
+* UI update & app optimization
