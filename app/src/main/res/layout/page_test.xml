@@ -17,77 +17,83 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:id="@+id/container_content_question"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="5dp"
             android:layout_weight="1"
-            android:animateLayoutChanges="true"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toTopOf="@id/container_content_answer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:cardElevation="3dp">
 
-            <ImageView
-                android:id="@+id/image_question"
+            <LinearLayout
+                android:id="@+id/container_content_question"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:visibility="gone" />
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/text_question"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:textSize="26sp"
-                tool:text="What is the answer to everything?" />
+                <ImageView
+                    android:id="@+id/image_question"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_question_voice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/play_voice"
-                android:visibility="gone"
-                app:icon="@drawable/ic_keyboard_voice_black"
-                app:iconTint="@color/daynight_white_black" />
-        </LinearLayout>
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/text_question"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="26sp"
+                    tool:text="What is the answer to everything?" />
 
-        <LinearLayout
-            android:id="@+id/container_content_answer"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_question_voice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/play_voice"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_keyboard_voice_black"
+                    app:iconTint="@color/daynight_white_black" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="5dp"
             android:layout_weight="1"
-            android:animateLayoutChanges="true"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toTopOf="@id/text_progress"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/container_content_question">
+            app:cardElevation="3dp">
 
-            <ImageView
-                android:id="@+id/image_answer"
+            <LinearLayout
+                android:id="@+id/container_content_answer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:visibility="gone" />
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/text_answer"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:textSize="26sp"
-                tool:text="@string/tap_to_view_answer" />
-        </LinearLayout>
+                <ImageView
+                    android:id="@+id/image_answer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/text_answer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="26sp"
+                    tool:text="@string/tap_to_view_answer" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
 
     <com.google.android.material.textview.MaterialTextView

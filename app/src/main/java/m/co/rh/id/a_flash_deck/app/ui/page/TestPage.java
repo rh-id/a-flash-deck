@@ -37,7 +37,6 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
-import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -49,34 +48,47 @@ import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
-import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.component.RequireNavRoute;
+import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class TestPage extends StatefulView<Activity> implements View.OnClickListener {
+public class TestPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, View.OnClickListener {
     private static final String TAG = TestPage.class.getName();
 
-    @NavInject
     private transient INavigator mNavigator;
-    @NavInject
     private transient NavRoute mNavRoute;
 
     private transient Provider mSvProvider;
+    private transient RxDisposer mRxDisposer;
+    private transient TestStateModifier mTestStateModifier;
+    private transient AudioPlayer mAudioPlayer;
     private transient BehaviorSubject<TestState> mTestStateSubject;
     private transient BehaviorSubject<TestState> mShowTestAnswerSubject;
 
     @Override
+    public void provideNavigator(INavigator navigator) {
+        mNavigator = navigator;
+    }
+
+    @Override
+    public void provideNavRoute(NavRoute navRoute) {
+        mNavRoute = navRoute;
+    }
+
+    @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mTestStateModifier = mSvProvider.get(TestStateModifier.class);
+        mAudioPlayer = mSvProvider.get(AudioPlayer.class);
+        mTestStateSubject = BehaviorSubject.create();
+        mShowTestAnswerSubject = BehaviorSubject.create();
+    }
+
+    @Override
     protected View createView(Activity activity, ViewGroup container) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = BaseApplication.of(activity).getProvider().get(IStatefulViewProvider.class);
-        if (mTestStateSubject == null) {
-            mTestStateSubject = BehaviorSubject.create();
-        }
-        if (mShowTestAnswerSubject == null) {
-            mShowTestAnswerSubject = BehaviorSubject.create();
-        }
         ViewGroup rootLayout = (ViewGroup)
                 activity.getLayoutInflater().inflate(
                         R.layout.page_test, container, false);
@@ -98,7 +110,7 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
         TextView textProgress = rootLayout.findViewById(R.id.text_progress);
         Context context = mSvProvider.getContext();
         FileHelper fileHelper = mSvProvider.get(FileHelper.class);
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onTestState",
                         mTestStateSubject.subscribe(
                                 testState -> {
@@ -129,9 +141,9 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                 }
                         )
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_getActiveTest",
-                        mSvProvider.get(TestStateModifier.class).getActiveTest()
+                        mTestStateModifier.getActiveTest()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((testStateOpt, throwable) -> {
                                     Context svContext = mSvProvider.getContext();
@@ -155,7 +167,7 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                                     }
                                 })
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onShowAnswer",
                         mShowTestAnswerSubject.subscribe(
                                 testState -> {
@@ -207,9 +219,9 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
             textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
             textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
         } else if (id == R.id.button_previous) {
-            mSvProvider.get(RxDisposer.class)
+            mRxDisposer
                     .add("onCLick_buttonPrevious",
-                            mSvProvider.get(TestStateModifier.class)
+                            mTestStateModifier
                                     .previousCard(testState).subscribe((testState1, throwable) -> {
                                 if (throwable != null) {
                                     iLogger.e(TAG, context.getString(R.string.error_failed_to_get_previous_card));
@@ -228,7 +240,7 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                         if (serializable instanceof Boolean) {
                             if ((Boolean) serializable) {
                                 CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                compositeDisposable.add(mSvProvider.get(TestStateModifier.class)
+                                compositeDisposable.add(mTestStateModifier
                                         .stopTest(testState)
                                         .observeOn(AndroidSchedulers.mainThread())
                                         .subscribe((testState1, throwable) -> {
@@ -243,9 +255,9 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                         }
                     });
         } else if (id == R.id.button_next) {
-            mSvProvider.get(RxDisposer.class)
+            mRxDisposer
                     .add("onClick_buttonNext",
-                            mSvProvider.get(TestStateModifier.class)
+                            mTestStateModifier
                                     .nextCard(testState)
                                     .subscribe((testState1, throwable) -> {
                                         if (throwable != null) {
@@ -265,7 +277,7 @@ public class TestPage extends StatefulView<Activity> implements View.OnClickList
                             fileHelper.getCardAnswerImage(card.answerImage)));
         } else if (id == R.id.button_question_voice) {
             File file = fileHelper.getCardQuestionVoice(card.questionVoice);
-            mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(file));
+            mAudioPlayer.play(Uri.fromFile(file));
         }
     }
 }
