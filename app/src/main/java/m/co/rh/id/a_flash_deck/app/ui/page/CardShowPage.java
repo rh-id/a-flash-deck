@@ -169,7 +169,7 @@ public class CardShowPage extends StatefulView<Activity> implements NavActivityL
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.button_exit) {
-            mNavigator.finishActivity(null);
+            mNavigator.finishActivity();
         } else if (id == R.id.button_edit) {
             mNavigator.push(Routes.CARD_DETAIL_PAGE,
                     CardDetailPage.Args.forUpdate(mCard), (navigator, navRoute, activity, currentView) -> {

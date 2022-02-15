@@ -315,7 +315,7 @@
   license: MIT License
   licenseUrl: https://api.github.com/licenses/mit
   url: https://github.com/rh-id/a-logger
-- artifact: com.github.rh-id:a-navigator:+
+- artifact: com.github.rh-id.a-navigator:a-navigator:+
   name: a-navigator
   copyrightHolder: Ruby Hartono
   license: MIT License
