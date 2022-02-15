@@ -86,6 +86,8 @@ public class CardShowPage extends StatefulView<Activity> implements NavActivityL
         questionImageView.setOnClickListener(this);
         ImageView answerImageView = rootLayout.findViewById(R.id.image_answer);
         answerImageView.setOnClickListener(this);
+        Button buttonExit = rootLayout.findViewById(R.id.button_exit);
+        buttonExit.setOnClickListener(this);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
         buttonEdit.setOnClickListener(this);
         Button questionVoiceButton = rootLayout.findViewById(R.id.button_question_voice);
@@ -166,7 +168,9 @@ public class CardShowPage extends StatefulView<Activity> implements NavActivityL
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.button_edit) {
+        if (id == R.id.button_exit) {
+            mNavigator.finishActivity(null);
+        } else if (id == R.id.button_edit) {
             mNavigator.push(Routes.CARD_DETAIL_PAGE,
                     CardDetailPage.Args.forUpdate(mCard), (navigator, navRoute, activity, currentView) -> {
                         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
