@@ -33,9 +33,9 @@ public class UpdateDeckCmd extends NewDeckCmd {
     @Override
     public Single<Deck> execute(Deck deck) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
-                    mDeckDao.get().updateDeck(deck);
-                    mDeckChangeNotifier.get().deckUpdated(deck);
+                mExecutorService.submit(() -> {
+                    mDeckDao.updateDeck(deck);
+                    mDeckChangeNotifier.deckUpdated(deck);
                     return deck;
                 })
         );

@@ -35,27 +35,26 @@ import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class NewCardCmd {
     private static final String TAG = NewCardCmd.class.getName();
     protected Context mAppContext;
-    protected ProviderValue<ExecutorService> mExecutorService;
-    protected ProviderValue<ILogger> mLogger;
-    protected ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
-    protected ProviderValue<DeckDao> mDeckDao;
-    protected ProviderValue<FileHelper> mFileHelper;
+    protected ExecutorService mExecutorService;
+    protected ILogger mLogger;
+    protected DeckChangeNotifier mDeckChangeNotifier;
+    protected DeckDao mDeckDao;
+    protected FileHelper mFileHelper;
     protected BehaviorSubject<String> mDeckIdValidSubject;
     protected BehaviorSubject<String> mQuestionValidSubject;
     protected BehaviorSubject<String> mAnswerValidSubject;
 
     public NewCardCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mLogger = provider.lazyGet(ILogger.class);
-        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
-        mFileHelper = provider.lazyGet(FileHelper.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mLogger = provider.get(ILogger.class);
+        mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
+        mDeckDao = provider.get(DeckDao.class);
+        mFileHelper = provider.get(FileHelper.class);
         mDeckIdValidSubject = BehaviorSubject.create();
         mQuestionValidSubject = BehaviorSubject.create();
         mAnswerValidSubject = BehaviorSubject.create();
@@ -92,24 +91,24 @@ public class NewCardCmd {
 
     public Single<Card> execute(Card card) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
-                    mDeckDao.get().insertCard(card);
-                    mDeckChangeNotifier.get().cardAdded(card);
+                mExecutorService.submit(() -> {
+                    mDeckDao.insertCard(card);
+                    mDeckChangeNotifier.cardAdded(card);
                     return card;
                 })
         );
     }
 
     public Single<Card> saveFiles(Card card, Uri questionImage, Uri answerImage, Uri questionVoice) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromFuture(mExecutorService.submit(() -> {
                     if (questionImage != null) {
                         try {
-                            File questionImageFile = mFileHelper.get().createCardQuestionImage(questionImage);
+                            File questionImageFile = mFileHelper.createCardQuestionImage(questionImage);
                             card.questionImage = questionImageFile.getName();
-                            mFileHelper.get().createCardQuestionImageThumbnail(questionImage,
+                            mFileHelper.createCardQuestionImageThumbnail(questionImage,
                                     questionImageFile.getName());
                         } catch (Exception e) {
-                            mLogger.get().d(TAG, e.getMessage(), e);
+                            mLogger.d(TAG, e.getMessage(), e);
                             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_save_question_image));
                         }
                     } else {
@@ -117,12 +116,12 @@ public class NewCardCmd {
                     }
                     if (answerImage != null) {
                         try {
-                            File answerImageFile = mFileHelper.get().createCardAnswerImage(answerImage);
+                            File answerImageFile = mFileHelper.createCardAnswerImage(answerImage);
                             card.answerImage = answerImageFile.getName();
-                            mFileHelper.get().createCardAnswerImageThumbnail(answerImage,
+                            mFileHelper.createCardAnswerImageThumbnail(answerImage,
                                     answerImageFile.getName());
                         } catch (Exception e) {
-                            mLogger.get().d(TAG, e.getMessage(), e);
+                            mLogger.d(TAG, e.getMessage(), e);
                             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_save_answer_image));
                         }
                     } else {
@@ -130,17 +129,17 @@ public class NewCardCmd {
                     }
                     if (questionVoice != null) {
                         try {
-                            File file = mFileHelper.get().createCardQuestionVoice(questionVoice);
+                            File file = mFileHelper.createCardQuestionVoice(questionVoice);
                             card.questionVoice = file.getName();
                         } catch (Exception e) {
-                            mLogger.get().d(TAG, e.getMessage(), e);
+                            mLogger.d(TAG, e.getMessage(), e);
                             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_save_question_voice));
                         }
                     } else {
                         card.questionVoice = null;
                     }
-                    mDeckDao.get().updateCard(card);
-                    mDeckChangeNotifier.get().cardUpdated(card);
+                    mDeckDao.updateCard(card);
+                    mDeckChangeNotifier.cardUpdated(card);
                     return card;
                 })
         );
@@ -148,7 +147,7 @@ public class NewCardCmd {
 
     public Single<Integer> countDeck() {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> mDeckDao.get().countDeck())
+                mExecutorService.submit(() -> mDeckDao.countDeck())
         );
     }
 

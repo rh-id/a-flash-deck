@@ -31,24 +31,23 @@ import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class NewDeckCmd {
     private static final String TAG = NewDeckCmd.class.getName();
 
     protected Context mAppContext;
-    protected ProviderValue<ExecutorService> mExecutorService;
-    protected ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
-    protected ProviderValue<ILogger> mLogger;
-    protected ProviderValue<DeckDao> mDeckDao;
+    protected ExecutorService mExecutorService;
+    protected DeckChangeNotifier mDeckChangeNotifier;
+    protected ILogger mLogger;
+    protected DeckDao mDeckDao;
     protected final BehaviorSubject<String> mNameValidationSubject;
 
     public NewDeckCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mLogger = provider.lazyGet(ILogger.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mLogger = provider.get(ILogger.class);
+        mDeckDao = provider.get(DeckDao.class);
         mNameValidationSubject = BehaviorSubject.create();
     }
 
@@ -67,9 +66,9 @@ public class NewDeckCmd {
 
     public Single<Deck> execute(Deck deck) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
-                    mDeckDao.get().insertDeck(deck);
-                    mDeckChangeNotifier.get().deckAdded(deck);
+                mExecutorService.submit(() -> {
+                    mDeckDao.insertDeck(deck);
+                    mDeckChangeNotifier.deckAdded(deck);
                     return deck;
                 })
         );

@@ -29,51 +29,50 @@ import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class CopyCardCmd {
-    protected ProviderValue<ExecutorService> mExecutorService;
-    protected ProviderValue<ILogger> mLogger;
-    protected ProviderValue<FileHelper> mFileHelper;
-    protected ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
-    protected ProviderValue<DeckDao> mDeckDao;
-    protected ProviderValue<NewCardCmd> mNewCardCmd;
+    protected ExecutorService mExecutorService;
+    protected ILogger mLogger;
+    protected FileHelper mFileHelper;
+    protected DeckChangeNotifier mDeckChangeNotifier;
+    protected DeckDao mDeckDao;
+    protected NewCardCmd mNewCardCmd;
 
     public CopyCardCmd(Provider provider) {
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mLogger = provider.lazyGet(ILogger.class);
-        mFileHelper = provider.lazyGet(FileHelper.class);
-        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
-        mNewCardCmd = provider.lazyGet(NewCardCmd.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mLogger = provider.get(ILogger.class);
+        mFileHelper = provider.get(FileHelper.class);
+        mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
+        mDeckDao = provider.get(DeckDao.class);
+        mNewCardCmd = provider.get(NewCardCmd.class);
     }
 
     public Single<CopyCardEvent> execute(CopyCardEvent copyCardEvent) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
+                mExecutorService.submit(() -> {
                     Card card = copyCardEvent.getCopyCard();
                     Uri questionImageUri;
                     if (card.questionImage != null) {
-                        questionImageUri = Uri.fromFile(mFileHelper.get().getCardQuestionImage(card.questionImage));
+                        questionImageUri = Uri.fromFile(mFileHelper.getCardQuestionImage(card.questionImage));
                     } else {
                         questionImageUri = null;
                     }
                     Uri answerImageUri;
                     if (card.answerImage != null) {
-                        answerImageUri = Uri.fromFile(mFileHelper.get().getCardAnswerImage(card.answerImage));
+                        answerImageUri = Uri.fromFile(mFileHelper.getCardAnswerImage(card.answerImage));
                     } else {
                         answerImageUri = null;
                     }
                     Uri questionVoiceUri;
                     if (card.questionVoice != null) {
-                        questionVoiceUri = Uri.fromFile(mFileHelper.get().getCardQuestionVoice(card.questionVoice));
+                        questionVoiceUri = Uri.fromFile(mFileHelper.getCardQuestionVoice(card.questionVoice));
                     } else {
                         questionVoiceUri = null;
                     }
-                    mDeckDao.get().copyCardToDeck(card, copyCardEvent.getDestinationDeck());
-                    mNewCardCmd.get().saveFiles(card, questionImageUri, answerImageUri, questionVoiceUri)
+                    mDeckDao.copyCardToDeck(card, copyCardEvent.getDestinationDeck());
+                    mNewCardCmd.saveFiles(card, questionImageUri, answerImageUri, questionVoiceUri)
                             .blockingGet();
-                    mDeckChangeNotifier.get().cardAdded(card);
+                    mDeckChangeNotifier.cardAdded(card);
                     return copyCardEvent;
                 })
         );

@@ -24,23 +24,22 @@ import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class DeleteDeckCmd {
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<DeckDao> mDeckDao;
-    private ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
+    private ExecutorService mExecutorService;
+    private DeckDao mDeckDao;
+    private DeckChangeNotifier mDeckChangeNotifier;
 
     public DeleteDeckCmd(Provider provider) {
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
-        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mDeckDao = provider.get(DeckDao.class);
+        mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
     }
 
     public Single<Deck> execute(Deck deck) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
-            mDeckDao.get().deleteDeck(deck);
-            mDeckChangeNotifier.get().deckDeleted(deck);
+        return Single.fromFuture(mExecutorService.submit(() -> {
+            mDeckDao.deleteDeck(deck);
+            mDeckChangeNotifier.deckDeleted(deck);
             return deck;
         }));
     }

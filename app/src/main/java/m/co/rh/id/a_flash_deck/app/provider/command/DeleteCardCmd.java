@@ -25,25 +25,24 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class DeleteCardCmd {
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<DeckDao> mDeckDao;
-    private ProviderValue<FileHelper> mFileHelper;
-    private ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
+    private ExecutorService mExecutorService;
+    private DeckDao mDeckDao;
+    private FileHelper mFileHelper;
+    private DeckChangeNotifier mDeckChangeNotifier;
 
     public DeleteCardCmd(Provider provider) {
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
-        mFileHelper = provider.lazyGet(FileHelper.class);
-        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mDeckDao = provider.get(DeckDao.class);
+        mFileHelper = provider.get(FileHelper.class);
+        mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
     }
 
     public Single<Card> execute(Card card) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
-            mDeckDao.get().deleteCard(card);
-            mDeckChangeNotifier.get().cardDeleted(card);
+        return Single.fromFuture(mExecutorService.submit(() -> {
+            mDeckDao.deleteCard(card);
+            mDeckChangeNotifier.cardDeleted(card);
             return card;
         }));
     }

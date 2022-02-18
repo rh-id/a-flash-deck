@@ -55,7 +55,6 @@ import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class ExportImportCmd {
     private static final String TAG = ExportImportCmd.class.getName();
@@ -65,25 +64,25 @@ public class ExportImportCmd {
     private static final String ZIP_CONTENT_VOICE_QUESTION_DIR = "media/voice/question/";
 
     protected Context mAppContext;
-    protected ProviderValue<ExecutorService> mExecutorService;
-    protected ProviderValue<ILogger> mLogger;
-    protected ProviderValue<DeckDao> mDeckDao;
-    protected ProviderValue<FileHelper> mFileHelper;
+    protected ExecutorService mExecutorService;
+    protected ILogger mLogger;
+    protected DeckDao mDeckDao;
+    protected FileHelper mFileHelper;
 
     public ExportImportCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mLogger = provider.lazyGet(ILogger.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
-        mFileHelper = provider.lazyGet(FileHelper.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mLogger = provider.get(ILogger.class);
+        mDeckDao = provider.get(DeckDao.class);
+        mFileHelper = provider.get(FileHelper.class);
     }
 
     public Single<File> exportFile(List<Deck> deckList) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
+                mExecutorService.submit(() -> {
                     if (!deckList.isEmpty()) {
                         try {
-                            File zipFile = mFileHelper.get().createTempFile("Decks.zip");
+                            File zipFile = mFileHelper.createTempFile("Decks.zip");
                             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
                             ZipEntry jsonZipEntry = new ZipEntry(ZIP_CONTENT_DECKS_JSON);
                             zipOutputStream.putNextEntry(jsonZipEntry);
@@ -91,7 +90,7 @@ public class ExportImportCmd {
                             JSONArray jsonArray = new JSONArray();
                             List<Card> allCards = new ArrayList<>();
                             for (Deck deck : deckList) {
-                                List<Card> cardList = mDeckDao.get().getCardByDeckId(deck.id);
+                                List<Card> cardList = mDeckDao.getCardByDeckId(deck.id);
                                 DeckModel deckModel = new DeckModel(deck, cardList);
                                 jsonArray.put(deckModel.toJson());
                                 allCards.addAll(cardList);
@@ -102,31 +101,31 @@ public class ExportImportCmd {
                             // next entries are images
                             for (Card card : allCards) {
                                 if (card.questionImage != null) {
-                                    File questionImage = mFileHelper.get().getCardQuestionImage(card.questionImage);
+                                    File questionImage = mFileHelper.getCardQuestionImage(card.questionImage);
                                     ZipEntry questionImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_QUESTION_DIR + card.questionImage);
                                     zipOutputStream.putNextEntry(questionImageZip);
-                                    mFileHelper.get().copyStream(new FileInputStream(questionImage), zipOutputStream);
+                                    mFileHelper.copyStream(new FileInputStream(questionImage), zipOutputStream);
                                     zipOutputStream.closeEntry();
                                 }
                                 if (card.answerImage != null) {
-                                    File answerImage = mFileHelper.get().getCardAnswerImage(card.answerImage);
+                                    File answerImage = mFileHelper.getCardAnswerImage(card.answerImage);
                                     ZipEntry answerImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_ANSWER_DIR + card.answerImage);
                                     zipOutputStream.putNextEntry(answerImageZip);
-                                    mFileHelper.get().copyStream(new FileInputStream(answerImage), zipOutputStream);
+                                    mFileHelper.copyStream(new FileInputStream(answerImage), zipOutputStream);
                                     zipOutputStream.closeEntry();
                                 }
                                 if (card.questionVoice != null) {
-                                    File file = mFileHelper.get().getCardQuestionVoice(card.questionVoice);
+                                    File file = mFileHelper.getCardQuestionVoice(card.questionVoice);
                                     ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_QUESTION_DIR + card.questionVoice);
                                     zipOutputStream.putNextEntry(zipEntry);
-                                    mFileHelper.get().copyStream(new FileInputStream(file), zipOutputStream);
+                                    mFileHelper.copyStream(new FileInputStream(file), zipOutputStream);
                                     zipOutputStream.closeEntry();
                                 }
                             }
                             zipOutputStream.close();
                             return zipFile;
                         } catch (IOException e) {
-                            mLogger.get().d(TAG, e.getMessage(), e);
+                            mLogger.d(TAG, e.getMessage(), e);
                             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_create_file));
                         }
                     } else {
@@ -138,7 +137,7 @@ public class ExportImportCmd {
 
     public Single<List<DeckModel>> importFile(File file) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
+                mExecutorService.submit(() -> {
                     try (ZipFile zipFile = new ZipFile(file)) {
                         Enumeration<? extends ZipEntry> zipEntryEnumeration = zipFile.entries();
                         List<DeckModel> deckModelList = new ArrayList<>();
@@ -153,59 +152,59 @@ public class ExportImportCmd {
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_QUESTION_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_QUESTION_DIR.length() - 1);
                                 BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                File imageTempFile = mFileHelper.get().createImageTempFile();
+                                File imageTempFile = mFileHelper.createImageTempFile();
                                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile));
-                                mFileHelper.get().copyStream(bis, bos);
+                                mFileHelper.copyStream(bis, bos);
                                 bis.close();
                                 bos.close();
-                                mFileHelper.get().createCardQuestionImage(imageTempFile, fileName);
-                                mFileHelper.get().createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
+                                mFileHelper.createCardQuestionImage(imageTempFile, fileName);
+                                mFileHelper.createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_ANSWER_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_ANSWER_DIR.length() - 1);
                                 BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                File imageTempFile = mFileHelper.get().createImageTempFile();
+                                File imageTempFile = mFileHelper.createImageTempFile();
                                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile));
-                                mFileHelper.get().copyStream(bis, bos);
+                                mFileHelper.copyStream(bis, bos);
                                 bis.close();
                                 bos.close();
-                                mFileHelper.get().createCardAnswerImage(imageTempFile, fileName);
-                                mFileHelper.get().createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
+                                mFileHelper.createCardAnswerImage(imageTempFile, fileName);
+                                mFileHelper.createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_QUESTION_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length() - 1);
                                 BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                File tempFile = mFileHelper.get().createTempFile(fileName);
+                                File tempFile = mFileHelper.createTempFile(fileName);
                                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));
-                                mFileHelper.get().copyStream(bis, bos);
+                                mFileHelper.copyStream(bis, bos);
                                 bis.close();
                                 bos.close();
-                                mFileHelper.get().createCardQuestionVoice(tempFile, fileName);
+                                mFileHelper.createCardQuestionVoice(tempFile, fileName);
                             }
                         }
 
                         if (!deckModelList.isEmpty()) {
-                            mDeckDao.get().importDecks(deckModelList);
+                            mDeckDao.importDecks(deckModelList);
                         }
                         return deckModelList;
                     } catch (ZipException e) {
-                        mLogger.get().d(TAG, "Not a zip file try json");
+                        mLogger.d(TAG, "Not a zip file try json");
                         // to support old file format Decks.json instead of zip
                         try (FileInputStream fis = new FileInputStream(file)) {
                             List<DeckModel> deckModelList = getDeckModelsFromJson(fis);
                             if (!deckModelList.isEmpty()) {
-                                mDeckDao.get().importDecks(deckModelList);
+                                mDeckDao.importDecks(deckModelList);
                             }
                             return deckModelList;
                         } catch (Exception exception) {
-                            mLogger.get().d(TAG, exception.getMessage(), e);
+                            mLogger.d(TAG, exception.getMessage(), e);
                             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
                         }
                     } catch (FileNotFoundException e) {
-                        mLogger.get().d(TAG, e.getMessage(), e);
+                        mLogger.d(TAG, e.getMessage(), e);
                         throw new ValidationException(mAppContext.getString(R.string.error_failed_to_open_file));
                     } catch (Exception e) {
-                        mLogger.get().d(TAG, e.getMessage(), e);
+                        mLogger.d(TAG, e.getMessage(), e);
                         throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
                     }
                 })

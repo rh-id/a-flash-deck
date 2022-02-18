@@ -25,26 +25,25 @@ import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class MoveCardCmd {
-    protected ProviderValue<ExecutorService> mExecutorService;
-    protected ProviderValue<ILogger> mLogger;
-    protected ProviderValue<DeckChangeNotifier> mDeckChangeNotifier;
-    protected ProviderValue<DeckDao> mDeckDao;
+    protected ExecutorService mExecutorService;
+    protected ILogger mLogger;
+    protected DeckChangeNotifier mDeckChangeNotifier;
+    protected DeckDao mDeckDao;
 
     public MoveCardCmd(Provider provider) {
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mLogger = provider.lazyGet(ILogger.class);
-        mDeckChangeNotifier = provider.lazyGet(DeckChangeNotifier.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mLogger = provider.get(ILogger.class);
+        mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
+        mDeckDao = provider.get(DeckDao.class);
     }
 
     public Single<MoveCardEvent> execute(MoveCardEvent moveCardEvent) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
-                    mDeckDao.get().moveCardToDeck(moveCardEvent.getMovedCard(), moveCardEvent.getDestinationDeck());
-                    mDeckChangeNotifier.get().cardMoved(moveCardEvent);
+                mExecutorService.submit(() -> {
+                    mDeckDao.moveCardToDeck(moveCardEvent.getMovedCard(), moveCardEvent.getDestinationDeck());
+                    mDeckChangeNotifier.cardMoved(moveCardEvent);
                     return moveCardEvent;
                 })
         );

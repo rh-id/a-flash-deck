@@ -31,9 +31,9 @@ public class UpdateCardCmd extends NewCardCmd {
     @Override
     public Single<Card> execute(Card card) {
         return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
-                    mDeckDao.get().updateCard(card);
-                    mDeckChangeNotifier.get().cardUpdated(card);
+                mExecutorService.submit(() -> {
+                    mDeckDao.updateCard(card);
+                    mDeckChangeNotifier.cardUpdated(card);
                     return card;
                 })
         );

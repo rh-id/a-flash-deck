@@ -23,26 +23,25 @@ import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class DeckQueryCmd {
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<DeckDao> mDeckDao;
+    private ExecutorService mExecutorService;
+    private DeckDao mDeckDao;
 
     public DeckQueryCmd(Provider provider) {
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mDeckDao = provider.get(DeckDao.class);
     }
 
     public Single<Integer> countCards(Deck deck) {
-        return Single.fromFuture(mExecutorService.get().submit(() ->
-                mDeckDao.get().countCardByDeckId(deck.id))
+        return Single.fromFuture(mExecutorService.submit(() ->
+                mDeckDao.countCardByDeckId(deck.id))
         );
     }
 
     public Single<Deck> getDeckById(long deckId) {
-        return Single.fromFuture(mExecutorService.get().submit(() ->
-                mDeckDao.get().getDeckById(deckId))
+        return Single.fromFuture(mExecutorService.submit(() ->
+                mDeckDao.getDeckById(deckId))
         );
     }
 }
