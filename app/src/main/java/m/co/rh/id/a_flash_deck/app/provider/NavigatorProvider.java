@@ -109,6 +109,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.HOME_PAGE, (args, activity) -> new CardShowHomePage());
         navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
         navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
+        navMap.put(Routes.DECK_SELECT_DIALOG, (args, activity) -> new DeckSelectSVDialog());
         navMap.putAll(mCommonNavConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
                 new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);

@@ -239,72 +239,80 @@ public class CardItemSV extends StatefulView<Activity> implements View.OnClickLi
     public boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_move_card) {
-            mNavigator.push(Routes.DECK_SELECT_DIALOG,
-                    (navigator, navRoute, activity, currentView) -> {
-                        DeckSelectSVDialog.Result result =
-                                DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
-                        if (result != null) {
-                            Deck selectedDeck = result.getSelectedDeck().get(0);
-                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                            CompositeDisposable compositeDisposable = new CompositeDisposable();
-                            compositeDisposable.add(provider.get(DeckQueryCmd.class).getDeckById(mCard.deckId)
-                                    .subscribe((deck, throwable) -> {
-                                        if (throwable != null) {
-                                            provider.get(ILogger.class)
-                                                    .e(TAG, provider.getContext().getString(R.string.error_loading_deck), throwable);
-                                            compositeDisposable.dispose();
-                                        } else {
-                                            compositeDisposable.add(provider.get(MoveCardCmd.class)
-                                                    .execute(new MoveCardEvent(mCard.clone(), deck, selectedDeck))
-                                                    .subscribe((moveCardEvent, throwable1) -> {
-                                                        ILogger iLogger = provider.get(ILogger.class);
-                                                        Context context = provider.getContext();
-                                                        if (throwable1 != null) {
-                                                            iLogger.e(TAG,
-                                                                    context.getString(R.string.error_moving_card), throwable1);
-                                                        } else {
-                                                            iLogger.i(TAG,
-                                                                    context.getString(R.string.success_moving_card,
-                                                                            moveCardEvent.getDestinationDeck().name));
-                                                        }
-                                                        compositeDisposable.dispose();
-                                                    })
-                                            );
-                                        }
-                                    })
-                            );
-                        }
-                    });
+            moveCardAction(mNavigator, mCard.clone());
             return true;
         } else if (id == R.id.menu_copy_card) {
-            mNavigator.push(Routes.DECK_SELECT_DIALOG,
-                    (navigator, navRoute, activity, currentView) -> {
-                        DeckSelectSVDialog.Result result =
-                                DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
-                        if (result != null) {
-                            Deck selectedDeck = result.getSelectedDeck().get(0);
-                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                            CompositeDisposable compositeDisposable = new CompositeDisposable();
-                            compositeDisposable.add(provider.get(CopyCardCmd.class)
-                                    .execute(new CopyCardEvent(mCard.clone(), selectedDeck))
-                                    .subscribe((copyCardEvent, throwable1) -> {
-                                        ILogger iLogger = provider.get(ILogger.class);
-                                        Context context = provider.getContext();
-                                        if (throwable1 != null) {
-                                            iLogger.e(TAG,
-                                                    context.getString(R.string.error_copying_card), throwable1);
-                                        } else {
-                                            iLogger.i(TAG,
-                                                    context.getString(R.string.success_copying_card,
-                                                            copyCardEvent.getDestinationDeck().name));
-                                        }
-                                        compositeDisposable.dispose();
-                                    })
-                            );
-                        }
-                    });
+            copyCardAction(mNavigator, mCard.clone());
             return true;
         }
         return false;
+    }
+
+    public static void copyCardAction(INavigator mainNavigator, Card card) {
+        mainNavigator.push(Routes.DECK_SELECT_DIALOG,
+                (navigator, navRoute, activity, currentView) -> {
+                    DeckSelectSVDialog.Result result =
+                            DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                    if (result != null) {
+                        Deck selectedDeck = result.getSelectedDeck().get(0);
+                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                        CompositeDisposable compositeDisposable = new CompositeDisposable();
+                        compositeDisposable.add(provider.get(CopyCardCmd.class)
+                                .execute(new CopyCardEvent(card, selectedDeck))
+                                .subscribe((copyCardEvent, throwable1) -> {
+                                    ILogger iLogger = provider.get(ILogger.class);
+                                    Context context = provider.getContext();
+                                    if (throwable1 != null) {
+                                        iLogger.e(TAG,
+                                                context.getString(R.string.error_copying_card), throwable1);
+                                    } else {
+                                        iLogger.i(TAG,
+                                                context.getString(R.string.success_copying_card,
+                                                        copyCardEvent.getDestinationDeck().name));
+                                    }
+                                    compositeDisposable.dispose();
+                                })
+                        );
+                    }
+                });
+    }
+
+    public static void moveCardAction(INavigator mainNavigator, Card card) {
+        mainNavigator.push(Routes.DECK_SELECT_DIALOG,
+                (navigator, navRoute, activity, currentView) -> {
+                    DeckSelectSVDialog.Result result =
+                            DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                    if (result != null) {
+                        Deck selectedDeck = result.getSelectedDeck().get(0);
+                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                        CompositeDisposable compositeDisposable = new CompositeDisposable();
+                        compositeDisposable.add(provider.get(DeckQueryCmd.class).getDeckById(card.deckId)
+                                .subscribe((deck, throwable) -> {
+                                    if (throwable != null) {
+                                        provider.get(ILogger.class)
+                                                .e(TAG, provider.getContext().getString(R.string.error_loading_deck), throwable);
+                                        compositeDisposable.dispose();
+                                    } else {
+                                        compositeDisposable.add(provider.get(MoveCardCmd.class)
+                                                .execute(new MoveCardEvent(card, deck, selectedDeck))
+                                                .subscribe((moveCardEvent, throwable1) -> {
+                                                    ILogger iLogger = provider.get(ILogger.class);
+                                                    Context context = provider.getContext();
+                                                    if (throwable1 != null) {
+                                                        iLogger.e(TAG,
+                                                                context.getString(R.string.error_moving_card), throwable1);
+                                                    } else {
+                                                        iLogger.i(TAG,
+                                                                context.getString(R.string.success_moving_card,
+                                                                        moveCardEvent.getDestinationDeck().name));
+                                                    }
+                                                    compositeDisposable.dispose();
+                                                })
+                                        );
+                                    }
+                                })
+                        );
+                    }
+                });
     }
 }

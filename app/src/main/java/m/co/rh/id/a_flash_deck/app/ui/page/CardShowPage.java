@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 import android.app.Activity;
 import android.net.Uri;
 import android.text.method.LinkMovementMethod;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -27,6 +28,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.text.HtmlCompat;
 
 import java.io.File;
@@ -35,6 +37,7 @@ import java.io.Serializable;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.ui.component.card.CardItemSV;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
@@ -51,7 +54,7 @@ import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavActivityLifecycle;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardShowPage extends StatefulView<Activity> implements NavActivityLifecycle, View.OnClickListener {
+public class CardShowPage extends StatefulView<Activity> implements NavActivityLifecycle, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = CardShowPage.class.getName();
 
     @NavInject
@@ -88,6 +91,8 @@ public class CardShowPage extends StatefulView<Activity> implements NavActivityL
         answerImageView.setOnClickListener(this);
         Button buttonExit = rootLayout.findViewById(R.id.button_exit);
         buttonExit.setOnClickListener(this);
+        Button buttonMenu = rootLayout.findViewById(R.id.button_menu);
+        buttonMenu.setOnClickListener(this);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
         buttonEdit.setOnClickListener(this);
         Button questionVoiceButton = rootLayout.findViewById(R.id.button_question_voice);
@@ -170,11 +175,15 @@ public class CardShowPage extends StatefulView<Activity> implements NavActivityL
         int id = view.getId();
         if (id == R.id.button_exit) {
             mNavigator.finishActivity();
+        } else if (id == R.id.button_menu) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            popup.getMenuInflater().inflate(R.menu.page_card_show, popup.getMenu());
+            popup.setOnMenuItemClickListener(this);
+            popup.show();//showing popup menu
         } else if (id == R.id.button_edit) {
             mNavigator.push(Routes.CARD_DETAIL_PAGE,
-                    CardDetailPage.Args.forUpdate(mCard), (navigator, navRoute, activity, currentView) -> {
-                        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    });
+                    CardDetailPage.Args.forUpdate(mCard), (navigator, navRoute, activity, currentView) ->
+                            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
         } else if (id == R.id.image_question) {
             CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             FileHelper fileHelper = mSvProvider.get(FileHelper.class);
@@ -192,6 +201,19 @@ public class CardShowPage extends StatefulView<Activity> implements NavActivityL
             File file = fileHelper.getCardQuestionVoice(mCard.questionVoice);
             mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(file));
         }
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_move_card) {
+            CardItemSV.moveCardAction(mNavigator, mCard.clone());
+            return true;
+        } else if (id == R.id.menu_copy_card) {
+            CardItemSV.copyCardAction(mNavigator, mCard.clone());
+            return true;
+        }
+        return false;
     }
 
     @Override
