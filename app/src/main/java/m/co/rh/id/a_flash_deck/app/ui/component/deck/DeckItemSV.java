@@ -19,6 +19,9 @@ package m.co.rh.id.a_flash_deck.app.ui.component.deck;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ShortcutManager;
+import android.os.Build;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -26,6 +29,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.PopupMenu;
 
 import java.io.Serializable;
 
@@ -35,6 +40,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteDeckCmd;
+import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
@@ -47,15 +53,15 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class DeckItemSV extends StatefulView<Activity> implements View.OnClickListener {
+public class DeckItemSV extends StatefulView<Activity> implements RequireComponent<Provider>, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = DeckItemSV.class.getName();
     @NavInject
     private transient INavigator mNavigator;
-    @NavInject
-    private transient Provider mProvider;
     private transient Provider mSvProvider;
+    private transient AppShortcutHandler mAppShortcutHandler;
     private Deck mDeck;
     private transient BehaviorSubject<Deck> mDeckSubject;
     private transient BehaviorSubject<Integer> mDeckCardCountSubject;
@@ -64,7 +70,10 @@ public class DeckItemSV extends StatefulView<Activity> implements View.OnClickLi
     private transient CompoundButton mSelectedUiButton;
     private transient OnItemSelectListener mOnItemSelectListener;
 
-    public DeckItemSV() {
+    @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mAppShortcutHandler = mSvProvider.get(AppShortcutHandler.class);
     }
 
     public DeckItemSV(ListMode listMode) {
@@ -74,10 +83,6 @@ public class DeckItemSV extends StatefulView<Activity> implements View.OnClickLi
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         initDeckSubject();
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.item_deck, container, false);
         rootLayout.setOnClickListener(this);
@@ -85,9 +90,11 @@ public class DeckItemSV extends StatefulView<Activity> implements View.OnClickLi
         CheckBox checkBoxSelect = rootLayout.findViewById(R.id.checkbox_select);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
         Button buttonDelete = rootLayout.findViewById(R.id.button_delete);
+        Button buttonMore = rootLayout.findViewById(R.id.button_more_action);
         if (mListMode != null) {
             buttonEdit.setVisibility(View.GONE);
             buttonDelete.setVisibility(View.GONE);
+            buttonMore.setVisibility(View.GONE);
             if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
                 radioSelect.setVisibility(View.VISIBLE);
                 radioSelect.setChecked(mIsSelected);
@@ -100,9 +107,18 @@ public class DeckItemSV extends StatefulView<Activity> implements View.OnClickLi
         } else {
             buttonEdit.setVisibility(View.VISIBLE);
             buttonDelete.setVisibility(View.VISIBLE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ShortcutManager shortcutManager = activity.getSystemService(ShortcutManager.class);
+                if (shortcutManager.isRequestPinShortcutSupported()) {
+                    buttonMore.setVisibility(View.VISIBLE);
+                }
+            } else {
+                buttonMore.setVisibility(View.GONE);
+            }
         }
         buttonEdit.setOnClickListener(this);
         buttonDelete.setOnClickListener(this);
+        buttonMore.setOnClickListener(this);
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
         TextView textTotalCards = rootLayout.findViewById(R.id.text_total_cards);
         mSvProvider.get(RxDisposer.class).add("createView_onChangeDeck",
@@ -281,7 +297,24 @@ public class DeckItemSV extends StatefulView<Activity> implements View.OnClickLi
                             );
                         }
                     });
+        } else if (viewId == R.id.button_more_action) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            popup.getMenuInflater().inflate(R.menu.item_deck, popup.getMenu());
+            popup.setOnMenuItemClickListener(this);
+            popup.show();//showing popup menu
         }
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_create_shuffle_shortcut) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mAppShortcutHandler.createPinnedShortcut(mDeck);
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

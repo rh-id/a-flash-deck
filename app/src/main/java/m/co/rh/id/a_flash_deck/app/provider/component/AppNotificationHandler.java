@@ -65,7 +65,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<DeckDao> mDeckDao;
     private final ProviderValue<FileHelper> mFileHelper;
     private final ProviderValue<AudioPlayer> mAudioPlayer;
-    private BehaviorSubject<Optional<NotificationTimerEvent>> mTimerNotificationSubject;
+    private BehaviorSubject<Optional<NotificationTimerEvent>> mNotificationTimerSubject;
     private ReentrantLock mLock;
 
     public AppNotificationHandler(Context context, Provider provider) {
@@ -76,7 +76,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mDeckDao = provider.lazyGet(DeckDao.class);
         mFileHelper = provider.lazyGet(FileHelper.class);
         mAudioPlayer = provider.lazyGet(AudioPlayer.class);
-        mTimerNotificationSubject = BehaviorSubject.createDefault(Optional.empty());
+        mNotificationTimerSubject = BehaviorSubject.createDefault(Optional.empty());
         mLock = new ReentrantLock();
     }
 
@@ -186,7 +186,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                     NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
                     Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                    mTimerNotificationSubject.onNext(Optional.of(new NotificationTimerEvent(notificationTimer, card)));
+                    mNotificationTimerSubject.onNext(Optional.of(new NotificationTimerEvent(notificationTimer, card)));
                     // delete after process notification
                     mAndroidNotificationRepo.get().deleteNotification(androidNotification);
                 }
@@ -197,12 +197,14 @@ public class AppNotificationHandler implements IAppNotificationHandler {
 
     @Override
     public Flowable<Optional<NotificationTimerEvent>> getTimerNotificationEventFlow() {
-        return Flowable.fromObservable(mTimerNotificationSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mNotificationTimerSubject, BackpressureStrategy.BUFFER);
     }
 
+    // FIXME: there should be some way to create queue with RX,
+    //  rather than manually clean subject everytime item is processed
     @Override
     public void clearEvent() {
-        mTimerNotificationSubject.onNext(Optional.empty());
+        mNotificationTimerSubject.onNext(Optional.empty());
     }
 
     @Override

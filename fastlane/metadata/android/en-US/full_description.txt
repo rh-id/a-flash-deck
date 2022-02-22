@@ -1,8 +1,9 @@
-A simple and easy to use flash card to help you memorize and learn
+A simple and easy to use flash card to help you study
 <ul>
   <li>Easily add deck and cards</li>
   <li>Add notification timer to periodically asking you question</li>
   <li>Support dark mode and light mode</li>
   <li>Easily export & share your decks to your friends</li>
   <li>Record voices and attach images for the cards</li>
+  <li>Create shortcut to show random card from deck for casual study (Android 8 and above)</li>
 </ul>

@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
@@ -65,7 +66,9 @@ public class CardShowActivity extends AppCompatActivity {
                     }
                 });
         super.onCreate(savedInstanceState);
-        mActProvider.get(IAppNotificationHandler.class).processNotification(getIntent());
+        Intent intent = getIntent();
+        mActProvider.get(IAppNotificationHandler.class).processNotification(intent);
+        mActProvider.get(AppShortcutHandler.class).processShortcut(intent);
     }
 
     @Override
@@ -79,6 +82,7 @@ public class CardShowActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         mActProvider.get(IAppNotificationHandler.class).processNotification(intent);
+        mActProvider.get(AppShortcutHandler.class).processShortcut(intent);
     }
 
     @Override

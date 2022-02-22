@@ -102,4 +102,6 @@
     <string name="title_add_voice">Add Voice</string>
     <string name="play_voice">Play voice</string>
     <string name="error_failed_to_save_question_voice">Failed to save question voice</string>
+    <string name="create_shuffle_shortcut">Create shuffle shortcut</string>
+    <string name="deck_was_deleted">Deck %s was deleted</string>
 </resources>

@@ -23,6 +23,7 @@ import android.content.Context;
 import androidx.work.WorkManager;
 
 import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
+import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.provider.BaseProviderModule;
@@ -61,7 +62,7 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerLazy(NotificationTimeChangeNotifier.class, NotificationTimeChangeNotifier::new);
         providerRegistry.registerLazy(TestStateModifier.class, () -> new TestStateModifier(context, provider));
         providerRegistry.registerAsync(AppNotificationHandler.class, () -> new AppNotificationHandler(context, provider));
-
+        providerRegistry.registerAsync(AppShortcutHandler.class, () -> new AppShortcutHandler(context, provider));
         // clean up undeleted file
         providerRegistry.registerAsync(FileCleanUpTask.class, () -> new FileCleanUpTask(provider));
 

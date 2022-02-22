@@ -37,7 +37,7 @@
         android:ellipsize="end"
         android:maxLines="5"
         android:textSize="20sp"
-        app:layout_constraintEnd_toStartOf="@id/button_edit"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/container_select"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="English Language Memorization" />
@@ -46,10 +46,12 @@
         android:id="@+id/text_total_cards"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/text_margin"
         android:layout_marginBottom="@dimen/text_margin"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/button_edit"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/text_deck_name"
         app:layout_constraintTop_toBottomOf="@id/text_deck_name"
         tools:text="Cards: 20" />
@@ -72,7 +74,18 @@
         android:layout_height="48dp"
         app:icon="@drawable/ic_delete_forever_black"
         app:iconTint="@color/red"
+        app:layout_constraintBottom_toBottomOf="@id/button_more_action"
+        app:layout_constraintEnd_toStartOf="@id/button_more_action"
+        app:layout_constraintTop_toTopOf="@id/button_more_action" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_more_action"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:icon="@drawable/ic_more_vert_black"
+        app:iconTint="@color/daynight_black_white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/text_total_cards" />
 </androidx.constraintlayout.widget.ConstraintLayout>
