@@ -25,7 +25,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -109,7 +108,6 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
         }
         RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(mCardRecyclerViewAdapter);
-        recyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
         recyclerView.addOnScrollListener(mOnScrollListener);
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemSearched",

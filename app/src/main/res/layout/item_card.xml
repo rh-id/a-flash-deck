@@ -1,106 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/text_margin"
+    app:cardElevation="@dimen/cardview_default_elevation">
 
-    <ImageView
-        android:id="@+id/image_question"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:adjustViewBounds="true"
-        android:maxHeight="100dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="wrap_content">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/text_question"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/text_margin"
-        android:layout_marginTop="@dimen/text_margin"
-        android:layout_marginEnd="@dimen/text_margin"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@id/button_edit"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/image_question"
-        tools:text="Q: What is the meaning of life?" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/text_answer"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@id/button_edit"
-        app:layout_constraintStart_toStartOf="@id/text_question"
-        app:layout_constraintTop_toBottomOf="@id/text_question"
-        tools:text="A: 42" />
-
-    <FrameLayout
-        android:id="@+id/container_deck_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/text_margin"
-        android:layout_marginBottom="@dimen/text_margin"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/button_edit"
-        app:layout_constraintStart_toStartOf="@id/text_question"
-        app:layout_constraintTop_toBottomOf="@id/text_answer">
+        <ImageView
+            android:id="@+id/image_question"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:adjustViewBounds="true"
+            android:maxHeight="100dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/text_deck_name"
-            android:layout_width="wrap_content"
+            android:id="@+id/text_question"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="?attr/colorSecondary"
+            android:layout_marginStart="@dimen/text_margin"
+            android:layout_marginTop="@dimen/text_margin"
+            android:layout_marginEnd="@dimen/text_margin"
             android:ellipsize="end"
             android:maxLines="1"
-            android:paddingStart="@dimen/label_text_padding"
-            android:paddingEnd="@dimen/label_text_padding"
-            android:textColor="?attr/colorOnPrimary"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="General Deck" />
-    </FrameLayout>
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/image_question"
+            tools:text="Q: What is the meaning of life?" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_edit"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:icon="@drawable/ic_edit_black"
-        app:iconTint="@color/daynight_black_white"
-        app:layout_constraintBottom_toBottomOf="@id/button_delete"
-        app:layout_constraintEnd_toStartOf="@id/button_delete"
-        app:layout_constraintTop_toTopOf="@id/button_delete" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_answer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/text_margin"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/text_question"
+            app:layout_constraintTop_toBottomOf="@id/text_question"
+            tools:text="A: 42" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_delete"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="@dimen/text_margin"
-        app:icon="@drawable/ic_delete_forever_black"
-        app:iconTint="@color/red"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/image_question" />
+        <FrameLayout
+            android:id="@+id/container_deck_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/text_margin"
+            android:layout_marginEnd="@dimen/text_margin"
+            android:layout_marginBottom="@dimen/text_margin"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/text_question"
+            app:layout_constraintTop_toBottomOf="@id/text_answer">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_more_action"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:icon="@drawable/ic_more_vert_black"
-        app:iconTint="@color/daynight_black_white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/button_delete"
-        app:layout_constraintTop_toBottomOf="@id/button_delete" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_deck_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSecondary"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingStart="@dimen/label_text_padding"
+                android:paddingEnd="@dimen/label_text_padding"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="General Deck" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/container_deck_name">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_edit"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_edit_black"
+                app:iconTint="@color/daynight_black_white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_delete"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_delete_forever_black"
+                app:iconTint="@color/red" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_more_action"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_more_vert_black"
+                app:iconTint="@color/daynight_black_white" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
