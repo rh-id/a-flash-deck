@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_flash_deck.R;
@@ -36,7 +37,7 @@ import m.co.rh.id.anavigator.component.NavOnBackPressed;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardShowHomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity> {
+public class CardShowHomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, View.OnClickListener {
 
     @NavInject
     private transient INavigator mNavigator;
@@ -56,6 +57,9 @@ public class CardShowHomePage extends StatefulView<Activity> implements RequireC
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
+        View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_card_show_home, container, false);
+        Button exitButton = rootLayout.findViewById(R.id.button_exit);
+        exitButton.setOnClickListener(this);
         mRxDisposer.add("createView_onCardShowActionDispatch",
                 mAppShortcutHandler.getCardFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(cardOptional -> cardOptional.ifPresent(card -> {
@@ -74,7 +78,7 @@ public class CardShowHomePage extends StatefulView<Activity> implements RequireC
                                         })
                                 )
                 );
-        return activity.getLayoutInflater().inflate(R.layout.page_card_show_home, container, false);
+        return rootLayout;
     }
 
     private void showCard(Card card) {
@@ -83,6 +87,14 @@ public class CardShowHomePage extends StatefulView<Activity> implements RequireC
                         (card.clone()),
                 (navigator, navRoute, activity1, currentView) ->
                         onBackPressed(currentView, activity1, navigator));
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.button_exit) {
+            mNavigator.finishActivity();
+        }
     }
 
     @Override
