@@ -26,3 +26,4 @@ and finally RxAndroid to handle UI use cases.
 
 ## Support this project
 ![Bitcoin](https://img.shields.io/badge/Bitcoin-000000?style=for-the-badge&logo=bitcoin&logoColor=white&link=bitcoin://bc1qk9n2kljqyunqvlpyjxd4f4tt2xl0uwt2ak9xu4)
+bc1qk9n2kljqyunqvlpyjxd4f4tt2xl0uwt2ak9xu4
