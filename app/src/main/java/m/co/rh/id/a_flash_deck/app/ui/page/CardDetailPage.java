@@ -490,39 +490,45 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
         Provider provider = (Provider) INavigator.getNavConfiguration().getRequiredComponent();
         if (requestCode == BROWSE_FOR_QUESTION_IMAGE && resultCode == Activity.RESULT_OK) {
             Uri fullPhotoUri = data.getData();
-            provider.get(ExecutorService.class)
-                    .execute(() -> {
-                        try {
-                            File resultFile = provider.get(FileHelper.class)
-                                    .createImageTempFile(fullPhotoUri);
-                            setQuestionImageFileSubject(resultFile);
-                        } catch (IOException e) {
-                            provider.get(ILogger.class)
-                                    .e(TAG, e.getMessage(), e);
-                        }
-                    });
+            setQuestionImageFile(provider, fullPhotoUri);
         } else if (requestCode == BROWSE_FOR_ANSWER_IMAGE && resultCode == Activity.RESULT_OK) {
             Uri fullPhotoUri = data.getData();
-            provider.get(ExecutorService.class)
-                    .execute(() -> {
-                        try {
-                            File resultFile = provider.get(FileHelper.class)
-                                    .createImageTempFile(fullPhotoUri);
-                            setAnswerImageFileSubject(resultFile);
-                        } catch (IOException e) {
-                            provider.get(ILogger.class)
-                                    .e(TAG, e.getMessage(), e);
-                        }
-                    });
+            setAnswerImageFile(provider, fullPhotoUri);
         } else if (requestCode == CAMERA_FOR_QUESTION_IMAGE && resultCode == Activity.RESULT_OK) {
-            File file = mTempCameraFile;
-            setQuestionImageFileSubject(file);
+            setQuestionImageFile(provider, Uri.fromFile(mTempCameraFile));
             mTempCameraFile = null;
         } else if (requestCode == CAMERA_FOR_ANSWER_IMAGE && resultCode == Activity.RESULT_OK) {
-            File file = mTempCameraFile;
-            setAnswerImageFileSubject(file);
+            setAnswerImageFile(provider, Uri.fromFile(mTempCameraFile));
             mTempCameraFile = null;
         }
+    }
+
+    public void setAnswerImageFile(Provider provider, Uri fullPhotoUri) {
+        provider.get(ExecutorService.class)
+                .execute(() -> {
+                    try {
+                        File resultFile = provider.get(FileHelper.class)
+                                .createImageTempFile(fullPhotoUri);
+                        setAnswerImageFileSubject(resultFile);
+                    } catch (IOException e) {
+                        provider.get(ILogger.class)
+                                .e(TAG, e.getMessage(), e);
+                    }
+                });
+    }
+
+    public void setQuestionImageFile(Provider provider, Uri fullPhotoUri) {
+        provider.get(ExecutorService.class)
+                .execute(() -> {
+                    try {
+                        File resultFile = provider.get(FileHelper.class)
+                                .createImageTempFile(fullPhotoUri);
+                        setQuestionImageFileSubject(resultFile);
+                    } catch (IOException e) {
+                        provider.get(ILogger.class)
+                                .e(TAG, e.getMessage(), e);
+                    }
+                });
     }
 
     @Override
