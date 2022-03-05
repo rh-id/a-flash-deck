@@ -6,4 +6,5 @@
     <string name="permission_denied_record_audio">Record audio permission denied</string>
     <string name="error">Error</string>
     <string name="cancel">Cancel</string>
+    <string name="share_image">Share image</string>
 </resources>

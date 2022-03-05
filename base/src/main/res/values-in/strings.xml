@@ -6,4 +6,5 @@
     <string name="permission_denied_record_audio">Izin merekam audio di tolak</string>
     <string name="error">Error</string>
     <string name="cancel">Batal</string>
+    <string name="share_image">Bagi gambar</string>
 </resources>
