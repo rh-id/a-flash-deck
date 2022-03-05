@@ -46,7 +46,6 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateCardCmd;
-import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -65,9 +64,11 @@ import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavActivityLifecycle;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
+import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.component.RequireNavRoute;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardDetailPage extends StatefulView<Activity> implements NavOnActivityResult, NavActivityLifecycle, Toolbar.OnMenuItemClickListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+public class CardDetailPage extends StatefulView<Activity> implements RequireNavRoute, RequireComponent<Provider>, NavOnActivityResult, NavActivityLifecycle, Toolbar.OnMenuItemClickListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = CardDetailPage.class.getName();
 
     // browse and select image for question image
@@ -83,10 +84,14 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
     private transient INavigator mNavigator;
     @NavInject
     private AppBarSV mAppBarSV;
-    @NavInject
     private transient NavRoute mNavRoute;
     private Card mCard;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
+    private transient RxDisposer mRxDisposer;
+    private transient FileHelper mFileHelper;
+    private transient AudioPlayer mAudioPlayer;
+    private transient CommonNavConfig mCommonNavConfig;
     private transient NewCardCmd mNewCardCmd;
     private transient TextWatcher mQuestionTextWatcher;
     private transient TextWatcher mAnswerTextWatcher;
@@ -100,51 +105,68 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
     }
 
     @Override
-    protected void initState(Activity activity) {
-        super.initState(activity);
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mCard = new Card();
-        mCard.question = "";
-        mCard.answer = "";
-        Args args = getArgs();
-        if (args != null) {
-            if (args.isUpdate()) {
-                mCard = args.mCard;
-            } else {
-                mCard.deckId = args.mDeck.id;
-            }
-        }
+    public void provideNavRoute(NavRoute navRoute) {
+        mNavRoute = navRoute;
     }
 
     @Override
-    protected View createView(Activity activity, ViewGroup container) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mFileHelper = mSvProvider.get(FileHelper.class);
+        mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
+        mAudioPlayer = mSvProvider.get(AudioPlayer.class);
+        if (isUpdate()) {
+            mNewCardCmd = mSvProvider.get(UpdateCardCmd.class);
+        } else {
+            mNewCardCmd = mSvProvider.get(NewCardCmd.class);
         }
-        mSvProvider = BaseApplication.of(activity).getProvider().get(IStatefulViewProvider.class);
-        FileHelper fileHelper = mSvProvider.get(FileHelper.class);
-        initTextWatcher();
+        if (mCard == null) {
+            mCard = new Card();
+            mCard.question = "";
+            mCard.answer = "";
+            Args args = getArgs();
+            if (args != null) {
+                if (args.isUpdate()) {
+                    mCard = args.mCard;
+                } else {
+                    mCard.deckId = args.mDeck.id;
+                }
+            }
+        }
         if (mCard.questionImage != null && !mCard.questionImage.isEmpty()) {
-            setQuestionImageFileSubject(fileHelper.getCardQuestionImage(mCard.questionImage));
+            setQuestionImageFileSubject(mFileHelper.getCardQuestionImage(mCard.questionImage));
         } else {
             if (mQuestionImageFileSubject == null) {
                 setQuestionImageFileSubject(null);
             }
         }
         if (mCard.answerImage != null && !mCard.answerImage.isEmpty()) {
-            setAnswerImageFileSubject(fileHelper.getCardAnswerImage(mCard.answerImage));
+            setAnswerImageFileSubject(mFileHelper.getCardAnswerImage(mCard.answerImage));
         } else {
             if (mAnswerImageFileSubject == null) {
                 setAnswerImageFileSubject(null);
             }
         }
         if (mCard.questionVoice != null && !mCard.questionVoice.isEmpty()) {
-            setQuestionVoiceSubject(fileHelper.getCardQuestionVoice(mCard.questionVoice));
+            setQuestionVoiceSubject(mFileHelper.getCardQuestionVoice(mCard.questionVoice));
         } else {
             if (mQuestionVoiceSubject == null) {
                 setQuestionVoiceSubject(null);
             }
         }
+        initTextWatcher();
+    }
+
+    @Override
+    protected void initState(Activity activity) {
+        super.initState(activity);
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected View createView(Activity activity, ViewGroup container) {
         ViewGroup rootLayout = (ViewGroup)
                 activity.getLayoutInflater().inflate(
                         R.layout.page_card_detail, container, false);
@@ -183,12 +205,7 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
         }
         editTextQuestion.addTextChangedListener(mQuestionTextWatcher);
         editTextAnswer.addTextChangedListener(mAnswerTextWatcher);
-        if (isUpdate()) {
-            mNewCardCmd = mSvProvider.get(UpdateCardCmd.class);
-        } else {
-            mNewCardCmd = mSvProvider.get(NewCardCmd.class);
-        }
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_questionValid",
                         mNewCardCmd
                                 .getQuestionValid().subscribe(s -> {
@@ -198,7 +215,7 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
                                 editTextQuestion.setError(null);
                             }
                         }));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_answerValid",
                         mNewCardCmd
                                 .getAnswerValid().subscribe(s -> {
@@ -208,7 +225,7 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
                                 editTextAnswer.setError(null);
                             }
                         }));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_questionImageChanged",
                         mQuestionImageFileSubject.observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(fileOpt -> {
@@ -221,7 +238,7 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
                                         containerImageQuestion.setVisibility(View.GONE);
                                     }
                                 }));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_answerImageChanged",
                         mAnswerImageFileSubject.observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(fileOpt -> {
@@ -234,7 +251,7 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
                                         containerImageAnswer.setVisibility(View.GONE);
                                     }
                                 }));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_questionVoiceChanged",
                         mQuestionVoiceSubject.observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(fileOpt -> {
@@ -373,16 +390,15 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
                 Uri questionImageUri = questionImageFile != null ? Uri.fromFile(questionImageFile) : null;
                 Uri answerImageUri = answerImageFile != null ? Uri.fromFile(answerImageFile) : null;
                 Uri questionVoiceUri = questionVoiceFile != null ? Uri.fromFile(questionVoiceFile) : null;
-                mSvProvider.get(RxDisposer.class).add("onClick_newCardCmd_execute",
+                mRxDisposer.add("onClick_newCardCmd_execute",
                         mNewCardCmd.execute(mCard)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((card, throwable) -> {
-                                    ILogger iLogger = mSvProvider.get(ILogger.class);
                                     if (throwable != null) {
-                                        iLogger.e(TAG,
+                                        mLogger.e(TAG,
                                                 errorMessage);
                                     } else {
-                                        iLogger.i(TAG,
+                                        mLogger.i(TAG,
                                                 successMessage);
                                         CompositeDisposable compositeDisposable = new CompositeDisposable();
                                         compositeDisposable.add(
@@ -394,10 +410,10 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
                                                                 if (throwable1.getCause() instanceof ValidationException) {
                                                                     message = throwable1.getCause().getMessage();
                                                                 }
-                                                                mSvProvider.get(ILogger.class)
+                                                                mLogger
                                                                         .e(TAG, message, throwable1);
                                                             } else {
-                                                                mSvProvider.get(ILogger.class).d(TAG, "Image added/updated success for " + card1.question);
+                                                                mLogger.d(TAG, "Image added/updated success for " + card1.question);
                                                             }
                                                             compositeDisposable.dispose();
                                                         })
@@ -407,19 +423,18 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
                                 }));
             } else {
                 String validationError = mNewCardCmd.getValidationError();
-                mSvProvider.get(ILogger.class).i(TAG, validationError);
+                mLogger.i(TAG, validationError);
             }
             return true;
         } else if (id == R.id.menu_question_add_image) {
             UiUtils.browseImage(mNavigator.getActivity(), BROWSE_FOR_QUESTION_IMAGE);
         } else if (id == R.id.menu_question_add_photo) {
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
             try {
-                mTempCameraFile = fileHelper.createImageTempFile();
+                mTempCameraFile = mFileHelper.createImageTempFile();
                 UiUtils.takeImageFromCamera(mNavigator.getActivity(), CAMERA_FOR_QUESTION_IMAGE,
                         mTempCameraFile);
             } catch (Exception e) {
-                mSvProvider.get(ILogger.class).e(TAG, e.getMessage(), e);
+                mLogger.e(TAG, e.getMessage(), e);
             }
         } else if (id == R.id.menu_question_add_voice) {
             mNavigator.push(Routes.COMMON_VOICERECORD, (navigator, navRoute, activity, currentView) -> {
@@ -435,13 +450,12 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
         } else if (id == R.id.menu_answer_add_image) {
             UiUtils.browseImage(mNavigator.getActivity(), BROWSE_FOR_ANSWER_IMAGE);
         } else if (id == R.id.menu_answer_add_photo) {
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
             try {
-                mTempCameraFile = fileHelper.createImageTempFile();
+                mTempCameraFile = mFileHelper.createImageTempFile();
                 UiUtils.takeImageFromCamera(mNavigator.getActivity(), CAMERA_FOR_ANSWER_IMAGE,
                         mTempCameraFile);
             } catch (Exception e) {
-                mSvProvider.get(ILogger.class).e(TAG, e.getMessage(), e);
+                mLogger.e(TAG, e.getMessage(), e);
             }
         }
         return false;
@@ -470,16 +484,16 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
             File file = mQuestionImageFileSubject.getValue().orElse(null);
             if (file != null) {
                 mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                        mSvProvider.get(CommonNavConfig.class).args_commonImageView(file));
+                        mCommonNavConfig.args_commonImageView(file));
             }
         } else if (id == R.id.image_answer) {
             File file = mAnswerImageFileSubject.getValue().orElse(null);
             if (file != null) {
                 mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                        mSvProvider.get(CommonNavConfig.class).args_commonImageView(file));
+                        mCommonNavConfig.args_commonImageView(file));
             }
         } else if (id == R.id.button_question_voice) {
-            mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(mQuestionVoiceSubject.getValue().get()));
+            mAudioPlayer.play(Uri.fromFile(mQuestionVoiceSubject.getValue().get()));
         } else if (id == R.id.button_question_delete_voice) {
             setQuestionVoiceSubject(null);
         }
@@ -507,11 +521,11 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
         provider.get(ExecutorService.class)
                 .execute(() -> {
                     try {
-                        File resultFile = provider.get(FileHelper.class)
+                        File resultFile = mFileHelper
                                 .createImageTempFile(fullPhotoUri);
                         setAnswerImageFileSubject(resultFile);
                     } catch (IOException e) {
-                        provider.get(ILogger.class)
+                        mLogger
                                 .e(TAG, e.getMessage(), e);
                     }
                 });
@@ -521,11 +535,11 @@ public class CardDetailPage extends StatefulView<Activity> implements NavOnActiv
         provider.get(ExecutorService.class)
                 .execute(() -> {
                     try {
-                        File resultFile = provider.get(FileHelper.class)
+                        File resultFile = mFileHelper
                                 .createImageTempFile(fullPhotoUri);
                         setQuestionImageFileSubject(resultFile);
                     } catch (IOException e) {
-                        provider.get(ILogger.class)
+                        mLogger
                                 .e(TAG, e.getMessage(), e);
                     }
                 });
