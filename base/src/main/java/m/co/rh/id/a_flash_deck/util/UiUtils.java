@@ -55,7 +55,7 @@ public class UiUtils {
         Uri fileUri = androidx.core.content.
                 FileProvider.getUriForFile(
                 context,
-                "m.co.rh.id.a_flash_deck.fileprovider",
+                Constants.FILE_PROVIDER_AUTHORITY,
                 file);
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
