@@ -61,7 +61,7 @@ public class CommonImageViewPage extends StatefulView<Activity> implements View.
             mNavigator.pop();
         } else if (id == R.id.button_share) {
             Context context = view.getContext();
-            UiUtils.shareFile(context, getFile(), context.getString(R.string.share_image));
+            UiUtils.shareFile(context, getFile(), context.getString(R.string.share_image), "image/*");
         }
     }
 
