@@ -1,5 +1,8 @@
 # a-flash-deck
 
+![Languages](https://img.shields.io/github/languages/top/rh-id/a-flash-deck)
+![Downloads](https://img.shields.io/github/downloads/rh-id/a-flash-deck/total)
+![Release](https://img.shields.io/github/v/release/rh-id/a-flash-deck)
 ![Android CI](https://github.com/rh-id/a-flash-deck/actions/workflows/gradlew-build.yml/badge.svg)
 ![Release Build](https://github.com/rh-id/a-flash-deck/actions/workflows/android-release.yml/badge.svg)
 ![Emulator Test](https://github.com/rh-id/a-flash-deck/actions/workflows/android-emulator-test.yml/badge.svg)
