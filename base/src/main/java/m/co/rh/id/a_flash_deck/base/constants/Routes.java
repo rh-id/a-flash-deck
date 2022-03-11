@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.base.constants;
 public class Routes {
     public static final String HOME_PAGE = "/";
     public static final String SETTINGS_PAGE = "/settings";
+    public static final String DONATIONS_PAGE = "/donations";
     public static final String CARD_DETAIL_PAGE = "/card/detail";
     public static final String CARD_SHOW_PAGE = "/card/show";
     public static final String DECK_DETAIL_DIALOG = "/deck/detailDialog";

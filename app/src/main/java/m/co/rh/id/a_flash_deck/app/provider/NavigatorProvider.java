@@ -35,6 +35,7 @@ import m.co.rh.id.a_flash_deck.app.ui.page.CardShowPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectSVDialog;
+import m.co.rh.id.a_flash_deck.app.ui.page.DonationsPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.NotificationTimerListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SettingsPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SplashPage;
@@ -80,6 +81,7 @@ public class NavigatorProvider implements ProviderDisposable {
             return new SplashPage();
         });
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
+        navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
         navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
         navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
         navMap.put(Routes.DECK_DETAIL_DIALOG, (args, activity) -> new DeckDetailSVDialog());

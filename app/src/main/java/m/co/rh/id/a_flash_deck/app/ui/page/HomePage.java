@@ -90,6 +90,8 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
         menuCards.setOnClickListener(this);
         View menuSettings = view.findViewById(R.id.menu_settings);
         menuSettings.setOnClickListener(this);
+        View menuDonations = view.findViewById(R.id.menu_donations);
+        menuDonations.setOnClickListener(this);
         View menuNotificationTimers = view.findViewById(R.id.menu_notification_timers);
         menuNotificationTimers.setOnClickListener(this);
         mDrawerLayout = view.findViewById(R.id.drawer);
@@ -298,6 +300,8 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                     });
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
+        } else if (id == R.id.menu_donations) {
+            mNavigator.push(Routes.DONATIONS_PAGE);
         } else if (id == R.id.menu_decks) {
             mNavigator.push(Routes.DECKS);
         } else if (id == R.id.menu_cards) {

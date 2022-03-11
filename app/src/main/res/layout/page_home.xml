@@ -168,6 +168,14 @@
                 android:layout_height="wrap_content"
                 android:text="@string/settings"
                 app:icon="@drawable/ic_settings_black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_donations"
+                style="@style/Theme.Aflashdeck.BorderlessMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/buy_developer_a_coffee"
+                app:icon="@drawable/ic_coffee_black" />
         </LinearLayout>
     </androidx.drawerlayout.widget.DrawerLayout>
 
