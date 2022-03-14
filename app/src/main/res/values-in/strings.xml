@@ -84,8 +84,8 @@
     <string name="title_start_time">Waktu Mulai</string>
     <string name="title_end_time">Waktu Akhir</string>
     <string name="notification_time_updated">Waktu notifikasi diperbarui</string>
-    <string name="notification_notification_timer_name">Pengatur Waktu Notifikasi</string>
-    <string name="notification_notification_timer_description">Memberi notifikasi kartu untuk mengujimu</string>
+    <string name="notification_name_notification_timer">Pengatur Waktu Notifikasi</string>
+    <string name="notification_description_notification_timer">Memberi notifikasi kartu untuk mengujimu</string>
     <string name="notification_title_flash_question">Pertanyaan Kilat</string>
     <string name="deck_is_required">Dek diperlukan</string>
     <string name="title_notification_timers">Pengatur Waktu Notifikasi</string>
@@ -109,4 +109,7 @@
     <string name="bitcoin">Bitcoin</string>
     <string name="donation_other_apps">Aplikasi lainnya dari developer: %s</string>
     <string name="donation_thank_you">Terima kasih atas bantuannya</string>
+    <string name="flash_bot_button_accept">Ya, mari kita coba</string>
+    <string name="notification_name_general_message">Pesan notifikasi umum</string>
+    <string name="notification_description_general_message">Digunakan untuk memperlihatkan pesan umum dari aplikasi</string>
 </resources>

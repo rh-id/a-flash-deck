@@ -33,10 +33,15 @@ public interface IAppNotificationHandler {
     String KEY_INT_REQUEST_ID = "KEY_INT_REQUEST_ID";
     String CHANNEL_ID_NOTIFICATION_TIMER = "CHANNEL_ID_NOTIFICATION_TIMER";
     String GROUP_KEY_NOTIFICATION_TIMER = "GROUP_KEY_NOTIFICATION_TIMER";
+    String CHANNEL_ID_GENERAL_MESSAGE = "CHANNEL_ID_GENERAL_MESSAGE";
+    String GROUP_KEY_GENERAL_MESSAGE = "GROUP_KEY_GENERAL_MESSAGE";
     int GROUP_SUMMARY_ID_NOTIFICATION_TIMER = 0;
+    int GROUP_SUMMARY_ID_GENERAL_MESSAGE = 1;
 
 
     void postNotificationTimer(NotificationTimer notificationTimer, Card selectedCard);
+
+    void postGeneralMessage(String title, String content);
 
     void removeNotification(Intent intent);
 

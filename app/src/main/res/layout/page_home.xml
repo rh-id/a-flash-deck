@@ -11,117 +11,170 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <FrameLayout
-                android:id="@+id/container_app_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <GridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:columnCount="@integer/grid_column_count">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_add_deck"
-                    style="@style/Theme.Aflashdeck.HomeMenuButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_gravity="fill"
-                    android:gravity="center"
-                    android:text="@string/title_add_deck"
-                    app:icon="@drawable/ic_note_add_black" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_add_card"
-                    style="@style/Theme.Aflashdeck.HomeMenuButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_gravity="fill"
-                    android:gravity="center"
-                    android:text="@string/title_add_card"
-                    app:icon="@drawable/ic_post_add_black" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_start_test"
-                    style="@style/Theme.Aflashdeck.HomeMenuButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_gravity="fill"
-                    android:gravity="center"
-                    android:text="@string/title_start_test"
-                    app:icon="@drawable/ic_assignment_black" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_add_notification"
-                    style="@style/Theme.Aflashdeck.HomeMenuButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_gravity="fill"
-                    android:gravity="center"
-                    android:text="@string/title_add_notification_timer"
-                    app:icon="@drawable/ic_add_alarm_black" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_export_deck"
-                    style="@style/Theme.Aflashdeck.HomeMenuButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_gravity="fill"
-                    android:gravity="center"
-                    android:text="@string/tittle_export_deck"
-                    app:icon="@drawable/ic_unarchive_black" />
-            </GridLayout>
-        </LinearLayout>
-
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/container_card_ongoing_test"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_gravity="bottom"
-                android:layout_margin="@dimen/text_margin"
-                android:contentDescription="@string/on_going_test"
-                android:visibility="gone">
+                android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <FrameLayout
+                    android:id="@+id/container_app_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="@integer/grid_column_count">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_deck"
+                        style="@style/Theme.Aflashdeck.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="center"
+                        android:text="@string/title_add_deck"
+                        app:icon="@drawable/ic_note_add_black" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_card"
+                        style="@style/Theme.Aflashdeck.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="center"
+                        android:text="@string/title_add_card"
+                        app:icon="@drawable/ic_post_add_black" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_start_test"
+                        style="@style/Theme.Aflashdeck.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="center"
+                        android:text="@string/title_start_test"
+                        app:icon="@drawable/ic_assignment_black" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_notification"
+                        style="@style/Theme.Aflashdeck.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="center"
+                        android:text="@string/title_add_notification_timer"
+                        app:icon="@drawable/ic_add_alarm_black" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_export_deck"
+                        style="@style/Theme.Aflashdeck.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="center"
+                        android:text="@string/tittle_export_deck"
+                        app:icon="@drawable/ic_unarchive_black" />
+                </GridLayout>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/container_card_ongoing_test"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:layout_marginRight="@dimen/text_margin"
+                    android:contentDescription="@string/on_going_test"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:text="@string/on_going_test"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_total_cards"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            tool:text="12/23" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/container_card_flash_bot"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:layout_marginTop="@dimen/text_margin"
+                    android:layout_marginRight="@dimen/text_margin"
+                    android:contentDescription="@string/flash_bot"
+                    android:visibility="gone">
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="@string/on_going_test"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal"
+                        android:padding="@dimen/text_margin">
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/text_total_cards"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        tool:text="12/23" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_flash_bot_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:drawableStart="@drawable/ic_support_agent_black"
+                            android:drawablePadding="@dimen/text_margin"
+                            android:text="@string/flash_bot"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="30sp"
+                            app:drawableTint="?attr/colorPrimary"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_flash_bot_message"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/text_margin"
+                            android:text="@string/flash_bot_message"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/text_flash_bot_title" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_flash_bot_accept"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/text_margin"
+                            android:text="@string/flash_bot_button_accept"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/text_flash_bot_message" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+        </ScrollView>
 
         <LinearLayout
             android:id="@+id/nav_view"

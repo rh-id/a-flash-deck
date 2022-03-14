@@ -29,9 +29,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
@@ -47,26 +50,35 @@ import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
+import m.co.rh.id.a_flash_deck.bot.entity.SuggestedCard;
+import m.co.rh.id.a_flash_deck.bot.provider.command.DeleteSuggestedCardCmd;
+import m.co.rh.id.a_flash_deck.bot.provider.notifier.SuggestedCardChangeNotifier;
 import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
+import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class HomePage extends StatefulView<Activity> implements NavOnBackPressed<Activity>, View.OnClickListener, DrawerLayout.DrawerListener {
+public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, View.OnClickListener, DrawerLayout.DrawerListener {
     private static final String TAG = HomePage.class.getName();
 
     @NavInject
     private transient INavigator mNavigator;
     @NavInject
-    private transient Provider mProvider;
-    @NavInject
     private AppBarSV mAppBarSV;
     private boolean mIsDrawerOpen;
     private transient long mLastBackPressMilis;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
+    private transient RxDisposer mRxDisposer;
+    private transient TestStateModifier mTestStateModifier;
+    private transient TestChangeNotifier mTestChangeNotifier;
+    private transient SuggestedCardChangeNotifier mSuggestedCardChangeNotifier;
+    private transient CommonNavConfig mCommonNavConfig;
+    private transient NewCardCmd mNewCardCmd;
     private transient DrawerLayout mDrawerLayout;
     private transient BehaviorSubject<Optional<TestState>> mTestStateSubject;
 
@@ -75,47 +87,56 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
     }
 
     @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mTestStateModifier = mSvProvider.get(TestStateModifier.class);
+        mTestChangeNotifier = mSvProvider.get(TestChangeNotifier.class);
+        mSuggestedCardChangeNotifier = mSvProvider.get(SuggestedCardChangeNotifier.class);
+        mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
+        mNewCardCmd = mSvProvider.get(NewCardCmd.class);
+        mTestStateSubject = BehaviorSubject.create();
+    }
+
+    @Override
     protected View createView(Activity activity, ViewGroup container) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
-        if (mTestStateSubject == null) {
-            mTestStateSubject = BehaviorSubject.create();
-        }
-        View view = activity.getLayoutInflater().inflate(R.layout.page_home, container, false);
-        View menuDecks = view.findViewById(R.id.menu_decks);
+        View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_home, container, false);
+        View menuDecks = rootLayout.findViewById(R.id.menu_decks);
         menuDecks.setOnClickListener(this);
-        View menuCards = view.findViewById(R.id.menu_cards);
+        View menuCards = rootLayout.findViewById(R.id.menu_cards);
         menuCards.setOnClickListener(this);
-        View menuSettings = view.findViewById(R.id.menu_settings);
+        View menuSettings = rootLayout.findViewById(R.id.menu_settings);
         menuSettings.setOnClickListener(this);
-        View menuDonations = view.findViewById(R.id.menu_donations);
+        View menuDonations = rootLayout.findViewById(R.id.menu_donations);
         menuDonations.setOnClickListener(this);
-        View menuNotificationTimers = view.findViewById(R.id.menu_notification_timers);
+        View menuNotificationTimers = rootLayout.findViewById(R.id.menu_notification_timers);
         menuNotificationTimers.setOnClickListener(this);
-        mDrawerLayout = view.findViewById(R.id.drawer);
+        mDrawerLayout = rootLayout.findViewById(R.id.drawer);
         mDrawerLayout.addDrawerListener(this);
         mAppBarSV.setTitle(activity.getString(R.string.home));
         mAppBarSV.setNavigationOnClick(this);
         if (mIsDrawerOpen) {
             mDrawerLayout.open();
         }
-        ViewGroup containerAppBar = view.findViewById(R.id.container_app_bar);
+        ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, container));
-        Button addDeckButton = view.findViewById(R.id.button_add_deck);
-        Button addCardButton = view.findViewById(R.id.button_add_card);
-        Button startTestButton = view.findViewById(R.id.button_start_test);
-        Button addNotificationButton = view.findViewById(R.id.button_add_notification);
-        Button exportDeckButton = view.findViewById(R.id.button_export_deck);
+        Button addDeckButton = rootLayout.findViewById(R.id.button_add_deck);
+        Button addCardButton = rootLayout.findViewById(R.id.button_add_card);
+        Button startTestButton = rootLayout.findViewById(R.id.button_start_test);
+        Button addNotificationButton = rootLayout.findViewById(R.id.button_add_notification);
+        Button exportDeckButton = rootLayout.findViewById(R.id.button_export_deck);
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
         addNotificationButton.setOnClickListener(this);
         exportDeckButton.setOnClickListener(this);
-        ViewGroup cardOnGoingTest = view.findViewById(R.id.container_card_ongoing_test);
+        ViewGroup cardOnGoingTest = rootLayout.findViewById(R.id.container_card_ongoing_test);
         cardOnGoingTest.setOnClickListener(this);
-        mSvProvider.get(RxDisposer.class)
+        View flashBotContainer = rootLayout.findViewById(R.id.container_card_flash_bot);
+        Button flashBotAcceptButton = rootLayout.findViewById(R.id.button_flash_bot_accept);
+        flashBotAcceptButton.setOnClickListener(this);
+        mRxDisposer
                 .add("createView_onGoingTest",
                         mTestStateSubject.observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(testStateOptional -> {
@@ -129,38 +150,49 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                                         cardOnGoingTest.setVisibility(View.GONE);
                                     }
                                 }));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_loadActiveTest",
-                        mSvProvider.get(TestStateModifier.class).getActiveTest()
+                        mTestStateModifier.getActiveTest()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((testStateOptional, throwable) -> {
                                     Context svContext = mSvProvider.getContext();
                                     if (throwable != null) {
-                                        mSvProvider.get(ILogger.class).e(TAG, svContext.getString(R.string.error_loading_test), throwable);
+                                        mLogger.e(TAG, svContext.getString(R.string.error_loading_test), throwable);
                                     } else {
                                         mTestStateSubject.onNext(testStateOptional);
                                     }
                                 }));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onStartTest",
-                        mSvProvider.get(TestChangeNotifier.class).getStartTestEventFlow()
+                        mTestChangeNotifier.getStartTestEventFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(testEvent ->
                                         mTestStateSubject.onNext(Optional.of(testEvent.getTestState())))
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onStopTest",
-                        mSvProvider.get(TestChangeNotifier.class).getStopTestEventFlow()
+                        mTestChangeNotifier.getStopTestEventFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(testEvent -> mTestStateSubject.onNext(Optional.empty()))
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onTestStateChanged",
-                        mSvProvider.get(TestChangeNotifier.class).getTestStateChangeFlow()
+                        mTestChangeNotifier.getTestStateChangeFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(testState -> mTestStateSubject.onNext(Optional.of(testState)))
                 );
-        return view;
+        mRxDisposer
+                .add("createView_onSuggestedCardChanged",
+                        mSuggestedCardChangeNotifier
+                                .getSuggestedCardFlow().observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(suggestedCards -> {
+                                    if (!suggestedCards.isEmpty()) {
+                                        flashBotContainer.setVisibility(View.VISIBLE);
+                                    } else {
+                                        flashBotContainer.setVisibility(View.GONE);
+                                    }
+                                }));
+        return rootLayout;
     }
 
     @Override
@@ -170,13 +202,13 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
             mNavigator.push(Routes.DECK_DETAIL_DIALOG);
         } else if (id == R.id.button_add_card) {
             // Check if deck empty then new card
-            mSvProvider.get(RxDisposer.class)
+            mRxDisposer
                     .add("onClick_addNewCard",
-                            mSvProvider.get(NewCardCmd.class)
+                            mNewCardCmd
                                     .countDeck().observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((integer, throwable) -> {
                                         if (throwable != null) {
-                                            mSvProvider.get(ILogger.class).e(TAG,
+                                            mLogger.e(TAG,
                                                     mSvProvider.getContext().getString(R.string.error_count_deck), throwable);
                                         } else {
                                             if (integer == 0) {
@@ -219,24 +251,23 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                                     })
                     );
         } else if (id == R.id.button_start_test) {
-            mSvProvider.get(RxDisposer.class)
+            mRxDisposer
                     .add("onClick_startTest",
-                            mSvProvider.get(TestStateModifier.class).getActiveTest()
+                            mTestStateModifier.getActiveTest()
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((testStateOpt, throwable) -> {
-                                        CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
                                         if (throwable != null) {
                                             String title = mSvProvider.getContext().getString(R.string.title_error);
                                             mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    commonNavConfig.args_commonMessageDialog(title, throwable.getMessage()));
-                                            mSvProvider.get(ILogger.class).e(TAG, throwable.getMessage(), throwable);
+                                                    mCommonNavConfig.args_commonMessageDialog(title, throwable.getMessage()));
+                                            mLogger.e(TAG, throwable.getMessage(), throwable);
                                         } else {
                                             if (testStateOpt.isPresent()) {
                                                 Context svContext = mSvProvider.getContext();
                                                 String title = svContext.getString(R.string.title_confirm);
                                                 String content = svContext.getString(R.string.test_session_exist_confirm_start_new);
                                                 mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                                                        commonNavConfig.args_commonBooleanDialog(title, content),
+                                                        mCommonNavConfig.args_commonBooleanDialog(title, content),
                                                         (navigator, navRoute, activity, currentView) -> {
                                                             Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                                                             CommonNavConfig commonNavConfig1 = provider.get(CommonNavConfig.class);
@@ -298,6 +329,92 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                             );
                         }
                     });
+        } else if (id == R.id.button_flash_bot_accept) {
+            mRxDisposer
+                    .add("onClick_flashBot_startTest",
+                            mTestStateModifier.getActiveTest()
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe((testStateOpt, throwable) -> {
+                                        if (throwable != null) {
+                                            String title = mSvProvider.getContext().getString(R.string.title_error);
+                                            mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                    mCommonNavConfig.args_commonMessageDialog(title, throwable.getMessage()));
+                                            mLogger.e(TAG, throwable.getMessage(), throwable);
+                                        } else {
+                                            if (testStateOpt.isPresent()) {
+                                                Context svContext = mSvProvider.getContext();
+                                                String title = svContext.getString(R.string.title_confirm);
+                                                String content = svContext.getString(R.string.test_session_exist_confirm_start_new);
+                                                mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
+                                                        mCommonNavConfig.args_commonBooleanDialog(title, content),
+                                                        (navigator, navRoute, activity, currentView) -> {
+                                                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                                                            CommonNavConfig commonNavConfig1 = provider.get(CommonNavConfig.class);
+                                                            if (commonNavConfig1.result_commonBooleanDialog(navRoute)) {
+                                                                Context context = provider.getContext();
+                                                                CompositeDisposable compositeDisposable = new CompositeDisposable();
+                                                                ExecutorService executorService = provider.get(ExecutorService.class);
+                                                                compositeDisposable.add(
+                                                                        Single.fromFuture(
+                                                                                executorService.submit(() -> {
+                                                                                    provider.get(TestStateModifier.class).stopActiveTest().blockingGet();
+                                                                                    List<SuggestedCard> suggestedCardList = provider.get(SuggestedCardChangeNotifier.class)
+                                                                                            .getSuggestedCard();
+                                                                                    List<Long> cardIds = new ArrayList<>();
+                                                                                    if (!suggestedCardList.isEmpty()) {
+                                                                                        for (SuggestedCard suggestedCard : suggestedCardList) {
+                                                                                            cardIds.add(suggestedCard.cardId);
+                                                                                        }
+                                                                                    }
+                                                                                    return provider.get(TestStateModifier.class).startTestWithCardIds(cardIds).blockingGet();
+                                                                                })
+                                                                        ).observeOn(AndroidSchedulers.mainThread()).subscribe((testState, throwable1) -> {
+                                                                            if (throwable1 != null) {
+                                                                                Throwable cause1 = throwable1.getCause();
+                                                                                if (cause1 == null)
+                                                                                    cause1 = throwable1;
+                                                                                provider.get(ILogger.class).e(TAG,
+                                                                                        context.getString(R.string.error_starting_test), cause1);
+                                                                            } else {
+                                                                                navigator.push(Routes.TEST);
+                                                                                provider.get(DeleteSuggestedCardCmd.class)
+                                                                                        .executeDeleteAll();
+                                                                            }
+                                                                            compositeDisposable.dispose();
+                                                                        })
+                                                                );
+                                                            }
+                                                        });
+                                            } else {
+                                                List<SuggestedCard> suggestedCardList = mSuggestedCardChangeNotifier
+                                                        .getSuggestedCard();
+                                                List<Long> cardIds = new ArrayList<>();
+                                                if (!suggestedCardList.isEmpty()) {
+                                                    for (SuggestedCard suggestedCard : suggestedCardList) {
+                                                        cardIds.add(suggestedCard.cardId);
+                                                    }
+                                                }
+                                                mRxDisposer
+                                                        .add("onClick_flashBot_startTest_withCardIds",
+                                                                mTestStateModifier.startTestWithCardIds(cardIds)
+                                                                        .observeOn(AndroidSchedulers.mainThread())
+                                                                        .subscribe((testState, throwable1) -> {
+                                                                            if (throwable1 != null) {
+                                                                                Throwable cause1 = throwable1.getCause();
+                                                                                if (cause1 == null)
+                                                                                    cause1 = throwable1;
+                                                                                mLogger.e(TAG,
+                                                                                        mSvProvider.getContext()
+                                                                                                .getString(R.string.error_starting_test), cause1);
+                                                                            } else {
+                                                                                mNavigator.push(Routes.TEST);
+                                                                            }
+                                                                        })
+                                                        );
+                                            }
+                                        }
+                                    })
+                    );
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
         } else if (id == R.id.menu_donations) {
@@ -362,7 +479,6 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
             mSvProvider.dispose();
             mSvProvider = null;
         }
-        mProvider = null;
         mDrawerLayout = null;
     }
 
@@ -376,8 +492,7 @@ public class HomePage extends StatefulView<Activity> implements NavOnBackPressed
                 navigator.finishActivity(null);
             } else {
                 mLastBackPressMilis = currentMilis;
-                mSvProvider
-                        .get(ILogger.class)
+                mLogger
                         .i(TAG, activity.getString(R.string.toast_back_press_exit));
             }
         }

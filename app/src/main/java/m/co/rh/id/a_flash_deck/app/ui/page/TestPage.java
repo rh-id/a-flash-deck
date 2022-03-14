@@ -45,6 +45,7 @@ import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.bot.provider.component.BotAnalytics;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -64,8 +65,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
     private transient RxDisposer mRxDisposer;
     private transient TestStateModifier mTestStateModifier;
     private transient AudioPlayer mAudioPlayer;
+    private transient BotAnalytics mBotAnalytics;
     private transient BehaviorSubject<TestState> mTestStateSubject;
-    private transient BehaviorSubject<TestState> mShowTestAnswerSubject;
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -83,8 +84,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mTestStateModifier = mSvProvider.get(TestStateModifier.class);
         mAudioPlayer = mSvProvider.get(AudioPlayer.class);
+        mBotAnalytics = mSvProvider.get(BotAnalytics.class);
         mTestStateSubject = BehaviorSubject.create();
-        mShowTestAnswerSubject = BehaviorSubject.create();
     }
 
     @Override
@@ -104,7 +105,6 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         answerImageView.setOnClickListener(this);
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
-        textAnswer.setOnClickListener(this);
         Button buttonQuestionVoice = rootLayout.findViewById(R.id.button_question_voice);
         buttonQuestionVoice.setOnClickListener(this);
         TextView textProgress = rootLayout.findViewById(R.id.text_progress);
@@ -121,6 +121,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     answerImageView.setImageURI(null);
                                     answerImageView.setVisibility(View.GONE);
                                     textAnswer.setText(context.getString(R.string.tap_to_view_answer));
+                                    textAnswer.setOnClickListener(this);
                                     if (card.questionImage != null) {
                                         questionImageView.setImageURI(Uri.fromFile(
                                                 fileHelper.getCardQuestionImage(card.questionImage)
@@ -167,13 +168,6 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     }
                                 })
                 );
-        mRxDisposer
-                .add("createView_onShowAnswer",
-                        mShowTestAnswerSubject.subscribe(
-                                testState -> {
-
-                                }
-                        ));
         return rootLayout;
     }
 
@@ -187,10 +181,6 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         if (mTestStateSubject != null) {
             mTestStateSubject.onComplete();
             mTestStateSubject = null;
-        }
-        if (mShowTestAnswerSubject != null) {
-            mShowTestAnswerSubject.onComplete();
-            mShowTestAnswerSubject = null;
         }
     }
 
@@ -218,6 +208,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             }
             textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
             textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
+            textAnswer.setOnClickListener(null);
+            mBotAnalytics.trackOpenTestAnswer(card.id);
         } else if (id == R.id.button_previous) {
             mRxDisposer
                     .add("onCLick_buttonPrevious",

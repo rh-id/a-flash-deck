@@ -125,6 +125,12 @@ public abstract class DeckDao {
     @Query("SELECT * FROM card WHERE question_voice=:questionVoice")
     public abstract Card findCardByQuestionVoice(String questionVoice);
 
+    @Query("SELECT id FROM card WHERE id IN (:cardIds)")
+    public abstract List<Long> findCardIdsByCardIds(List<Long> cardIds);
+
+    @Query("SELECT * FROM card WHERE id IN (:cardIds)")
+    public abstract List<Card> findCardsByCardIds(List<Long> cardIds);
+
     @Transaction
     public void importDecks(List<DeckModel> deckModels) {
         if (deckModels == null || deckModels.isEmpty()) return;

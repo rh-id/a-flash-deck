@@ -31,6 +31,7 @@ import m.co.rh.id.a_flash_deck.app.provider.command.PagedCardItemsCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.PagedDeckItemsCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateDeckCmd;
+import m.co.rh.id.a_flash_deck.bot.provider.BotCommandProviderModule;
 import m.co.rh.id.a_flash_deck.timer.provider.NotificationTimerCmdProviderModule;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
@@ -53,6 +54,7 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(CopyCardCmd.class, () -> new CopyCardCmd(provider));
         providerRegistry.registerLazy(ExportImportCmd.class, () -> new ExportImportCmd(context, provider));
         providerRegistry.registerModule(new NotificationTimerCmdProviderModule());
+        providerRegistry.registerModule(new BotCommandProviderModule());
     }
 
     @Override

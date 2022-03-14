@@ -20,20 +20,13 @@ package m.co.rh.id.a_flash_deck.app.provider;
 import android.app.Application;
 import android.content.Context;
 
-import androidx.work.WorkManager;
-
 import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
-import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.provider.BaseProviderModule;
-import m.co.rh.id.a_flash_deck.base.provider.DatabaseProviderModule;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
-import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
-import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimeChangeNotifier;
-import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimerChangeNotifier;
-import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
+import m.co.rh.id.a_flash_deck.bot.provider.BotProviderModule;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -49,25 +42,15 @@ public class AppProviderModule implements ProviderModule {
     @Override
     public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerModule(new BaseProviderModule());
-        providerRegistry.registerModule(new DatabaseProviderModule());
         providerRegistry.registerModule(new CommandProviderModule());
         providerRegistry.registerModule(new RxProviderModule());
-
-        providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider, context));
-        providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(context));
+        providerRegistry.registerModule(new BotProviderModule());
 
         providerRegistry.registerPool(IStatefulViewProvider.class, () -> new StatefulViewProvider(provider));
-        providerRegistry.registerLazy(DeckChangeNotifier.class, DeckChangeNotifier::new);
-        providerRegistry.registerLazy(TestChangeNotifier.class, TestChangeNotifier::new);
-        providerRegistry.registerLazy(NotificationTimeChangeNotifier.class, NotificationTimeChangeNotifier::new);
         providerRegistry.registerLazy(TestStateModifier.class, () -> new TestStateModifier(context, provider));
         providerRegistry.registerAsync(AppNotificationHandler.class, () -> new AppNotificationHandler(context, provider));
         providerRegistry.registerAsync(AppShortcutHandler.class, () -> new AppShortcutHandler(context, provider));
-        // clean up undeleted file
-        providerRegistry.registerAsync(FileCleanUpTask.class, () -> new FileCleanUpTask(provider));
 
-        // Timer notification
-        providerRegistry.registerLazy(NotificationTimerChangeNotifier.class, NotificationTimerChangeNotifier::new);
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
         providerRegistry.register(NavigatorProvider.class, new NavigatorProvider(mApplication, provider));
     }

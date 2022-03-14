@@ -84,8 +84,8 @@
     <string name="title_start_time">Start Time</string>
     <string name="title_end_time">End Time</string>
     <string name="notification_time_updated">Notification time updated</string>
-    <string name="notification_notification_timer_name">Notification Timer</string>
-    <string name="notification_notification_timer_description">Notify selected cards to test you</string>
+    <string name="notification_name_notification_timer">Notification Timer</string>
+    <string name="notification_description_notification_timer">Notify selected cards to test you</string>
     <string name="notification_title_flash_question">Flash Question</string>
     <string name="deck_is_required">Deck is required</string>
     <string name="title_notification_timers">Notification Timers</string>
@@ -109,4 +109,7 @@
     <string name="bitcoin">Bitcoin</string>
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
+    <string name="flash_bot_button_accept">Yes, let\'s try it</string>
+    <string name="notification_name_general_message">General notification message</string>
+    <string name="notification_description_general_message">Used to show general message from app</string>
 </resources>

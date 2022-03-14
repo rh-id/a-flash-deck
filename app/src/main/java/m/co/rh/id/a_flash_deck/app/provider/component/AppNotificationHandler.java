@@ -42,6 +42,7 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.CardShowActivity;
+import m.co.rh.id.a_flash_deck.app.MainActivity;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationPlayVoiceReceiver;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
@@ -54,6 +55,7 @@ import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
+import m.co.rh.id.a_flash_deck.bot.provider.component.BotAnalytics;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
@@ -65,6 +67,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<DeckDao> mDeckDao;
     private final ProviderValue<FileHelper> mFileHelper;
     private final ProviderValue<AudioPlayer> mAudioPlayer;
+    private final ProviderValue<BotAnalytics> mBotAnalytics;
     private BehaviorSubject<Optional<NotificationTimerEvent>> mNotificationTimerSubject;
     private ReentrantLock mLock;
 
@@ -76,6 +79,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mDeckDao = provider.lazyGet(DeckDao.class);
         mFileHelper = provider.lazyGet(FileHelper.class);
         mAudioPlayer = provider.lazyGet(AudioPlayer.class);
+        mBotAnalytics = provider.lazyGet(BotAnalytics.class);
         mNotificationTimerSubject = BehaviorSubject.createDefault(Optional.empty());
         mLock = new ReentrantLock();
     }
@@ -150,10 +154,61 @@ public class AppNotificationHandler implements IAppNotificationHandler {
 
     private void createNotificationTimerNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = mAppContext.getString(R.string.notification_notification_timer_name);
-            String description = mAppContext.getString(R.string.notification_notification_timer_description);
+            CharSequence name = mAppContext.getString(R.string.notification_name_notification_timer);
+            String description = mAppContext.getString(R.string.notification_description_notification_timer);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID_NOTIFICATION_TIMER,
+                    name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = mAppContext.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    @Override
+    public void postGeneralMessage(String title, String content) {
+        mLock.lock();
+        createGeneralMessageNotificationChannel();
+        AndroidNotification androidNotification = new AndroidNotification();
+        androidNotification.groupKey = GROUP_KEY_GENERAL_MESSAGE;
+        mAndroidNotificationRepo.get().insertNotification(androidNotification);
+        Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
+        receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        int intentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            intentFlag = PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
+                intentFlag);
+        Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
+        deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
+                intentFlag);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_GENERAL_MESSAGE)
+                .setSmallIcon(R.drawable.ic_notification_launcher)
+                .setColorized(true)
+                .setColor(mAppContext.getResources().getColor(R.color.teal_custom))
+                .setContentTitle(title)
+                .setContentText(content)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setDeleteIntent(deletePendingIntent)
+                .setGroup(GROUP_KEY_GENERAL_MESSAGE)
+                .setAutoCancel(true);
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+        notificationManagerCompat.notify(GROUP_KEY_GENERAL_MESSAGE,
+                androidNotification.requestId,
+                builder.build());
+        mLock.unlock();
+    }
+
+    private void createGeneralMessageNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = mAppContext.getString(R.string.notification_name_general_message);
+            String description = mAppContext.getString(R.string.notification_description_general_message);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID_GENERAL_MESSAGE,
                     name, importance);
             channel.setDescription(description);
 
@@ -169,6 +224,14 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             mExecutorService.get().execute(() ->
             {
                 mLock.lock();
+                AndroidNotification androidNotification =
+                        mAndroidNotificationRepo.get().findByRequestId((int) serializable);
+                if (androidNotification != null) {
+                    if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
+                        NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
+                        mBotAnalytics.get().trackDeleteNotification(notificationTimer.currentCardId);
+                    }
+                }
                 mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
                 mLock.unlock();
             });
@@ -183,10 +246,13 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 mLock.lock();
                 AndroidNotification androidNotification =
                         mAndroidNotificationRepo.get().findByRequestId((int) serializable);
-                if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
-                    NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
-                    Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                    mNotificationTimerSubject.onNext(Optional.of(new NotificationTimerEvent(notificationTimer, card)));
+                if (androidNotification != null) {
+                    if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
+                        NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
+                        mBotAnalytics.get().trackOpenNotification(notificationTimer.currentCardId);
+                        Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                        mNotificationTimerSubject.onNext(Optional.of(new NotificationTimerEvent(notificationTimer, card)));
+                    }
                     // delete after process notification
                     mAndroidNotificationRepo.get().deleteNotification(androidNotification);
                 }

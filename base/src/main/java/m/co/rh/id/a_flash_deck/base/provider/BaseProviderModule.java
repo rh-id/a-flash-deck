@@ -21,6 +21,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.work.WorkManager;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +33,14 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.AudioRecorder;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimeChangeNotifier;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimerChangeNotifier;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.CompositeLogger;
 import m.co.rh.id.alogger.FileLogger;
@@ -51,6 +58,7 @@ public class BaseProviderModule implements ProviderModule {
 
     @Override
     public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+        providerRegistry.registerModule(new DatabaseProviderModule());
         // thread pool to be used throughout this app lifecycle
         providerRegistry.registerAsync(ExecutorService.class, () -> {
             ThreadPoolExecutor threadPoolExecutor =
@@ -84,10 +92,19 @@ public class BaseProviderModule implements ProviderModule {
 
             return new CompositeLogger(loggerList);
         });
+        providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(context));
+
         providerRegistry.register(FileHelper.class, new FileHelper(provider, context));
         providerRegistry.register(CommonNavConfig.class, new CommonNavConfig());
+        providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider, context));
         providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(context, provider));
         providerRegistry.registerLazy(AudioPlayer.class, () -> new AudioPlayer(context, provider));
+        providerRegistry.registerLazy(DeckChangeNotifier.class, DeckChangeNotifier::new);
+        providerRegistry.registerLazy(TestChangeNotifier.class, TestChangeNotifier::new);
+        providerRegistry.registerLazy(NotificationTimerChangeNotifier.class, NotificationTimerChangeNotifier::new);
+        providerRegistry.registerLazy(NotificationTimeChangeNotifier.class, NotificationTimeChangeNotifier::new);
+        // clean up undeleted file
+        providerRegistry.registerAsync(FileCleanUpTask.class, () -> new FileCleanUpTask(provider));
     }
 
     @Override

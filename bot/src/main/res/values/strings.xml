@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flash_bot">Flash bot</string>
+    <string name="flash_bot_message">Greetings, I have prepared a test to help you study, would you like to try it?</string>
+</resources>

@@ -10,3 +10,4 @@ rootProject.name = "a-flash-deck"
 include ':app'
 include ':base'
 include ':timer-notification'
+include ':bot'

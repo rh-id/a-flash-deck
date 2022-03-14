@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.app.provider.modifier;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.File;
@@ -138,31 +139,47 @@ public class TestStateModifier {
         return Single.fromFuture(
                 mExecutorService.get().submit(() -> {
                     if (deckList != null && !deckList.isEmpty()) {
-                        List<Card> cardList = mDeckDao.get().getCardsByDecks(deckList);
-                        if (cardList.isEmpty()) {
-                            throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
-                        } else {
-                            Collections.shuffle(cardList);
-                            String uuid = UUID.randomUUID().toString();
-                            File stateFileParent = new File(mAppContext.getFilesDir(),
-                                    "test/state");
-                            stateFileParent.mkdirs();
-                            File stateFile = new File(stateFileParent, uuid);
-                            stateFile.createNewFile();
-                            Test test = new Test();
-                            test.stateFileLocation = stateFile.getAbsolutePath();
-                            mTestDao.get().insertTest(test);
-                            TestState testState = new TestState(deckList, cardList, test.id);
-                            serializeTest(testState, test);
-                            TestEvent event = new TestEvent(testState, test);
-                            mTestChangeNotifier.get().startTest(event);
-                            return testState;
-                        }
+                        return prepareTest(mDeckDao.get().getCardsByDecks(deckList));
                     } else {
                         throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                     }
                 })
         );
+    }
+
+    public Single<TestState> startTestWithCardIds(List<Long> cardIds) {
+        return Single.fromFuture(
+                mExecutorService.get().submit(() -> {
+                    if (cardIds != null && !cardIds.isEmpty()) {
+                        return prepareTest(mDeckDao.get().findCardsByCardIds(cardIds));
+                    } else {
+                        throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
+                    }
+                })
+        );
+    }
+
+    @NonNull
+    public TestState prepareTest(List<Card> cardList) throws IOException {
+        if (cardList.isEmpty()) {
+            throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
+        } else {
+            Collections.shuffle(cardList);
+            String uuid = UUID.randomUUID().toString();
+            File stateFileParent = new File(mAppContext.getFilesDir(),
+                    "test/state");
+            stateFileParent.mkdirs();
+            File stateFile = new File(stateFileParent, uuid);
+            stateFile.createNewFile();
+            Test test = new Test();
+            test.stateFileLocation = stateFile.getAbsolutePath();
+            mTestDao.get().insertTest(test);
+            TestState testState = new TestState(cardList, test.id);
+            serializeTest(testState, test);
+            TestEvent event = new TestEvent(testState, test);
+            mTestChangeNotifier.get().startTest(event);
+            return testState;
+        }
     }
 
     private void serializeTest(TestState testState, Test test) throws IOException {

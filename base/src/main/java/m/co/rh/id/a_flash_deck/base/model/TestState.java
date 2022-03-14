@@ -22,14 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.Card;
-import m.co.rh.id.a_flash_deck.base.entity.Deck;
 
 /**
  * Model of the test state
  */
 public class TestState implements Serializable {
-    // list of choosen decks
-    private ArrayList<Deck> mChoosenDecks;
     // list of choosen cards
     private ArrayList<Card> mChoosenCards;
     // current test index position
@@ -37,9 +34,7 @@ public class TestState implements Serializable {
     // test id from Test entity
     private long mTestId;
 
-    public TestState(List<Deck> choosenDecks, List<Card> choosenCards, long testId) {
-        mChoosenDecks = new ArrayList<>();
-        mChoosenDecks.addAll(choosenDecks);
+    public TestState(List<Card> choosenCards, long testId) {
         mChoosenCards = new ArrayList<>();
         mChoosenCards.addAll(choosenCards);
         mTestId = testId;
