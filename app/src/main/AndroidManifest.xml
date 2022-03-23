@@ -4,6 +4,9 @@
     package="m.co.rh.id.a_flash_deck">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove" />
 
     <application
         android:name=".app.MainApplication"
@@ -17,7 +20,6 @@
             android:name=".app.MainActivity"
             android:configChanges="uiMode|locale|layoutDirection|orientation|screenSize|screenLayout|density|colorMode|fontScale|fontWeightAdjustment|keyboard|keyboardHidden|smallestScreenSize"
             android:exported="true"
-            android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Aflashdeck.NoActionBar">
             <intent-filter>
@@ -40,7 +42,6 @@
             android:name=".app.CardShowActivity"
             android:configChanges="uiMode|locale|layoutDirection|orientation|screenSize|screenLayout|density|colorMode|fontScale|fontWeightAdjustment|keyboard|keyboardHidden|smallestScreenSize"
             android:exported="true"
-            android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Aflashdeck.NoActionBar">
             <intent-filter>
@@ -58,6 +59,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
         <receiver android:name=".app.receiver.NotificationDeleteReceiver" />
         <receiver android:name=".app.receiver.NotificationPlayVoiceReceiver" />
         <!--WorkManager will be initialized by provider instead of its own initializer-->
