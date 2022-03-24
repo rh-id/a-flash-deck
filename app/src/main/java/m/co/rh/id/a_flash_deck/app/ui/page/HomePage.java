@@ -79,6 +79,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient SuggestedCardChangeNotifier mSuggestedCardChangeNotifier;
     private transient CommonNavConfig mCommonNavConfig;
     private transient NewCardCmd mNewCardCmd;
+    private transient DeleteSuggestedCardCmd mDeleteSuggestedCardCmd;
     private transient DrawerLayout mDrawerLayout;
     private transient BehaviorSubject<Optional<TestState>> mTestStateSubject;
 
@@ -96,6 +97,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mSuggestedCardChangeNotifier = mSvProvider.get(SuggestedCardChangeNotifier.class);
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mNewCardCmd = mSvProvider.get(NewCardCmd.class);
+        mDeleteSuggestedCardCmd = mSvProvider.get(DeleteSuggestedCardCmd.class);
         mTestStateSubject = BehaviorSubject.create();
     }
 
@@ -408,6 +410,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                                                                                 .getString(R.string.error_starting_test), cause1);
                                                                             } else {
                                                                                 mNavigator.push(Routes.TEST);
+                                                                                mDeleteSuggestedCardCmd
+                                                                                        .executeDeleteAll();
                                                                             }
                                                                         })
                                                         );
