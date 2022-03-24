@@ -112,6 +112,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 .setColor(mAppContext.getResources().getColor(R.color.teal_custom))
                 .setContentTitle(title)
                 .setContentText(content)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(content))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setDeleteIntent(deletePendingIntent)
@@ -124,7 +126,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             Bitmap questionImageThumbnail = BitmapFactory.decodeFile(questionImageThumbnailFile.getAbsolutePath());
             builder.setLargeIcon(questionImageThumbnail);
             builder.setStyle(new NotificationCompat.BigPictureStyle()
-                    .setSummaryText(selectedCard.question)
+                    .setSummaryText(content)
                     .bigPicture(questionImage));
         }
         if (selectedCard.questionVoice != null) {
@@ -191,6 +193,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                 .setColor(mAppContext.getResources().getColor(R.color.teal_custom))
                 .setContentTitle(title)
                 .setContentText(content)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(content))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setDeleteIntent(deletePendingIntent)
