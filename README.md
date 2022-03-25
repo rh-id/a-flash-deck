@@ -7,7 +7,16 @@
 ![Release Build](https://github.com/rh-id/a-flash-deck/actions/workflows/android-release.yml/badge.svg)
 ![Emulator Test](https://github.com/rh-id/a-flash-deck/actions/workflows/android-emulator-test.yml/badge.svg)
 
-A simple Flash Card application to assist in learning and remembering something.
+A simple and easy to use flash card to help you study
+<ul>
+  <li>Easily add deck and cards</li>
+  <li>Add notification timer to periodically asking you question</li>
+  <li>Support dark mode and light mode</li>
+  <li>Easily export & share your decks to your friends</li>
+  <li>Record voices and attach images for the cards</li>
+  <li>Create shortcut to show random card from deck for casual study (Android 8 and above)</li>
+  <li>Flash bot to smartly suggest list of card to test you</li>
+</ul>
 
 This project is intended for demo app for [a-navigator](https://github.com/rh-id/a-navigator) and [a-provider](https://github.com/rh-id/a-provider) library usage.
 The app still works as production even though it is demo app.

@@ -6,4 +6,5 @@ A simple and easy to use flash card to help you study
   <li>Easily export & share your decks to your friends</li>
   <li>Record voices and attach images for the cards</li>
   <li>Create shortcut to show random card from deck for casual study (Android 8 and above)</li>
+  <li>Flash bot to smartly suggest list of card to test you</li>
 </ul>
