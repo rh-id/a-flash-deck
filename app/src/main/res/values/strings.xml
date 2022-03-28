@@ -38,7 +38,6 @@
     <string name="confirm_delete_deck">Are you sure you want to delete %s ?</string>
     <string name="error_deleting_deck">Error deleting deck</string>
     <string name="success_deleting_deck">Success deleting deck %s</string>
-    <string name="search_desc">Search: </string>
     <string name="hint_type_to_search">Type here to search</string>
     <string name="title_select_deck">Select Deck</string>
     <string name="total_cards">Cards: %d</string>

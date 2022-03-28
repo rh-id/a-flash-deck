@@ -38,7 +38,6 @@
     <string name="confirm_delete_deck">Yakin mau menghapus %s ?</string>
     <string name="error_deleting_deck">Error menghapus dek</string>
     <string name="success_deleting_deck">Sukses menghapus dek %s</string>
-    <string name="search_desc">Cari: </string>
     <string name="hint_type_to_search">ketik di sini untuk mencari</string>
     <string name="title_select_deck">Pilih dek</string>
     <string name="total_cards">Kartu: %d</string>
