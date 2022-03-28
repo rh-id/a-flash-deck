@@ -80,7 +80,7 @@
     <string name="light_mode">Light Mode</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="notification_time_description">Setup when you want to receive notification</string>
-    <string name="notification_time_title">Notification time ( %s ~ %s )</string>
+    <string name="notification_time_title">Notification time ( %1$s ~ %2$s )</string>
     <string name="title_start_time">Start Time</string>
     <string name="title_end_time">End Time</string>
     <string name="notification_time_updated">Notification time updated</string>

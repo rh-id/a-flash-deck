@@ -80,7 +80,7 @@
     <string name="light_mode">Mode Terang</string>
     <string name="dark_mode">Mode Gelap</string>
     <string name="notification_time_description">Pengaturan kapan kamu mau menerima notifikasi</string>
-    <string name="notification_time_title">Waktu notifikasi ( %s ~ %s )</string>
+    <string name="notification_time_title">Waktu notifikasi ( %1$s ~ %2$s )</string>
     <string name="title_start_time">Waktu Mulai</string>
     <string name="title_end_time">Waktu Akhir</string>
     <string name="notification_time_updated">Waktu notifikasi diperbarui</string>
