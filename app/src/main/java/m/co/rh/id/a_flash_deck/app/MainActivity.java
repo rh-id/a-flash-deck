@@ -28,9 +28,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.File;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -38,8 +35,6 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
-import m.co.rh.id.a_flash_deck.base.model.DeckModel;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
@@ -77,13 +72,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         super.onCreate(savedInstanceState);
-        handleJsonFile(getIntent());
+        handleImportFile(getIntent());
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        handleJsonFile(intent);
+        handleImportFile(intent);
     }
 
     @Override
@@ -114,29 +109,28 @@ public class MainActivity extends AppCompatActivity {
         mRebuildUi.onNext(true);
     }
 
-    private void handleJsonFile(Intent intent) {
+    private void handleImportFile(Intent intent) {
         // handle open JSON file
         String intentAction = intent.getAction();
         if (Intent.ACTION_VIEW.equals(intentAction)) {
             Context context = getApplicationContext();
             Uri fileData = intent.getData();
-            String errorMessage = getString(R.string.error_failed_to_open_file);
             mActProvider.get(ILogger.class).d(TAG, "begin import file");
-            mActProvider.get(ExecutorService.class)
-                    .execute(() -> {
-                        try {
-                            File file = mActProvider.get(FileHelper.class)
-                                    .createTempFile("Deck-Import", fileData);
-                            List<DeckModel> deckModelList = mActProvider.get(ExportImportCmd.class)
-                                    .importFile(file).blockingGet();
-                            mActProvider.get(ILogger.class).i(TAG,
-                                    context.getString(R.string.success_import_file, deckModelList.size()));
-                        } catch (Throwable throwable) {
-                            mActProvider.get(ILogger.class)
-                                    .e(TAG, errorMessage
-                                            , throwable);
-                        }
-                    });
+            mActProvider.get(RxDisposer.class)
+                    .add("handleImportFile_importFile",
+                            mActProvider.get(ExportImportCmd.class)
+                                    .importFile(fileData)
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe((deckModels, throwable) -> {
+                                        if (throwable != null) {
+                                            mActProvider.get(ILogger.class)
+                                                    .e(TAG, context.getString(R.string.error_failed_to_open_file)
+                                                            , throwable);
+                                        } else {
+                                            mActProvider.get(ILogger.class).i(TAG,
+                                                    context.getString(R.string.success_import_file, deckModels.size()));
+                                        }
+                                    }));
         }
     }
 }

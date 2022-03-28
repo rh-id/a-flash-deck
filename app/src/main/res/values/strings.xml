@@ -90,7 +90,7 @@
     <string name="deck_is_required">Deck is required</string>
     <string name="title_notification_timers">Notification Timers</string>
     <string name="edit">Edit</string>
-    <string name="tittle_export_deck">Export Deck</string>
+    <string name="title_export_deck">Export Deck</string>
     <string name="error_failed_to_create_file">Failed to create file</string>
     <string name="error_failed_to_open_file">Failed to open file</string>
     <string name="error_failed_to_parse_file">Failed to parse file</string>
@@ -112,4 +112,5 @@
     <string name="flash_bot_button_accept">Yes, let\'s try it</string>
     <string name="notification_name_general_message">General notification message</string>
     <string name="notification_description_general_message">Used to show general message from app</string>
+    <string name="title_import_deck">Import Deck</string>
 </resources>

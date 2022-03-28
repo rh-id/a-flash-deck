@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -58,12 +59,14 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, View.OnClickListener, DrawerLayout.DrawerListener {
+public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, View.OnClickListener, DrawerLayout.DrawerListener, NavOnActivityResult<Activity> {
     private static final String TAG = HomePage.class.getName();
+    private static final int REQUEST_CODE_IMPORT_DECK = 1;
 
     @NavInject
     private transient INavigator mNavigator;
@@ -80,6 +83,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient CommonNavConfig mCommonNavConfig;
     private transient NewCardCmd mNewCardCmd;
     private transient DeleteSuggestedCardCmd mDeleteSuggestedCardCmd;
+    private transient ExportImportCmd mExportImportCmd;
     private transient DrawerLayout mDrawerLayout;
     private transient BehaviorSubject<Optional<TestState>> mTestStateSubject;
 
@@ -98,6 +102,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mNewCardCmd = mSvProvider.get(NewCardCmd.class);
         mDeleteSuggestedCardCmd = mSvProvider.get(DeleteSuggestedCardCmd.class);
+        mExportImportCmd = mSvProvider.get(ExportImportCmd.class);
         mTestStateSubject = BehaviorSubject.create();
     }
 
@@ -128,11 +133,13 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         Button startTestButton = rootLayout.findViewById(R.id.button_start_test);
         Button addNotificationButton = rootLayout.findViewById(R.id.button_add_notification);
         Button exportDeckButton = rootLayout.findViewById(R.id.button_export_deck);
+        Button importDeckButton = rootLayout.findViewById(R.id.button_import_deck);
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
         addNotificationButton.setOnClickListener(this);
         exportDeckButton.setOnClickListener(this);
+        importDeckButton.setOnClickListener(this);
         ViewGroup cardOnGoingTest = rootLayout.findViewById(R.id.container_card_ongoing_test);
         cardOnGoingTest.setOnClickListener(this);
         View flashBotContainer = rootLayout.findViewById(R.id.container_card_flash_bot);
@@ -331,6 +338,14 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                             );
                         }
                     });
+        } else if (id == R.id.button_import_deck) {
+            Activity activity = mNavigator.getActivity();
+            String chooserMessage = activity.getString(R.string.title_import_deck);
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+            intent.setType("application/zip");
+            intent = Intent.createChooser(intent, chooserMessage);
+            activity.startActivityForResult(intent, REQUEST_CODE_IMPORT_DECK);
         } else if (id == R.id.button_flash_bot_accept) {
             mRxDisposer
                     .add("onClick_flashBot_startTest",
@@ -520,5 +535,27 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     @Override
     public void onDrawerStateChanged(int newState) {
         // Leave blank
+    }
+
+    @Override
+    public void onActivityResult(View currentView, Activity activity, INavigator INavigator, int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_IMPORT_DECK) {
+            if (resultCode == Activity.RESULT_OK) {
+                Context context = activity.getApplicationContext();
+                mRxDisposer.add("onActivityResult_importFile"
+                        , mExportImportCmd.importFile(data.getData())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe((deckModels, throwable) -> {
+                                    if (throwable != null) {
+                                        mLogger
+                                                .e(TAG, context.getString(R.string.error_failed_to_open_file)
+                                                        , throwable);
+                                    } else {
+                                        mLogger.i(TAG,
+                                                context.getString(R.string.success_import_file, deckModels.size()));
+                                    }
+                                }));
+            }
+        }
     }
 }

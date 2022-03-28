@@ -226,4 +226,14 @@ public class ExportImportCmd {
         }
         return deckModelsFromJson;
     }
+
+    public Single<List<DeckModel>> importFile(Uri uri) {
+        return Single.fromFuture(
+                mExecutorService.submit(() -> {
+                    File file = mFileHelper
+                            .createTempFile("Deck-Import", uri);
+                    return this.importFile(file).blockingGet();
+                })
+        );
+    }
 }
