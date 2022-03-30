@@ -40,18 +40,22 @@ import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.anavigator.StatefulView;
-import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLayout.OnRefreshListener {
+public class CardListSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = CardListSV.class.getName();
 
-    @NavInject
     private transient INavigator mNavigator;
-    @NavInject
-    private transient Provider mProvider;
+
     private transient Provider mSvProvider;
+    private transient ExecutorService mExecutorService;
+    private transient RxDisposer mRxDisposer;
+    private transient DeckChangeNotifier mDeckChangeNotifier;
+    private transient PagedCardItemsCmd mPagedCardItemsCmd;
+
     private transient PublishSubject<String> mSearchStringSubject;
     private transient TextWatcher mSearchTextWatcher;
     private transient CardRecyclerViewAdapter mCardRecyclerViewAdapter;
@@ -60,88 +64,93 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
     private Long mDeckId;
 
     @Override
+    public void provideNavigator(INavigator navigator) {
+        mNavigator = navigator;
+    }
+
+    @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
+        mPagedCardItemsCmd = mSvProvider.get(PagedCardItemsCmd.class);
+        mPagedCardItemsCmd.setDeckId(mDeckId);
+        mPagedCardItemsCmd.refresh();
+
+        mSearchStringSubject = PublishSubject.create();
+        mSearchTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                mSearchStringSubject.onNext(editable.toString());
+            }
+        };
+        mOnScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    mPagedCardItemsCmd.loadNextPage();
+                }
+            }
+        };
+        mCardRecyclerViewAdapter = new CardRecyclerViewAdapter(
+                mPagedCardItemsCmd,
+                mNavigator, this);
+    }
+
+    @Override
     protected View createView(Activity activity, ViewGroup container) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
-        mSvProvider.get(PagedCardItemsCmd.class).setDeckId(mDeckId);
-        mSvProvider.get(PagedCardItemsCmd.class).refresh();
-        if (mSearchStringSubject == null) {
-            mSearchStringSubject = PublishSubject.create();
-        }
-        if (mSearchTextWatcher == null) {
-            mSearchTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    mSearchStringSubject.onNext(editable.toString());
-                }
-            };
-        }
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.list_card, container, false);
         EditText editTextSearch = rootLayout.findViewById(R.id.edit_text_search);
         editTextSearch.addTextChangedListener(mSearchTextWatcher);
         SwipeRefreshLayout swipeRefreshLayout = rootLayout.findViewById(R.id.container_swipe_refresh_list);
         swipeRefreshLayout.setOnRefreshListener(this);
-        mCardRecyclerViewAdapter = new CardRecyclerViewAdapter(
-                mSvProvider.get(PagedCardItemsCmd.class),
-                mNavigator, this);
-        if (mOnScrollListener == null) {
-            mOnScrollListener = new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                    if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        mSvProvider.get(PagedCardItemsCmd.class).loadNextPage();
-                    }
-                }
-            };
-        }
         RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(mCardRecyclerViewAdapter);
         recyclerView.addOnScrollListener(mOnScrollListener);
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemSearched",
                         mSearchStringSubject
                                 .debounce(700, TimeUnit.MILLISECONDS)
-                                .observeOn(Schedulers.from(mSvProvider.get(ExecutorService.class)))
-                                .subscribe(searchString -> mSvProvider.get(PagedCardItemsCmd.class)
+                                .observeOn(Schedulers.from(mExecutorService))
+                                .subscribe(searchString -> mPagedCardItemsCmd
                                         .search(searchString))
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemRefreshed",
-                        mSvProvider.get(PagedCardItemsCmd.class).getCardsFlow()
+                        mPagedCardItemsCmd.getCardsFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(decks -> mCardRecyclerViewAdapter.notifyItemRefreshed())
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemAdded",
-                        mSvProvider.get(DeckChangeNotifier.class).getAddedCardFlow()
+                        mDeckChangeNotifier.getAddedCardFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mCardRecyclerViewAdapter::notifyItemAdded));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemUpdated",
-                        mSvProvider.get(DeckChangeNotifier.class).getUpdatedCardFlow()
+                        mDeckChangeNotifier.getUpdatedCardFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mCardRecyclerViewAdapter::notifyItemUpdated));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onLoadingChanged",
-                        mSvProvider.get(PagedCardItemsCmd.class).getLoadingFlow()
+                        mPagedCardItemsCmd.getLoadingFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(swipeRefreshLayout::setRefreshing)
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemDeleted",
-                        mSvProvider.get(DeckChangeNotifier.class)
+                        mDeckChangeNotifier
                                 .getDeletedCardFlow().observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mCardRecyclerViewAdapter::notifyItemDeleted));
 
@@ -155,7 +164,6 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
             mSvProvider.dispose();
             mSvProvider = null;
         }
-        mProvider = null;
         if (mSearchStringSubject != null) {
             mSearchStringSubject.onComplete();
             mSearchStringSubject = null;
@@ -170,7 +178,7 @@ public class CardListSV extends StatefulView<Activity> implements SwipeRefreshLa
 
     @Override
     public void onRefresh() {
-        mSvProvider.get(PagedCardItemsCmd.class).refresh();
+        mPagedCardItemsCmd.refresh();
     }
 
     public void setDeckId(long deckId) {

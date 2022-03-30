@@ -51,27 +51,46 @@ import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
-import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardItemSV extends StatefulView<Activity> implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+public class CardItemSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = CardItemSV.class.getName();
-    @NavInject
+
     private transient INavigator mNavigator;
-    @NavInject
-    private transient Provider mProvider;
+
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
+    private transient FileHelper mFileHelper;
+    private transient CommonNavConfig mCommonNavConfig;
+    private transient DeckChangeNotifier mDeckChangeNotifier;
+    private transient RxDisposer mRxDisposer;
+    private transient DeckQueryCmd mDeckQueryCmd;
+
     private Card mCard;
     private transient BehaviorSubject<Card> mCardSubject;
 
     @Override
-    protected View createView(Activity activity, ViewGroup container) {
+    public void provideNavigator(INavigator navigator) {
+        mNavigator = navigator;
+    }
+
+    @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
+        mFileHelper = mSvProvider.get(FileHelper.class);
+        mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
+        mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mDeckQueryCmd = mSvProvider.get(DeckQueryCmd.class);
         initSubject();
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
+    }
+
+    @Override
+    protected View createView(Activity activity, ViewGroup container) {
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.item_card, container, false);
         rootLayout.setOnClickListener(this);
@@ -86,33 +105,32 @@ public class CardItemSV extends StatefulView<Activity> implements View.OnClickLi
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
-        mSvProvider.get(RxDisposer.class).add("createView_onChangeCard",
+        mRxDisposer.add("createView_onChangeCard",
                 mCardSubject.observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
-                            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
                             Context context = mSvProvider.getContext();
                             textQuestion.setText(context.getString(R.string.question_desc_value, card.question));
                             textAnswer.setText(context.getString(R.string.answer_desc_value, card.answer));
                             if (card.questionImage != null) {
-                                imageQuestion.setImageURI(Uri.fromFile(fileHelper.getCardQuestionImageThumbnail(card.questionImage)));
+                                imageQuestion.setImageURI(Uri.fromFile(mFileHelper.getCardQuestionImageThumbnail(card.questionImage)));
                                 imageQuestion.setVisibility(View.VISIBLE);
                             } else {
                                 imageQuestion.setImageURI(null);
                                 imageQuestion.setVisibility(View.GONE);
                             }
-                            mSvProvider.get(RxDisposer.class).add("createView_onChangeCard_getDeckById",
-                                    mSvProvider.get(DeckQueryCmd.class).getDeckById(card.deckId)
+                            mRxDisposer.add("createView_onChangeCard_getDeckById",
+                                    mDeckQueryCmd.getDeckById(card.deckId)
                                             .subscribe((deck, throwable) -> {
                                                 if (throwable != null) {
-                                                    mSvProvider.get(ILogger.class).e(TAG, context.getString(R.string.error_loading_deck), throwable);
+                                                    mLogger.e(TAG, context.getString(R.string.error_loading_deck), throwable);
                                                 } else {
                                                     textDeckName.setText(deck.name);
                                                 }
                                             })
                             );
                         }));
-        mSvProvider.get(RxDisposer.class).add("createView_onMoveCard",
-                mSvProvider.get(DeckChangeNotifier.class)
+        mRxDisposer.add("createView_onMoveCard",
+                mDeckChangeNotifier
                         .getMovedCardFlow()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(moveCardEvent -> {
@@ -121,13 +139,13 @@ public class CardItemSV extends StatefulView<Activity> implements View.OnClickLi
                             if (card.id.equals(mCard.id)) {
                                 textQuestion.setText(context.getString(R.string.question_desc_value, card.question));
                                 textAnswer.setText(context.getString(R.string.answer_desc_value, card.answer));
-                                mSvProvider.get(RxDisposer.class).add("createView_onMoveCard_getDeckById",
-                                        mSvProvider.get(DeckQueryCmd.class)
+                                mRxDisposer.add("createView_onMoveCard_getDeckById",
+                                        mDeckQueryCmd
                                                 .getDeckById(moveCardEvent.getDestinationDeck().id)
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe((deck, throwable) -> {
                                                     if (throwable != null) {
-                                                        mSvProvider.get(ILogger.class).e(TAG, context.getString(R.string.error_loading_deck), throwable);
+                                                        mLogger.e(TAG, context.getString(R.string.error_loading_deck), throwable);
                                                     } else {
                                                         textDeckName.setText(deck.name);
                                                     }
@@ -161,7 +179,6 @@ public class CardItemSV extends StatefulView<Activity> implements View.OnClickLi
             mCardSubject = null;
         }
         mCard = null;
-        mProvider = null;
         mNavigator = null;
     }
 
@@ -189,9 +206,8 @@ public class CardItemSV extends StatefulView<Activity> implements View.OnClickLi
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_card, mCard.question);
-            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                    commonNavConfig.args_commonBooleanDialog(title, content),
+                    mCommonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                         if (provider.get(CommonNavConfig.class).result_commonBooleanDialog(navRoute)) {
@@ -224,12 +240,10 @@ public class CardItemSV extends StatefulView<Activity> implements View.OnClickLi
             popup.setOnMenuItemClickListener(this);
             popup.show();//showing popup menu
         } else if (id == R.id.image_question) {
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
-            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             if (mCard != null && mCard.questionImage != null) {
                 mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                        commonNavConfig.args_commonImageView(
-                                fileHelper.getCardQuestionImage(mCard.questionImage)
+                        mCommonNavConfig.args_commonImageView(
+                                mFileHelper.getCardQuestionImage(mCard.questionImage)
                         ));
             }
         }
