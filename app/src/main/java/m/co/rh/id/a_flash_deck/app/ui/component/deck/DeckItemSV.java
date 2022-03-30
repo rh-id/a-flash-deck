@@ -61,7 +61,13 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     @NavInject
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
+    private transient RxDisposer mRxDisposer;
+    private transient CommonNavConfig mCommonNavConfig;
+    private transient DeckChangeNotifier mDeckChangeNotifier;
     private transient AppShortcutHandler mAppShortcutHandler;
+    private transient DeckQueryCmd mDeckQueryCmd;
+
     private Deck mDeck;
     private transient BehaviorSubject<Deck> mDeckSubject;
     private transient BehaviorSubject<Integer> mDeckCardCountSubject;
@@ -73,7 +79,12 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(IStatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
+        mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
         mAppShortcutHandler = mSvProvider.get(AppShortcutHandler.class);
+        mDeckQueryCmd = mSvProvider.get(DeckQueryCmd.class);
     }
 
     public DeckItemSV(ListMode listMode) {
@@ -121,31 +132,31 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         buttonMore.setOnClickListener(this);
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
         TextView textTotalCards = rootLayout.findViewById(R.id.text_total_cards);
-        mSvProvider.get(RxDisposer.class).add("createView_onChangeDeck",
+        mRxDisposer.add("createView_onChangeDeck",
                 mDeckSubject.observeOn(AndroidSchedulers.mainThread())
                         .subscribe(deck -> textDeckName.setText(deck.name)));
-        mSvProvider.get(RxDisposer.class).add("createView_onChangeCardCount",
+        mRxDisposer.add("createView_onChangeCardCount",
                 mDeckCardCountSubject.observeOn(AndroidSchedulers.mainThread())
                         .subscribe(integer -> {
                             Context context = mSvProvider.getContext();
                             textTotalCards.setText(context.getString(R.string.total_cards, integer));
                         }));
-        mSvProvider.get(RxDisposer.class).add("createView_onCardAdded",
-                mSvProvider.get(DeckChangeNotifier.class).getAddedCardFlow()
+        mRxDisposer.add("createView_onCardAdded",
+                mDeckChangeNotifier.getAddedCardFlow()
                         .subscribe(card -> {
                             if (card.deckId.equals(mDeck.id)) {
                                 loadCardCount();
                             }
                         }));
-        mSvProvider.get(RxDisposer.class).add("createView_onCardDeleted",
-                mSvProvider.get(DeckChangeNotifier.class).getDeletedCardFlow()
+        mRxDisposer.add("createView_onCardDeleted",
+                mDeckChangeNotifier.getDeletedCardFlow()
                         .subscribe(card -> {
                             if (card.deckId.equals(mDeck.id)) {
                                 loadCardCount();
                             }
                         }));
-        mSvProvider.get(RxDisposer.class).add("createView_onCardMoved",
-                mSvProvider.get(DeckChangeNotifier.class).getMovedCardFlow()
+        mRxDisposer.add("createView_onCardMoved",
+                mDeckChangeNotifier.getMovedCardFlow()
                         .subscribe(moveCardEvent -> {
                             Deck sourceDeck = moveCardEvent.getSourceDeck();
                             Deck destDeck = moveCardEvent.getDestinationDeck();
@@ -172,13 +183,13 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     }
 
     private void loadCardCount() {
-        mSvProvider.get(RxDisposer.class).add("loadCardCount_queryCardCount",
-                mSvProvider.get(DeckQueryCmd.class).countCards(mDeck)
+        mRxDisposer.add("loadCardCount_queryCardCount",
+                mDeckQueryCmd.countCards(mDeck)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((integer, throwable) -> {
                             if (throwable != null) {
                                 Context context = mSvProvider.getContext();
-                                mSvProvider.get(ILogger.class).e(TAG, context.getString(R.string.error_counting_cards), throwable);
+                                mLogger.e(TAG, context.getString(R.string.error_counting_cards), throwable);
                             } else {
                                 if (mDeckCardCountSubject != null) {
                                     mDeckCardCountSubject.onNext(integer);
@@ -269,9 +280,8 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_deck, mDeck.name);
-            CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                    commonNavConfig.args_commonBooleanDialog(title, content),
+                    mCommonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                         if (provider.get(CommonNavConfig.class).result_commonBooleanDialog(navRoute)) {

@@ -44,18 +44,22 @@ import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.anavigator.StatefulView;
-import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLayout.OnRefreshListener {
+public class DeckListSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = DeckListSV.class.getName();
 
-    @NavInject
     private transient INavigator mNavigator;
-    @NavInject
-    private transient Provider mProvider;
+
     private transient Provider mSvProvider;
+    private transient ExecutorService mExecutorService;
+    private transient RxDisposer mRxDisposer;
+    private transient DeckChangeNotifier mDeckChangeNotifier;
+    private transient PagedDeckItemsCmd mPagedDeckItemsCmd;
+
     private transient PublishSubject<String> mSearchStringSubject;
     private transient TextWatcher mSearchTextWatcher;
     private transient DeckRecyclerViewAdapter mDeckRecyclerViewAdapter;
@@ -71,12 +75,18 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
     }
 
     @Override
-    protected View createView(Activity activity, ViewGroup container) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
-        mSvProvider.get(PagedDeckItemsCmd.class).refresh();
+    public void provideNavigator(INavigator navigator) {
+        mNavigator = navigator;
+    }
+
+    @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
+        mPagedDeckItemsCmd = mSvProvider.get(PagedDeckItemsCmd.class);
+        mPagedDeckItemsCmd.refresh();
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
         }
@@ -98,11 +108,6 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
                 }
             };
         }
-        ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.list_deck, container, false);
-        EditText editTextSearch = rootLayout.findViewById(R.id.edit_text_search);
-        editTextSearch.addTextChangedListener(mSearchTextWatcher);
-        SwipeRefreshLayout swipeRefreshLayout = rootLayout.findViewById(R.id.container_swipe_refresh_list);
-        swipeRefreshLayout.setOnRefreshListener(this);
         DeckItemSV.ListMode listMode = null;
         if (mListMode != null) {
             if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
@@ -112,56 +117,63 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
             }
         }
         mDeckRecyclerViewAdapter = new DeckRecyclerViewAdapter(
-                mSvProvider.get(PagedDeckItemsCmd.class),
+                mPagedDeckItemsCmd,
                 mNavigator, this,
                 listMode);
-        if (mOnScrollListener == null) {
-            mOnScrollListener = new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                    if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        mSvProvider.get(PagedDeckItemsCmd.class).loadNextPage();
-                    }
+        mOnScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    mPagedDeckItemsCmd.loadNextPage();
                 }
-            };
-        }
+            }
+        };
+    }
+
+    @Override
+    protected View createView(Activity activity, ViewGroup container) {
+        ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.list_deck, container, false);
+        EditText editTextSearch = rootLayout.findViewById(R.id.edit_text_search);
+        editTextSearch.addTextChangedListener(mSearchTextWatcher);
+        SwipeRefreshLayout swipeRefreshLayout = rootLayout.findViewById(R.id.container_swipe_refresh_list);
+        swipeRefreshLayout.setOnRefreshListener(this);
         RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(mDeckRecyclerViewAdapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
         recyclerView.addOnScrollListener(mOnScrollListener);
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemSearched",
                         mSearchStringSubject
                                 .debounce(700, TimeUnit.MILLISECONDS)
-                                .observeOn(Schedulers.from(mSvProvider.get(ExecutorService.class)))
-                                .subscribe(searchString -> mSvProvider.get(PagedDeckItemsCmd.class)
+                                .observeOn(Schedulers.from(mExecutorService))
+                                .subscribe(searchString -> mPagedDeckItemsCmd
                                         .search(searchString))
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemRefreshed",
-                        mSvProvider.get(PagedDeckItemsCmd.class).getDecksFlow()
+                        mPagedDeckItemsCmd.getDecksFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(decks -> mDeckRecyclerViewAdapter.notifyItemRefreshed())
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemAdded",
-                        mSvProvider.get(DeckChangeNotifier.class).getAddedDeckFlow()
+                        mDeckChangeNotifier.getAddedDeckFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mDeckRecyclerViewAdapter::notifyItemAdded));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemUpdated",
-                        mSvProvider.get(DeckChangeNotifier.class).getUpdatedDeckFlow()
+                        mDeckChangeNotifier.getUpdatedDeckFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mDeckRecyclerViewAdapter::notifyItemUpdated));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onLoadingChanged",
-                        mSvProvider.get(PagedDeckItemsCmd.class).getLoadingFlow()
+                        mPagedDeckItemsCmd.getLoadingFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(swipeRefreshLayout::setRefreshing)
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemDeleted",
-                        mSvProvider.get(DeckChangeNotifier.class)
+                        mDeckChangeNotifier
                                 .getDeletedDeckFlow().observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mDeckRecyclerViewAdapter::notifyItemDeleted));
 
@@ -175,7 +187,6 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
             mSvProvider.dispose();
             mSvProvider = null;
         }
-        mProvider = null;
         if (mSearchStringSubject != null) {
             mSearchStringSubject.onComplete();
             mSearchStringSubject = null;
@@ -190,11 +201,11 @@ public class DeckListSV extends StatefulView<Activity> implements SwipeRefreshLa
 
     @Override
     public void onRefresh() {
-        mSvProvider.get(PagedDeckItemsCmd.class).refresh();
+        mPagedDeckItemsCmd.refresh();
     }
 
     public ArrayList<Deck> getSelectedDeck() {
-        return mSvProvider.get(PagedDeckItemsCmd.class).getSelectedDecks();
+        return mPagedDeckItemsCmd.getSelectedDecks();
     }
 
     public static class ListMode implements Serializable {
