@@ -134,4 +134,13 @@ public class LogPage extends StatefulView<Activity> implements View.OnClickListe
                     .post(() -> mLogFileSubject.onNext(logFile));
         }
     }
+
+    @Override
+    public void dispose(Activity activity) {
+        super.dispose(activity);
+        if (mSvProvider != null) {
+            mSvProvider.dispose();
+            mSvProvider = null;
+        }
+    }
 }

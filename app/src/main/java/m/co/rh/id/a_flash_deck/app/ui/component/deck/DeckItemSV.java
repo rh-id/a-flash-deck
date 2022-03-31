@@ -205,6 +205,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         super.dispose(activity);
         if (mSvProvider != null) {
             mSvProvider.dispose();
+            mSvProvider = null;
         }
         if (mDeckSubject != null) {
             mDeckSubject.onComplete();

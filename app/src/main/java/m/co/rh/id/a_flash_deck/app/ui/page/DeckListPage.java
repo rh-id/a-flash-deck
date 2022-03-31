@@ -67,4 +67,13 @@ public class DeckListPage extends StatefulView<Activity> implements Toolbar.OnMe
         }
         return false;
     }
+
+    @Override
+    public void dispose(Activity activity) {
+        super.dispose(activity);
+        mAppBarSV.dispose(activity);
+        mAppBarSV = null;
+        mDeckListSV.dispose(activity);
+        mDeckListSV = null;
+    }
 }

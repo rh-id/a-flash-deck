@@ -69,6 +69,15 @@ public class NotificationTimerListPage extends StatefulView<Activity> implements
         return false;
     }
 
+    @Override
+    public void dispose(Activity activity) {
+        super.dispose(activity);
+        mAppBarSV.dispose(activity);
+        mAppBarSV = null;
+        mNotificationTimerListSV.dispose(activity);
+        mNotificationTimerListSV = null;
+    }
+
     public static void addNewNotificationTimerWorkflow(INavigator navigator) {
         navigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
                 (navigator1, navRoute, activity, currentView) -> {

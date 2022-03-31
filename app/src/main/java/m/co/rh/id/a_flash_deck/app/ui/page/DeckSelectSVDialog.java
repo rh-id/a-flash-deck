@@ -79,6 +79,15 @@ public class DeckSelectSVDialog extends StatefulViewDialog<Activity> implements 
         }
     }
 
+    @Override
+    public void dispose(Activity activity) {
+        super.dispose(activity);
+        if (mDeckListSV != null) {
+            mDeckListSV.dispose(activity);
+            mDeckListSV = null;
+        }
+    }
+
     public static class Args implements Serializable {
         public static Args multiSelectMode() {
             Args args = new Args();
