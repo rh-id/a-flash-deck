@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="name_is_required">Ein Name wird benötigt.</string>
+	<string name="search_desc">Suchen:</string>
+	<string name="hint_type_to_search">Hier tippen, um zu suchen.</string>
+	<string name="notification_period_every_x_minutes">Alle %d Minuten.</string>
+	<string name="success_updating_new_notification_timer">Erinnerung %s wurde erfolgreich aktualisiert.</string>
+	<string name="title_confirm">Bestätigen</string>
+	<string name="error_loading_decks">Fehler beim Laden der Stapel.</string>
+	<string name="error_no_card_from_deck">Es gibt keine Karte im gewählten Stapel.</string>
+	<string name="title_error">Fehler</string>
+	<string name="form_name">Name</string>
+	<string name="save">Speichern</string>
+	<string name="error_no_deck_selected">Es wurde kein Stapel gewählt.</string>
+	<string name="title_add_notification_timer">Erinnerungstimer hinzufügen.</string>
+	<string name="notification_period_in_minutes">Erinnerungsperiode in Minuten</string>
+	<string name="success_adding_new_notification_timer">Erinnerungstimer %s wurde erfolgreich hinzugefügt.</string>
+	<string name="confirm_delete_notification_timer">Möchten Sie den Timer %s löschen?</string>
+	<string name="error_deleting_notification_timer">Fehler beim Löschen des Timers.</string>
+	<string name="success_deleting_notification_timer">Der Timer %s wurde erfolgreich gelöscht.</string>
+	<string name="title_notification_timer_list">Erinnerungstimerliste</string>
+</resources>
