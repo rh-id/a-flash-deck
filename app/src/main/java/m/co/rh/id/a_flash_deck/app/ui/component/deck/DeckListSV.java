@@ -159,7 +159,10 @@ public class DeckListSV extends StatefulView<Activity> implements RequireNavigat
                 .add("createView_onItemAdded",
                         mDeckChangeNotifier.getAddedDeckFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(mDeckRecyclerViewAdapter::notifyItemAdded));
+                                .subscribe(deck -> {
+                                    mDeckRecyclerViewAdapter.notifyItemAdded(deck);
+                                    recyclerView.scrollToPosition(0);
+                                }));
         mRxDisposer
                 .add("createView_onItemUpdated",
                         mDeckChangeNotifier.getUpdatedDeckFlow()

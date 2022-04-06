@@ -136,7 +136,10 @@ public class CardListSV extends StatefulView<Activity> implements RequireNavigat
                 .add("createView_onItemAdded",
                         mDeckChangeNotifier.getAddedCardFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(mCardRecyclerViewAdapter::notifyItemAdded));
+                                .subscribe(card -> {
+                                    mCardRecyclerViewAdapter.notifyItemAdded(card);
+                                    recyclerView.scrollToPosition(0);
+                                }));
         mRxDisposer
                 .add("createView_onItemUpdated",
                         mDeckChangeNotifier.getUpdatedCardFlow()
