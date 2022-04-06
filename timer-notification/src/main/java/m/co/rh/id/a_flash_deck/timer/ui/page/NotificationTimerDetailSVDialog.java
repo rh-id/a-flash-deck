@@ -34,7 +34,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
@@ -42,6 +41,7 @@ import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NewNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.UpdateNotificationTimerCmd;
@@ -61,12 +61,13 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
     private transient Provider mSvProvider;
     private String mTitle;
     private NotificationTimer mNotificationTimer;
-    private transient BehaviorSubject<String> mNameSubject;
+    private SerialBehaviorSubject<String> mNameSubject;
     private transient NewNotificationTimerCmd mNewNotificationTimerCmd;
 
     @Override
     protected void initState(Activity activity) {
         super.initState(activity);
+        mNameSubject = new SerialBehaviorSubject<>();
         Args args = Args.of(mNavRoute);
         if (args != null && args.isUpdate()) {
             mNotificationTimer = args.getNotificationTimer();
@@ -104,8 +105,9 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
             mNewNotificationTimerCmd = mSvProvider.get(NewNotificationTimerCmd.class);
         }
 
-        mSvProvider.get(RxDisposer.class).add("createView_onNameChanged", mNameSubject.subscribe(
-                editTextName::setText));
+        mSvProvider.get(RxDisposer.class).add("createView_onNameChanged", mNameSubject.getSubject()
+                .subscribe(
+                        editTextName::setText));
         mSvProvider.get(RxDisposer.class).add("createView_onValidName",
                 mNewNotificationTimerCmd.getNameValid()
                         .subscribe(s -> {
@@ -127,10 +129,6 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
         }
         mNavRoute = null;
         mNotificationTimer = null;
-        if (mNameSubject != null) {
-            mNameSubject.onComplete();
-            mNameSubject = null;
-        }
         mNewNotificationTimerCmd = null;
     }
 
@@ -141,14 +139,8 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
 
     private void setNameSubject() {
         String name = mNotificationTimer.name;
-        if (mNameSubject == null) {
-            if (name == null) {
-                mNameSubject = BehaviorSubject.create();
-            } else {
-                mNameSubject = BehaviorSubject.createDefault(name);
-            }
-        } else {
-            mNameSubject.onNext(name);
+        if (name != null) {
+            mNameSubject.onNext(mNotificationTimer.name);
         }
     }
 
