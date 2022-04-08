@@ -104,14 +104,49 @@ public abstract class DeckDao {
     @Query("SELECT * FROM deck WHERE id=:deckId")
     public abstract Deck getDeckById(long deckId);
 
+    public List<Card> findCardByDeckIds(List<Long> deckIds) {
+        int size = deckIds.size();
+        int maxQuerySize = 30;
+        if (size < maxQuerySize) {
+            return getCardByDeckIds(deckIds);
+        }
+        List<Card> result = new ArrayList<>();
+        for (int i = 0, i2 = maxQuerySize - 1;
+             size > maxQuerySize;
+             size -= maxQuerySize,
+                     i = i2
+                     , i2 += Math.min(size, maxQuerySize)) {
+            List<Long> queryIds = deckIds.subList(i, i2);
+            result.addAll(getCardByDeckIds(queryIds));
+        }
+        return result;
+    }
+
     @Query("SELECT * FROM card WHERE deck_id IN (:deckIds)")
-    public abstract List<Card> getCardByDeckIds(List<Long> deckIds);
+    abstract List<Card> getCardByDeckIds(List<Long> deckIds);
 
     @Query("SELECT * FROM card WHERE id =:cardId")
     public abstract Card getCardByCardId(long cardId);
 
+    public List<Deck> findDeckByIds(List<Long> deckIds) {
+        int size = deckIds.size();
+        int maxQuerySize = 30;
+        if (size <= maxQuerySize) {
+            return getDeckByIds(deckIds);
+        }
+        List<Deck> result = new ArrayList<>();
+        for (int i = 0, i2 = maxQuerySize;
+             size > 0;
+             size -= maxQuerySize,
+                     i = i2
+                     , i2 += Math.min(size, maxQuerySize)) {
+            result.addAll(getDeckByIds(deckIds.subList(i, i2)));
+        }
+        return result;
+    }
+
     @Query("SELECT * FROM deck WHERE id IN (:deckIds)")
-    public abstract List<Deck> getDeckByIds(List<Long> deckIds);
+    abstract List<Deck> getDeckByIds(List<Long> deckIds);
 
     @Query("SELECT * FROM deck")
     public abstract List<Deck> getAllDecks();
@@ -125,11 +160,45 @@ public abstract class DeckDao {
     @Query("SELECT * FROM card WHERE question_voice=:questionVoice")
     public abstract Card findCardByQuestionVoice(String questionVoice);
 
+    public List<Long> findCardIdsByCardIds(List<Long> cardIds) {
+        int size = cardIds.size();
+        int maxQuerySize = 30;
+        if (size <= maxQuerySize) {
+            return getCardIdsByCardIds(cardIds);
+        }
+        List<Long> result = new ArrayList<>();
+        for (int i = 0, i2 = maxQuerySize;
+             size > 0;
+             size -= maxQuerySize,
+                     i = i2
+                     , i2 += Math.min(size, maxQuerySize)) {
+            result.addAll(getCardIdsByCardIds(cardIds.subList(i, i2)));
+        }
+        return result;
+    }
+
     @Query("SELECT id FROM card WHERE id IN (:cardIds)")
-    public abstract List<Long> findCardIdsByCardIds(List<Long> cardIds);
+    abstract List<Long> getCardIdsByCardIds(List<Long> cardIds);
 
     @Query("SELECT * FROM card WHERE id IN (:cardIds)")
-    public abstract List<Card> findCardsByCardIds(List<Long> cardIds);
+    abstract List<Card> getCardsByCardIds(List<Long> cardIds);
+
+    public List<Card> findCardsByCardIds(List<Long> cardIds) {
+        int size = cardIds.size();
+        int maxQuerySize = 30;
+        if (size <= maxQuerySize) {
+            return getCardsByCardIds(cardIds);
+        }
+        List<Card> result = new ArrayList<>();
+        for (int i = 0, i2 = maxQuerySize;
+             size > 0;
+             size -= maxQuerySize,
+                     i = i2
+                     , i2 += Math.min(size, maxQuerySize)) {
+            result.addAll(getCardsByCardIds(cardIds.subList(i, i2)));
+        }
+        return result;
+    }
 
     @Transaction
     public void importDecks(List<DeckModel> deckModels) {
@@ -157,7 +226,7 @@ public abstract class DeckDao {
         for (Deck deck : decks) {
             deckIds.add(deck.id);
         }
-        return getCardByDeckIds(deckIds);
+        return findCardByDeckIds(deckIds);
     }
 
     @Transaction

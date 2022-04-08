@@ -106,7 +106,7 @@ public class NewNotificationTimerCmd {
                         for (int i = 0; i < size; i++) {
                             deckIds.add(jsonArray.getLong(i));
                         }
-                        List<Card> cardList = mDeckDao.get().getCardByDeckIds(deckIds);
+                        List<Card> cardList = mDeckDao.get().findCardByDeckIds(deckIds);
                         if (cardList.isEmpty()) {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }

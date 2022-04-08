@@ -91,7 +91,7 @@ public class NotificationTimerWorker extends Worker {
             for (int i = 0; i < size; i++) {
                 deckIds.add(jsonArray.getLong(i));
             }
-            List<Card> cards = provider.get(DeckDao.class).getCardByDeckIds(deckIds);
+            List<Card> cards = provider.get(DeckDao.class).findCardByDeckIds(deckIds);
             if (cards.isEmpty()) {
                 iLogger.d(TAG, "cards is empty");
                 return Result.success();

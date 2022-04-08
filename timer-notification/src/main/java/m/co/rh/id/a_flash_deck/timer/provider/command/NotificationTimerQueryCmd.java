@@ -50,7 +50,7 @@ public class NotificationTimerQueryCmd {
                         for (int i = 0; i < size; i++) {
                             deckIds.add(jsonArray.getLong(i));
                         }
-                        List<Deck> deckList = mDeckDao.get().getDeckByIds(deckIds);
+                        List<Deck> deckList = mDeckDao.get().findDeckByIds(deckIds);
                         return new ArrayList<>(deckList);
                     } catch (JSONException jsonException) {
                         throw new RuntimeException(jsonException);
