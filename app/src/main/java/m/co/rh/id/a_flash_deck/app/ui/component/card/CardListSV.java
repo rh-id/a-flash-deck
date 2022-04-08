@@ -39,6 +39,7 @@ import m.co.rh.id.a_flash_deck.app.provider.command.PagedCardItemsCmd;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
@@ -61,7 +62,11 @@ public class CardListSV extends StatefulView<Activity> implements RequireNavigat
     private transient CardRecyclerViewAdapter mCardRecyclerViewAdapter;
     private transient RecyclerView.OnScrollListener mOnScrollListener;
 
-    private Long mDeckId;
+    private SerialBehaviorSubject<Long> mDeckId;
+
+    public CardListSV() {
+        mDeckId = new SerialBehaviorSubject<>();
+    }
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -75,7 +80,6 @@ public class CardListSV extends StatefulView<Activity> implements RequireNavigat
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
         mPagedCardItemsCmd = mSvProvider.get(PagedCardItemsCmd.class);
-        mPagedCardItemsCmd.setDeckId(mDeckId);
         mPagedCardItemsCmd.refresh();
 
         mSearchStringSubject = PublishSubject.create();
@@ -118,6 +122,12 @@ public class CardListSV extends StatefulView<Activity> implements RequireNavigat
         RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(mCardRecyclerViewAdapter);
         recyclerView.addOnScrollListener(mOnScrollListener);
+        mRxDisposer.add("createView_onDeckIdChanged",
+                mDeckId.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(aLong -> {
+                            mPagedCardItemsCmd.setDeckId(aLong);
+                            mPagedCardItemsCmd.refresh();
+                        }));
         mRxDisposer
                 .add("createView_onItemSearched",
                         mSearchStringSubject
@@ -185,6 +195,6 @@ public class CardListSV extends StatefulView<Activity> implements RequireNavigat
     }
 
     public void setDeckId(long deckId) {
-        mDeckId = deckId;
+        mDeckId.onNext(deckId);
     }
 }
