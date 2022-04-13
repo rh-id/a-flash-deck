@@ -168,11 +168,11 @@ public class NotificationTimerRecyclerViewAdapter extends RecyclerView.Adapter<R
         }
 
         public void setItem(NotificationTimer notificationTimer) {
-            mNotificationTimerItemSV.setTimerNotification(notificationTimer);
+            mNotificationTimerItemSV.setNotificationTimer(notificationTimer);
         }
 
         public NotificationTimer getItem() {
-            return mNotificationTimerItemSV.getTimerNotification();
+            return mNotificationTimerItemSV.getNotificationTimer();
         }
     }
 

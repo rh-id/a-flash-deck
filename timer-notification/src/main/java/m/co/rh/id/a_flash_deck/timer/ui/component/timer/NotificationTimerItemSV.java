@@ -28,12 +28,12 @@ import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.DeleteNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NotificationTimerQueryCmd;
@@ -42,25 +42,35 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class NotificationTimerItemSV extends StatefulView<Activity> implements View.OnClickListener {
+public class NotificationTimerItemSV extends StatefulView<Activity> implements RequireComponent<Provider>, View.OnClickListener {
     private static final String TAG = NotificationTimerItemSV.class.getName();
     @NavInject
     private transient INavigator mNavigator;
-    @NavInject
-    private transient Provider mProvider;
     private transient Provider mSvProvider;
-    private transient BehaviorSubject<NotificationTimer> mTimerNotificationSubject;
-    private NotificationTimer mNotificationTimer;
+    private transient ILogger mLogger;
+    private transient CommonNavConfig mCommonNavConfig;
+    private transient RxDisposer mRxDisposer;
+    private transient NotificationTimerQueryCmd mNotificationTimerQueryCmd;
+    private SerialBehaviorSubject<NotificationTimer> mNotificationTimerSubject;
+
+    public NotificationTimerItemSV() {
+        mNotificationTimerSubject = new SerialBehaviorSubject<>();
+    }
+
+    @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
+        mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mNotificationTimerQueryCmd = mSvProvider.get(NotificationTimerQueryCmd.class);
+    }
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
-        setTimerSubject(null);
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.item_notification_timer, container, false);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
@@ -70,20 +80,20 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements V
         TextView textName = rootLayout.findViewById(R.id.text_name);
         TextView textPeriodMin = rootLayout.findViewById(R.id.text_period_min);
         TextView textSelectedDecks = rootLayout.findViewById(R.id.text_selected_decks);
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("clickView_onTimerNotificationChanged",
-                        mTimerNotificationSubject
+                        mNotificationTimerSubject
+                                .getSubject()
                                 .subscribe(timerNotification -> {
-                                    mNotificationTimer = timerNotification;
                                     Context svContext = mSvProvider.getContext();
                                     textPeriodMin.setText(svContext.getString(R.string.notification_period_every_x_minutes, timerNotification.periodInMinutes));
                                     textName.setText(timerNotification.name);
-                                    mSvProvider.get(RxDisposer.class).add("clickView_onTimerNotificationChanged_getSelectedDecks"
-                                            , mSvProvider.get(NotificationTimerQueryCmd.class).getSelectedDecks(timerNotification)
+                                    mRxDisposer.add("clickView_onTimerNotificationChanged_getSelectedDecks"
+                                            , mNotificationTimerQueryCmd.getSelectedDecks(timerNotification)
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe((decks, throwable) -> {
                                                         if (throwable != null) {
-                                                            mSvProvider.get(ILogger.class)
+                                                            mLogger
                                                                     .e(TAG, svContext.getString(R.string.error_loading_decks)
                                                                             , throwable);
                                                         } else {
@@ -104,30 +114,23 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements V
         return rootLayout;
     }
 
-    private void setTimerSubject(NotificationTimer notificationTimer) {
-        if (mTimerNotificationSubject == null) {
-            mTimerNotificationSubject = BehaviorSubject.create();
-        }
+    public void setNotificationTimer(NotificationTimer notificationTimer) {
         if (notificationTimer != null) {
-            mTimerNotificationSubject.onNext(notificationTimer);
+            mNotificationTimerSubject.onNext(notificationTimer);
         }
-    }
-
-    public void setTimerNotification(NotificationTimer notificationTimer) {
-        setTimerSubject(notificationTimer);
     }
 
     @Override
     public void onClick(View view) {
         int id = view.getId();
+        NotificationTimer notificationTimer = mNotificationTimerSubject.getValue();
         if (id == R.id.button_delete) {
-            if (mNotificationTimer != null) {
+            if (notificationTimer != null) {
                 Context context = mSvProvider.getContext();
                 String title = context.getString(R.string.title_confirm);
-                String content = context.getString(R.string.confirm_delete_notification_timer, mNotificationTimer.name);
-                CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
+                String content = context.getString(R.string.confirm_delete_notification_timer, notificationTimer.name);
                 mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                        commonNavConfig.args_commonBooleanDialog(title, content),
+                        mCommonNavConfig.args_commonBooleanDialog(title, content),
                         (navigator, navRoute, activity, currentView) -> {
                             Serializable serializable = navRoute.getRouteResult();
                             if (serializable instanceof Boolean) {
@@ -135,7 +138,7 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements V
                                     Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                                     CompositeDisposable compositeDisposable = new CompositeDisposable();
                                     compositeDisposable.add(provider.get(DeleteNotificationTimerCmd.class)
-                                            .execute(mNotificationTimer)
+                                            .execute(notificationTimer)
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe((timerNotification, throwable) -> {
                                                 Context deleteContext = provider.getContext();
@@ -159,11 +162,11 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements V
             }
         } else if (id == R.id.button_edit) {
             mNavigator.push(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG,
-                    NotificationTimerDetailSVDialog.Args.forUpdate(mNotificationTimer.clone()));
+                    NotificationTimerDetailSVDialog.Args.forUpdate(notificationTimer.clone()));
         }
     }
 
-    public NotificationTimer getTimerNotification() {
-        return mNotificationTimer;
+    public NotificationTimer getNotificationTimer() {
+        return mNotificationTimerSubject.getValue();
     }
 }
