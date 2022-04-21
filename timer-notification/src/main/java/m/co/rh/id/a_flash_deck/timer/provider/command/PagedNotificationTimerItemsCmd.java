@@ -39,8 +39,8 @@ public class PagedNotificationTimerItemsCmd {
     private final BehaviorSubject<ArrayList<NotificationTimer>> mNotificationTimerItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
-    public PagedNotificationTimerItemsCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public PagedNotificationTimerItemsCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mNotificationTimerDao = provider.get(NotificationTimerDao.class);
         mNotificationTimerItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());

@@ -39,8 +39,8 @@ public class AudioPlayer implements ProviderDisposable {
     private ReentrantLock mLock;
     private volatile MediaPlayer mediaPlayer;
 
-    public AudioPlayer(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public AudioPlayer(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mFileHelper = provider.lazyGet(FileHelper.class);
         mLogger = provider.lazyGet(ILogger.class);
         mLock = new ReentrantLock();

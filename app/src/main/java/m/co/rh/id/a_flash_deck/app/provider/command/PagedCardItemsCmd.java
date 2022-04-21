@@ -47,8 +47,8 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final CompositeDisposable mCompositeDisposable;
 
-    public PagedCardItemsCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public PagedCardItemsCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mDeckDao = provider.get(DeckDao.class);
         mCardItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());

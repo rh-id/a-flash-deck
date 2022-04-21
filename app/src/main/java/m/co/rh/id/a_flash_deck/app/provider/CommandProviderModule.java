@@ -17,8 +17,6 @@
 
 package m.co.rh.id.a_flash_deck.app.provider;
 
-import android.content.Context;
-
 import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
@@ -40,25 +38,25 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 public class CommandProviderModule implements ProviderModule {
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
-        providerRegistry.registerLazy(NewDeckCmd.class, () -> new NewDeckCmd(context, provider));
-        providerRegistry.registerLazy(UpdateDeckCmd.class, () -> new UpdateDeckCmd(context, provider));
-        providerRegistry.registerLazy(NewCardCmd.class, () -> new NewCardCmd(context, provider));
-        providerRegistry.registerLazy(UpdateCardCmd.class, () -> new UpdateCardCmd(context, provider));
-        providerRegistry.registerLazy(PagedDeckItemsCmd.class, () -> new PagedDeckItemsCmd(context, provider));
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
+        providerRegistry.registerLazy(NewDeckCmd.class, () -> new NewDeckCmd(provider));
+        providerRegistry.registerLazy(UpdateDeckCmd.class, () -> new UpdateDeckCmd(provider));
+        providerRegistry.registerLazy(NewCardCmd.class, () -> new NewCardCmd(provider));
+        providerRegistry.registerLazy(UpdateCardCmd.class, () -> new UpdateCardCmd(provider));
+        providerRegistry.registerLazy(PagedDeckItemsCmd.class, () -> new PagedDeckItemsCmd(provider));
         providerRegistry.registerLazy(DeleteDeckCmd.class, () -> new DeleteDeckCmd(provider));
         providerRegistry.registerLazy(DeckQueryCmd.class, () -> new DeckQueryCmd(provider));
-        providerRegistry.registerLazy(PagedCardItemsCmd.class, () -> new PagedCardItemsCmd(context, provider));
+        providerRegistry.registerLazy(PagedCardItemsCmd.class, () -> new PagedCardItemsCmd(provider));
         providerRegistry.registerLazy(DeleteCardCmd.class, () -> new DeleteCardCmd(provider));
         providerRegistry.registerLazy(MoveCardCmd.class, () -> new MoveCardCmd(provider));
         providerRegistry.registerLazy(CopyCardCmd.class, () -> new CopyCardCmd(provider));
-        providerRegistry.registerLazy(ExportImportCmd.class, () -> new ExportImportCmd(context, provider));
+        providerRegistry.registerLazy(ExportImportCmd.class, () -> new ExportImportCmd(provider));
         providerRegistry.registerModule(new NotificationTimerCmdProviderModule());
         providerRegistry.registerModule(new BotCommandProviderModule());
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         // leave blank
     }
 }

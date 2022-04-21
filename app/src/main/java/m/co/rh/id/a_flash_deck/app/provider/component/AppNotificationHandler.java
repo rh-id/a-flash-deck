@@ -71,8 +71,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private BehaviorSubject<Optional<NotificationTimerEvent>> mNotificationTimerSubject;
     private ReentrantLock mLock;
 
-    public AppNotificationHandler(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public AppNotificationHandler(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);
         mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);

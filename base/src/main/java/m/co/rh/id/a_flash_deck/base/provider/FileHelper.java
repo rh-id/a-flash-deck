@@ -58,11 +58,11 @@ public class FileHelper {
     private File mCardAnswerImageThumbnailParent;
     private File mCardQuestionVoiceParent;
 
-    public FileHelper(Provider provider, Context context) {
-        mAppContext = context.getApplicationContext();
+    public FileHelper(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
-        File cacheDir = context.getCacheDir();
-        File fileDir = context.getFilesDir();
+        File cacheDir = mAppContext.getCacheDir();
+        File fileDir = mAppContext.getFilesDir();
         mLogFile = new File(cacheDir, "alogger/app.log");
         mTempFileRoot = new File(cacheDir, "/tmp");
         mTempFileRoot.mkdirs();

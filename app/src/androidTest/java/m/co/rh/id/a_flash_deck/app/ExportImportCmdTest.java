@@ -69,15 +69,15 @@ public class ExportImportCmdTest {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         testProvider = Provider.createProvider(appContext, new ProviderModule() {
             @Override
-            public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+            public void provides(ProviderRegistry providerRegistry, Provider provider) {
                 providerRegistry.registerModule(new TestDatabaseProviderModule(DBNAME));
                 providerRegistry.register(ExecutorService.class, Executors.newSingleThreadExecutor());
                 providerRegistry.register(ILogger.class, new AndroidLogger(ILogger.VERBOSE));
-                providerRegistry.register(FileHelper.class, new FileHelper(provider, context));
+                providerRegistry.register(FileHelper.class, new FileHelper(provider));
             }
 
             @Override
-            public void dispose(Context context, Provider provider) {
+            public void dispose(Provider provider) {
                 // leave blank
             }
         });
@@ -92,10 +92,7 @@ public class ExportImportCmdTest {
 
     @Test
     public void exportImportFile() {
-        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-
-        ExportImportCmd cmd = new ExportImportCmd(appContext,
-                testProvider);
+        ExportImportCmd cmd = new ExportImportCmd(testProvider);
         // prepare data
         DeckDao deckDao = testProvider.get(DeckDao.class);
         Date date = new Date();

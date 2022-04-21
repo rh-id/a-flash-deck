@@ -42,8 +42,8 @@ public class PagedDeckItemsCmd {
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final BehaviorSubject<Set<Long>> mSelectedDeckIdsSubject;
 
-    public PagedDeckItemsCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public PagedDeckItemsCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mDeckDao = provider.get(DeckDao.class);
         mDeckItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());

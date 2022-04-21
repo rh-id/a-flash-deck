@@ -39,8 +39,8 @@ public class AudioRecorder implements ProviderDisposable {
     private volatile MediaRecorder mediaRecorder;
     private File mAudioRecordFile;
 
-    public AudioRecorder(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public AudioRecorder(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mFileHelper = provider.lazyGet(FileHelper.class);
         mLogger = provider.lazyGet(ILogger.class);
         mLock = new ReentrantLock();

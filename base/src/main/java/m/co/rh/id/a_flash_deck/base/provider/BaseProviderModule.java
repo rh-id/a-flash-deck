@@ -17,7 +17,6 @@
 
 package m.co.rh.id.a_flash_deck.base.provider;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -57,7 +56,7 @@ public class BaseProviderModule implements ProviderModule {
     private static final String TAG = BaseProviderModule.class.getName();
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerModule(new DatabaseProviderModule());
         // thread pool to be used throughout this app lifecycle
         providerRegistry.registerAsync(ExecutorService.class, () -> {
@@ -84,7 +83,7 @@ public class BaseProviderModule implements ProviderModule {
                 defaultLogger.e(TAG, "Error creating file logger", e);
             }
             try {
-                ILogger toastLogger = new ToastLogger(ILogger.INFO, context);
+                ILogger toastLogger = new ToastLogger(ILogger.INFO, provider.getContext());
                 loggerList.add(toastLogger);
             } catch (Throwable throwable) {
                 defaultLogger.e(TAG, "Error creating toast logger", throwable);
@@ -92,13 +91,13 @@ public class BaseProviderModule implements ProviderModule {
 
             return new CompositeLogger(loggerList);
         });
-        providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(context));
+        providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(provider.getContext()));
 
-        providerRegistry.register(FileHelper.class, new FileHelper(provider, context));
+        providerRegistry.register(FileHelper.class, new FileHelper(provider));
         providerRegistry.register(CommonNavConfig.class, new CommonNavConfig());
-        providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider, context));
-        providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(context, provider));
-        providerRegistry.registerLazy(AudioPlayer.class, () -> new AudioPlayer(context, provider));
+        providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
+        providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(provider));
+        providerRegistry.registerLazy(AudioPlayer.class, () -> new AudioPlayer(provider));
         providerRegistry.registerLazy(DeckChangeNotifier.class, DeckChangeNotifier::new);
         providerRegistry.registerLazy(TestChangeNotifier.class, TestChangeNotifier::new);
         providerRegistry.registerLazy(NotificationTimerChangeNotifier.class, NotificationTimerChangeNotifier::new);
@@ -108,7 +107,7 @@ public class BaseProviderModule implements ProviderModule {
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         ILogger iLogger = provider.get(ILogger.class);
         ExecutorService executorService = provider.get(ExecutorService.class);
         ScheduledExecutorService scheduledExecutorService = provider.get(ScheduledExecutorService.class);

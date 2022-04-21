@@ -59,8 +59,8 @@ public class TestStateModifier {
     private ProviderValue<TestDao> mTestDao;
     private ProviderValue<ILogger> mLogger;
 
-    public TestStateModifier(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public TestStateModifier(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mTestChangeNotifier = provider.lazyGet(TestChangeNotifier.class);
         mDeckDao = provider.lazyGet(DeckDao.class);

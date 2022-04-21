@@ -38,9 +38,8 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class BotProviderModule implements ProviderModule {
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
-        Context appContext = context.getApplicationContext();
-        providerRegistry.registerAsync(BotDatabase.class, getDatabaseProviderValue(appContext));
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
+        providerRegistry.registerAsync(BotDatabase.class, getDatabaseProviderValue(provider.getContext()));
         providerRegistry.registerAsync(CardLogDao.class, () ->
                 provider.get(BotDatabase.class).cardLogDao());
         providerRegistry.registerAsync(SuggestedCardDao.class, () ->
@@ -59,7 +58,7 @@ public class BotProviderModule implements ProviderModule {
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         // nothing to dispose
     }
 }

@@ -45,10 +45,10 @@ public class AppSharedPreferences {
     private Date mNotificationEndTime;
     private String mNotificationEndTimeKey;
 
-    public AppSharedPreferences(Provider provider, Context context) {
+    public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mHandler = provider.lazyGet(Handler.class);
-        mSharedPreferences = context.getSharedPreferences(
+        mSharedPreferences = provider.getContext().getSharedPreferences(
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         initValue();
     }

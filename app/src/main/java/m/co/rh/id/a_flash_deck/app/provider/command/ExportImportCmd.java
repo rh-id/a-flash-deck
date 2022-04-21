@@ -69,8 +69,8 @@ public class ExportImportCmd {
     protected DeckDao mDeckDao;
     protected FileHelper mFileHelper;
 
-    public ExportImportCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public ExportImportCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mLogger = provider.get(ILogger.class);
         mDeckDao = provider.get(DeckDao.class);

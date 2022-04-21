@@ -17,8 +17,6 @@
 
 package m.co.rh.id.a_flash_deck.app.provider.command;
 
-import android.content.Context;
-
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.aprovider.Provider;
@@ -26,8 +24,8 @@ import m.co.rh.id.aprovider.Provider;
 public class UpdateDeckCmd extends NewDeckCmd {
     private static final String TAG = UpdateDeckCmd.class.getName();
 
-    public UpdateDeckCmd(Context context, Provider provider) {
-        super(context, provider);
+    public UpdateDeckCmd(Provider provider) {
+        super(provider);
     }
 
     @Override

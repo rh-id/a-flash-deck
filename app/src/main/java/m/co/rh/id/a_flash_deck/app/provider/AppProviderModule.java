@@ -18,7 +18,6 @@
 package m.co.rh.id.a_flash_deck.app.provider;
 
 import android.app.Application;
-import android.content.Context;
 
 import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
@@ -40,16 +39,16 @@ public class AppProviderModule implements ProviderModule {
     }
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerModule(new BaseProviderModule());
         providerRegistry.registerModule(new CommandProviderModule());
         providerRegistry.registerModule(new RxProviderModule());
         providerRegistry.registerModule(new BotProviderModule());
 
         providerRegistry.registerPool(IStatefulViewProvider.class, () -> new StatefulViewProvider(provider));
-        providerRegistry.registerLazy(TestStateModifier.class, () -> new TestStateModifier(context, provider));
-        providerRegistry.registerAsync(AppNotificationHandler.class, () -> new AppNotificationHandler(context, provider));
-        providerRegistry.registerAsync(AppShortcutHandler.class, () -> new AppShortcutHandler(context, provider));
+        providerRegistry.registerLazy(TestStateModifier.class, () -> new TestStateModifier(provider));
+        providerRegistry.registerAsync(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
+        providerRegistry.registerAsync(AppShortcutHandler.class, () -> new AppShortcutHandler(provider));
 
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
         providerRegistry.register(NavigatorProvider.class, new NavigatorProvider(mApplication, provider));
@@ -57,7 +56,7 @@ public class AppProviderModule implements ProviderModule {
 
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         mApplication = null;
     }
 }

@@ -17,8 +17,6 @@
 
 package m.co.rh.id.a_flash_deck.timer.provider.command;
 
-import android.content.Context;
-
 import androidx.work.Data;
 import androidx.work.PeriodicWorkRequest;
 
@@ -34,8 +32,8 @@ import m.co.rh.id.aprovider.Provider;
 
 public class UpdateNotificationTimerCmd extends NewNotificationTimerCmd {
 
-    public UpdateNotificationTimerCmd(Context context, Provider provider) {
-        super(context, provider);
+    public UpdateNotificationTimerCmd(Provider provider) {
+        super(provider);
     }
 
     @Override

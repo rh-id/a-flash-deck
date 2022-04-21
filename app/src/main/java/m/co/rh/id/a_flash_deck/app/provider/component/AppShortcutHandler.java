@@ -59,8 +59,8 @@ public class AppShortcutHandler implements ProviderDisposable {
     private BehaviorSubject<Optional<Card>> mCardSubject;
     private CompositeDisposable mCompositeDisposable;
 
-    public AppShortcutHandler(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public AppShortcutHandler(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mDeckDao = provider.lazyGet(DeckDao.class);

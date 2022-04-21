@@ -17,15 +17,13 @@
 
 package m.co.rh.id.a_flash_deck.app.provider.command;
 
-import android.content.Context;
-
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.aprovider.Provider;
 
 public class UpdateCardCmd extends NewCardCmd {
-    public UpdateCardCmd(Context context, Provider provider) {
-        super(context, provider);
+    public UpdateCardCmd(Provider provider) {
+        super(provider);
     }
 
     @Override

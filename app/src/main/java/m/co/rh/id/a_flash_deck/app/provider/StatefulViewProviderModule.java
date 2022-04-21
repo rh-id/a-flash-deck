@@ -17,8 +17,6 @@
 
 package m.co.rh.id.a_flash_deck.app.provider;
 
-import android.content.Context;
-
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
@@ -27,13 +25,13 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 public class StatefulViewProviderModule implements ProviderModule {
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerModule(new RxProviderModule());
         providerRegistry.registerModule(new CommandProviderModule());
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
-
+    public void dispose(Provider provider) {
+        // Leave blank
     }
 }

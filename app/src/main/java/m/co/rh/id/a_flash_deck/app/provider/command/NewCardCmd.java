@@ -48,8 +48,8 @@ public class NewCardCmd {
     protected BehaviorSubject<String> mQuestionValidSubject;
     protected BehaviorSubject<String> mAnswerValidSubject;
 
-    public NewCardCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewCardCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mLogger = provider.get(ILogger.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);

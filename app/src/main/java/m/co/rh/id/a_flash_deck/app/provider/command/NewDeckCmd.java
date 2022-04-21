@@ -42,8 +42,8 @@ public class NewDeckCmd {
     protected DeckDao mDeckDao;
     protected final BehaviorSubject<String> mNameValidationSubject;
 
-    public NewDeckCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewDeckCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mExecutorService = provider.get(ExecutorService.class);
         mLogger = provider.get(ILogger.class);

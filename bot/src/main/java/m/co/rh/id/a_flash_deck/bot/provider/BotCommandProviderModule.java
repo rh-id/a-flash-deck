@@ -17,8 +17,6 @@
 
 package m.co.rh.id.a_flash_deck.bot.provider;
 
-import android.content.Context;
-
 import m.co.rh.id.a_flash_deck.bot.provider.command.DeleteSuggestedCardCmd;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
@@ -30,12 +28,12 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 public class BotCommandProviderModule implements ProviderModule {
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerLazy(DeleteSuggestedCardCmd.class, () -> new DeleteSuggestedCardCmd(provider));
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         // nothing to dispose
     }
 }

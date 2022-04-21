@@ -43,7 +43,7 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
     def nav_version = "v0.0.54"
-    api 'com.github.rh-id:a-provider:v0.0.17'
+    api 'com.github.rh-id:a-provider:v0.0.19'
     api "com.github.rh-id.a-navigator:a-navigator:$nav_version"
     api 'com.github.rh-id:a-logger:v0.0.3'
     api 'io.reactivex.rxjava3:rxandroid:3.0.0'

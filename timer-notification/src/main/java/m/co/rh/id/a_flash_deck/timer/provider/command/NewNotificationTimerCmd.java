@@ -59,8 +59,8 @@ public class NewNotificationTimerCmd {
     protected BehaviorSubject<String> mNameValidSubject;
     protected BehaviorSubject<String> mSelectedDeckIdsValidSubject;
 
-    public NewNotificationTimerCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewNotificationTimerCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mWorkManager = provider.lazyGet(WorkManager.class);
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);

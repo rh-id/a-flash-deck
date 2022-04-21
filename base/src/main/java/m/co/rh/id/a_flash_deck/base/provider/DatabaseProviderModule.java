@@ -39,16 +39,17 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class DatabaseProviderModule implements ProviderModule {
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
-        Context appContext = context.getApplicationContext();
-        providerRegistry.registerAsync(AppDatabase.class, getAppDatabaseProviderValue(appContext));
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
+        providerRegistry.registerAsync(AppDatabase.class,
+                getAppDatabaseProviderValue(provider.getContext()));
         // register Dao separately to decouple from AppDatabase
         providerRegistry.registerAsync(DeckDao.class, () ->
                 provider.get(AppDatabase.class).deckDao());
         providerRegistry.registerAsync(TestDao.class, () ->
                 provider.get(AppDatabase.class).testDao());
         providerRegistry.registerAsync(AndroidNotificationRepo.class, () ->
-                new AndroidNotificationRepo(context, provider.get(AppDatabase.class).androidNotificationDao())
+                new AndroidNotificationRepo(provider.getContext(),
+                        provider.get(AppDatabase.class).androidNotificationDao())
         );
         providerRegistry.registerLazy(NotificationTimerDao.class, () ->
                 provider.get(AppDatabase.class).timerNotificationDao());
@@ -64,7 +65,7 @@ public class DatabaseProviderModule implements ProviderModule {
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         // nothing to dispose
     }
 }
