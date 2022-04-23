@@ -41,14 +41,15 @@ import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.anavigator.StatefulView;
+import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardListSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
+public class CardListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = CardListSV.class.getName();
 
+    @NavInject
     private transient INavigator mNavigator;
 
     private transient Provider mSvProvider;
@@ -66,11 +67,6 @@ public class CardListSV extends StatefulView<Activity> implements RequireNavigat
 
     public CardListSV() {
         mDeckId = new SerialBehaviorSubject<>();
-    }
-
-    @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
     }
 
     @Override
