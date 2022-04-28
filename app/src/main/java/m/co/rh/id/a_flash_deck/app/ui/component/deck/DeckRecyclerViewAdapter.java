@@ -30,10 +30,10 @@ import java.util.List;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.PagedDeckItemsCmd;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
-import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 
+@SuppressWarnings("rawtypes")
 public class DeckRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int VIEW_TYPE_DECK_ITEM = 0;
     public static final int VIEW_TYPE_EMPTY_TEXT = 1;
@@ -58,10 +58,10 @@ public class DeckRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (VIEW_TYPE_EMPTY_TEXT == viewType) {
-            View view = UiUtils.getActivity(parent).getLayoutInflater().inflate(R.layout.no_record, parent, false);
+            View view = mNavigator.getActivity().getLayoutInflater().inflate(R.layout.no_record, parent, false);
             return new EmptyViewHolder(view);
         } else {
-            Activity activity = UiUtils.getActivity(parent);
+            Activity activity = mNavigator.getActivity();
             DeckItemSV deckItemSV = new DeckItemSV(mDeckItemListMode);
             mNavigator.injectRequired(mParentStatefulView, deckItemSV);
             View view = deckItemSV.buildView(activity, parent);
@@ -76,10 +76,7 @@ public class DeckRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             ArrayList<Deck> itemArrayList = mPagedDeckItemsCmd.getAllDeckItems();
             Deck item = itemArrayList.get(position);
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-            Deck itemHolder = itemViewHolder.getItem();
-            if (itemHolder == null || !itemHolder.equals(item)) {
-                itemViewHolder.setItem(item);
-            }
+            itemViewHolder.setItem(item);
         }
     }
 
