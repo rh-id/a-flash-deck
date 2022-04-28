@@ -56,7 +56,7 @@ public class PagedDeckItemsCmd {
         return mSearch != null && !mSearch.isEmpty();
     }
 
-    public boolean isSelected(Deck deck) {
+    public synchronized boolean isSelected(Deck deck) {
         if (deck != null) {
             Set<Long> selectedDeckIds = mSelectedDeckIdsSubject.getValue();
             return selectedDeckIds.contains(deck.id);
@@ -64,7 +64,7 @@ public class PagedDeckItemsCmd {
         return false;
     }
 
-    public void selectDeck(Deck deck, boolean clearOtherSelection) {
+    public synchronized void selectDeck(Deck deck, boolean clearOtherSelection) {
         Set<Long> selectedDeckIds = mSelectedDeckIdsSubject.getValue();
         if (clearOtherSelection) {
             selectedDeckIds.clear();
@@ -73,7 +73,7 @@ public class PagedDeckItemsCmd {
         mSelectedDeckIdsSubject.onNext(selectedDeckIds);
     }
 
-    public void unSelectDeck(Deck deck) {
+    public synchronized void unSelectDeck(Deck deck) {
         Set<Long> selectedDeckIds = mSelectedDeckIdsSubject.getValue();
         selectedDeckIds.remove(deck.id);
         mSelectedDeckIdsSubject.onNext(selectedDeckIds);
@@ -151,10 +151,6 @@ public class PagedDeckItemsCmd {
         return mDeckItemsSubject.getValue();
     }
 
-    public Set<Long> getSelectedIds() {
-        return mSelectedDeckIdsSubject.getValue();
-    }
-
     public Flowable<ArrayList<Deck>> getDecksFlow() {
         return Flowable.fromObservable(mDeckItemsSubject, BackpressureStrategy.BUFFER);
     }
@@ -163,15 +159,11 @@ public class PagedDeckItemsCmd {
         return Flowable.fromObservable(mIsLoadingSubject, BackpressureStrategy.BUFFER);
     }
 
-    public Flowable<Set<Long>> getSelectedIdsFlow() {
-        return Flowable.fromObservable(mSelectedDeckIdsSubject, BackpressureStrategy.BUFFER);
-    }
-
     private void resetPage() {
         mLimit = 10;
     }
 
-    public ArrayList<Deck> getSelectedDecks() {
+    public synchronized ArrayList<Deck> getSelectedDecks() {
         Set<Long> selectedDeckIds = mSelectedDeckIdsSubject.getValue();
         ArrayList<Deck> returnedDeck = new ArrayList<>();
         if (!selectedDeckIds.isEmpty()) {

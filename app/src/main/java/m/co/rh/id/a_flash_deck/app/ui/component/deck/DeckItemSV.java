@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -36,7 +35,6 @@ import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteDeckCmd;
@@ -49,6 +47,7 @@ import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -68,12 +67,10 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     private transient AppShortcutHandler mAppShortcutHandler;
     private transient DeckQueryCmd mDeckQueryCmd;
 
-    private Deck mDeck;
-    private transient BehaviorSubject<Deck> mDeckSubject;
-    private transient BehaviorSubject<Integer> mDeckCardCountSubject;
+    private SerialBehaviorSubject<Deck> mDeck;
+    private SerialBehaviorSubject<Integer> mDeckCardCount;
     private ListMode mListMode;
-    private boolean mIsSelected;
-    private transient CompoundButton mSelectedUiButton;
+    private SerialBehaviorSubject<Boolean> mIsSelected;
     private transient OnItemSelectListener mOnItemSelectListener;
 
     @Override
@@ -89,11 +86,13 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
 
     public DeckItemSV(ListMode listMode) {
         mListMode = listMode;
+        mDeck = new SerialBehaviorSubject<>();
+        mDeckCardCount = new SerialBehaviorSubject<>(0);
+        mIsSelected = new SerialBehaviorSubject<>(false);
     }
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
-        initDeckSubject();
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.item_deck, container, false);
         rootLayout.setOnClickListener(this);
@@ -108,12 +107,8 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
             buttonMore.setVisibility(View.GONE);
             if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
                 radioSelect.setVisibility(View.VISIBLE);
-                radioSelect.setChecked(mIsSelected);
-                mSelectedUiButton = radioSelect;
             } else if (mListMode.mSelectMode == ListMode.MULTI_SELECT_MODE) {
                 checkBoxSelect.setVisibility(View.VISIBLE);
-                checkBoxSelect.setChecked(mIsSelected);
-                mSelectedUiButton = checkBoxSelect;
             }
         } else {
             buttonEdit.setVisibility(View.VISIBLE);
@@ -133,25 +128,36 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
         TextView textTotalCards = rootLayout.findViewById(R.id.text_total_cards);
         mRxDisposer.add("createView_onChangeDeck",
-                mDeckSubject.observeOn(AndroidSchedulers.mainThread())
+                mDeck.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(deck -> textDeckName.setText(deck.name)));
         mRxDisposer.add("createView_onChangeCardCount",
-                mDeckCardCountSubject.observeOn(AndroidSchedulers.mainThread())
+                mDeckCardCount.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(integer -> {
                             Context context = mSvProvider.getContext();
                             textTotalCards.setText(context.getString(R.string.total_cards, integer));
                         }));
+        mRxDisposer.add("createView_onIsSelectedChanged",
+                mIsSelected.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(aBoolean -> {
+                            if (mListMode != null) {
+                                if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
+                                    radioSelect.setChecked(aBoolean);
+                                } else if (mListMode.mSelectMode == ListMode.MULTI_SELECT_MODE) {
+                                    checkBoxSelect.setChecked(aBoolean);
+                                }
+                            }
+                        }));
         mRxDisposer.add("createView_onCardAdded",
                 mDeckChangeNotifier.getAddedCardFlow()
                         .subscribe(card -> {
-                            if (card.deckId.equals(mDeck.id)) {
+                            if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
                             }
                         }));
         mRxDisposer.add("createView_onCardDeleted",
                 mDeckChangeNotifier.getDeletedCardFlow()
                         .subscribe(card -> {
-                            if (card.deckId.equals(mDeck.id)) {
+                            if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
                             }
                         }));
@@ -160,42 +166,24 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                         .subscribe(moveCardEvent -> {
                             Deck sourceDeck = moveCardEvent.getSourceDeck();
                             Deck destDeck = moveCardEvent.getDestinationDeck();
-                            if (sourceDeck.id.equals(mDeck.id) || destDeck.id.equals(mDeck.id)) {
+                            Deck currentDeck = mDeck.getValue();
+                            if (sourceDeck.id.equals(currentDeck.id) || destDeck.id.equals(currentDeck.id)) {
                                 loadCardCount();
                             }
                         }));
         return rootLayout;
     }
 
-    private void initDeckSubject() {
-        if (mDeckSubject == null) {
-            if (mDeck != null) {
-                mDeckSubject = BehaviorSubject.createDefault(mDeck);
-            } else {
-                mDeckSubject = BehaviorSubject.create();
-            }
-        } else {
-            mDeckSubject.onNext(mDeck);
-        }
-        if (mDeckCardCountSubject == null) {
-            mDeckCardCountSubject = BehaviorSubject.createDefault(0);
-        }
-    }
-
     private void loadCardCount() {
         mRxDisposer.add("loadCardCount_queryCardCount",
-                mDeckQueryCmd.countCards(mDeck)
+                mDeckQueryCmd.countCards(mDeck.getValue())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((integer, throwable) -> {
                             if (throwable != null) {
                                 Context context = mSvProvider.getContext();
                                 mLogger.e(TAG, context.getString(R.string.error_counting_cards), throwable);
                             } else {
-                                if (mDeckCardCountSubject != null) {
-                                    mDeckCardCountSubject.onNext(integer);
-                                } else {
-                                    mDeckCardCountSubject = BehaviorSubject.createDefault(integer);
-                                }
+                                mDeckCardCount.onNext(integer);
                             }
                         }));
     }
@@ -207,23 +195,16 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
             mSvProvider.dispose();
             mSvProvider = null;
         }
-        if (mDeckSubject != null) {
-            mDeckSubject.onComplete();
-            mDeckSubject = null;
-        }
-        mDeck = null;
         mListMode = null;
-        mSelectedUiButton = null;
     }
 
     public void setDeck(Deck deck) {
-        mDeck = deck;
-        initDeckSubject();
+        mDeck.onNext(deck);
         loadCardCount();
     }
 
     public Deck getDeck() {
-        return mDeck;
+        return mDeck.getValue();
     }
 
     public ListMode getListMode() {
@@ -231,17 +212,11 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     }
 
     public void select() {
-        mIsSelected = true;
-        if (mSelectedUiButton != null) {
-            mSelectedUiButton.setChecked(true);
-        }
+        mIsSelected.onNext(true);
     }
 
     public void unSelect() {
-        mIsSelected = false;
-        if (mSelectedUiButton != null) {
-            mSelectedUiButton.setChecked(false);
-        }
+        mIsSelected.onNext(false);
     }
 
     public void setOnSelectListener(OnItemSelectListener onItemSelectListener) {
@@ -253,23 +228,22 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         int viewId = view.getId();
         if (viewId == R.id.root_layout) {
             if (mListMode != null) {
+                boolean isSelected = mIsSelected.getValue();
                 if (mListMode.mSelectMode == ListMode.MULTI_SELECT_MODE) {
-                    mIsSelected = !mIsSelected;
+                    isSelected = !isSelected;
                 } else {
-                    mIsSelected = true;
+                    isSelected = true;
                 }
-                if (mSelectedUiButton != null) {
-                    mSelectedUiButton.setChecked(mIsSelected);
-                }
+                mIsSelected.onNext(isSelected);
                 if (mOnItemSelectListener != null) {
-                    mOnItemSelectListener.onItemSelect(mDeck, mIsSelected);
+                    mOnItemSelectListener.onItemSelect(mDeck.getValue(), isSelected);
                 }
             } else {
-                mNavigator.push(Routes.CARDS, CardListPage.Args.withDeck(mDeck.clone()));
+                mNavigator.push(Routes.CARDS, CardListPage.Args.withDeck(mDeck.getValue().clone()));
             }
         } else if (viewId == R.id.button_edit) {
             mNavigator.push(Routes.DECK_DETAIL_DIALOG,
-                    DeckDetailSVDialog.Args.forUpdate(mDeck.clone()),
+                    DeckDetailSVDialog.Args.forUpdate(mDeck.getValue().clone()),
                     (navigator, navRoute, activity, currentView) -> {
                         DeckDetailSVDialog.Result result =
                                 DeckDetailSVDialog.Result.of(navRoute.getRouteResult());
@@ -280,7 +254,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         } else if (viewId == R.id.button_delete) {
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_deck, mDeck.name);
+            String content = context.getString(R.string.confirm_delete_deck, mDeck.getValue().name);
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
                     mCommonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
@@ -288,7 +262,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                         if (provider.get(CommonNavConfig.class).result_commonBooleanDialog(navRoute)) {
                             CompositeDisposable compositeDisposable = new CompositeDisposable();
                             compositeDisposable.add(provider.get(DeleteDeckCmd.class)
-                                    .execute(mDeck)
+                                    .execute(mDeck.getValue())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((deck, throwable) -> {
                                         Context deleteContext = provider.getContext();
@@ -321,7 +295,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         int id = item.getItemId();
         if (id == R.id.menu_create_shuffle_shortcut) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                mAppShortcutHandler.createPinnedShortcut(mDeck);
+                mAppShortcutHandler.createPinnedShortcut(mDeck.getValue());
             }
             return true;
         }
