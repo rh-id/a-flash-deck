@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import java.io.Serializable;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
@@ -33,7 +34,6 @@ import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.DeleteNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NotificationTimerQueryCmd;

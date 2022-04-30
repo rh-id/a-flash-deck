@@ -32,12 +32,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimerChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.PagedNotificationTimerItemsCmd;
 import m.co.rh.id.anavigator.StatefulView;

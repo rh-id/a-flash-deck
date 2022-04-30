@@ -374,3 +374,9 @@
   license: CC0
   licenseUrl: http://creativecommons.org/publicdomain/zero/1.0/
   url: http://www.reactive-streams.org/
+- artifact: com.github.rh-id:rx-utils:+
+  name: rx-utils
+  copyrightHolder: Ruby Hartono
+  license: MIT License
+  licenseUrl: https://api.github.com/licenses/mit
+  url: https://github.com/rh-id/rx-utils

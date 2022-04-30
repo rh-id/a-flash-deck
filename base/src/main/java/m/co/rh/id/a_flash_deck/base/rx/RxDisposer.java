@@ -19,9 +19,7 @@ package m.co.rh.id.a_flash_deck.base.rx;
 
 import android.content.Context;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import co.rh.id.lib.rx3_utils.disposable.UniqueKeyDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import m.co.rh.id.aprovider.ProviderDisposable;
 
@@ -29,31 +27,18 @@ import m.co.rh.id.aprovider.ProviderDisposable;
  * Helper class to help manage Rx disposable instances
  */
 public class RxDisposer implements ProviderDisposable {
-    private Map<String, Disposable> disposableMap;
+    private UniqueKeyDisposable mUniqueKeyDisposable;
 
     public RxDisposer() {
-        disposableMap = new HashMap<>();
+        mUniqueKeyDisposable = new UniqueKeyDisposable();
     }
 
     public void add(String uniqueKey, Disposable disposable) {
-        Disposable existing = disposableMap.remove(uniqueKey);
-        if (existing != null) {
-            existing.dispose();
-        }
-        disposableMap.put(uniqueKey, disposable);
-    }
-
-    public void dispose() {
-        if (!disposableMap.isEmpty()) {
-            for (Map.Entry<String, Disposable> entry : disposableMap.entrySet()) {
-                entry.getValue().dispose();
-            }
-            disposableMap.clear();
-        }
+        mUniqueKeyDisposable.add(uniqueKey, disposable);
     }
 
     @Override
     public void dispose(Context context) {
-        dispose();
+        mUniqueKeyDisposable.dispose();
     }
 }
