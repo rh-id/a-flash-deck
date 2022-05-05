@@ -70,12 +70,8 @@ public class CardShowHomePage extends StatefulView<Activity> implements RequireC
                 .add("createView_onTimerNotificationEvent",
                         mSvProvider.get(AppNotificationHandler.class)
                                 .getTimerNotificationEventFlow().observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(timerNotificationEventOpt ->
-                                        timerNotificationEventOpt.ifPresent(notificationTimerEvent ->
-                                        {
-                                            showCard(notificationTimerEvent.getSelectedCard());
-                                            mAppNotificationHandler.clearEvent();
-                                        })
+                                .subscribe(notificationTimerEvent ->
+                                        showCard(notificationTimerEvent.getSelectedCard())
                                 )
                 );
         return rootLayout;
