@@ -49,20 +49,52 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
 import m.co.rh.id.anavigator.annotation.NavInject;
+import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity> implements View.OnClickListener, TextWatcher, NumberPicker.OnValueChangeListener {
+public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity> implements RequireComponent<Provider>, View.OnClickListener {
     private static String TAG = NotificationTimerDetailSVDialog.class.getName();
 
     @NavInject
     private transient NavRoute mNavRoute;
-    @NavInject
-    private transient Provider mProvider;
+
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
+    private transient RxDisposer mRxDisposer;
+    private transient NewNotificationTimerCmd mNewNotificationTimerCmd;
+
     private String mTitle;
     private NotificationTimer mNotificationTimer;
     private SerialBehaviorSubject<String> mNameSubject;
-    private transient NewNotificationTimerCmd mNewNotificationTimerCmd;
+
+    private transient TextWatcher mNameTextWatcher;
+    private transient NumberPicker.OnValueChangeListener mPeriodOnValueChangeListener;
+
+    @Override
+    public void provideComponent(Provider provider) {
+        mSvProvider = provider.get(IStatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mNameTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Leave blank
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Leave blank
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                mNotificationTimer.name = editable.toString();
+                mNewNotificationTimerCmd.valid(mNotificationTimer);
+            }
+        };
+        mPeriodOnValueChangeListener = (numberPicker, oldVal, newVal) ->
+                mNotificationTimer.periodInMinutes = newVal;
+    }
 
     @Override
     protected void initState(Activity activity) {
@@ -79,10 +111,6 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
         mTitle = activity.getString(R.string.title_add_notification_timer);
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.dialog_notification_timer_detail, container, false);
         setNameSubject();
@@ -90,11 +118,11 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
         numberPickerMinute.setMinValue(15);
         numberPickerMinute.setMaxValue(120);
         numberPickerMinute.setValue(mNotificationTimer.periodInMinutes);
-        numberPickerMinute.setOnValueChangedListener(this);
+        numberPickerMinute.setOnValueChangedListener(mPeriodOnValueChangeListener);
         TextView textViewTitle = rootLayout.findViewById(R.id.text_title);
         textViewTitle.setText(mTitle);
         EditText editTextName = rootLayout.findViewById(R.id.edit_text_name);
-        editTextName.addTextChangedListener(this);
+        editTextName.addTextChangedListener(mNameTextWatcher);
         Button buttonCancel = rootLayout.findViewById(R.id.button_cancel);
         buttonCancel.setOnClickListener(this);
         Button buttonSave = rootLayout.findViewById(R.id.button_save);
@@ -105,10 +133,10 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
             mNewNotificationTimerCmd = mSvProvider.get(NewNotificationTimerCmd.class);
         }
 
-        mSvProvider.get(RxDisposer.class).add("createView_onNameChanged", mNameSubject.getSubject()
+        mRxDisposer.add("createView_onNameChanged", mNameSubject.getSubject()
                 .subscribe(
                         editTextName::setText));
-        mSvProvider.get(RxDisposer.class).add("createView_onValidName",
+        mRxDisposer.add("createView_onValidName",
                 mNewNotificationTimerCmd.getNameValid()
                         .subscribe(s -> {
                             if (s.isEmpty()) {
@@ -130,6 +158,8 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
         mNavRoute = null;
         mNotificationTimer = null;
         mNewNotificationTimerCmd = null;
+        mNameTextWatcher = null;
+        mPeriodOnValueChangeListener = null;
     }
 
     private String getSelectedDecks() {
@@ -178,37 +208,11 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
                                     }
                                 }));
             } else {
-                Context context = view.getContext();
-                String title = context.getString(R.string.title_error);
-                String content = mNewNotificationTimerCmd.getValidationError();
-                CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
-                getNavigator().push(Routes.COMMON_MESSAGE_DIALOG,
-                        commonNavConfig.args_commonMessageDialog(title, content));
+                mLogger.i(TAG, mNewNotificationTimerCmd.getValidationError());
             }
         } else if (id == R.id.button_cancel) {
             getNavigator().pop();
         }
-    }
-
-    @Override
-    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-        // Leave blank
-    }
-
-    @Override
-    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-        // Leave blank
-    }
-
-    @Override
-    public void afterTextChanged(Editable editable) {
-        mNotificationTimer.name = editable.toString();
-        mNewNotificationTimerCmd.valid(mNotificationTimer);
-    }
-
-    @Override
-    public void onValueChange(NumberPicker numberPicker, int oldVal, int newVal) {
-        mNotificationTimer.periodInMinutes = newVal;
     }
 
     private boolean isUpdate() {
