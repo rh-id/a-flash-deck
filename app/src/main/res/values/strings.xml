@@ -112,4 +112,5 @@
     <string name="notification_name_general_message">General notification message</string>
     <string name="notification_description_general_message">Used to show general message from app</string>
     <string name="title_import_deck">Import Deck</string>
+    <string name="error_please_select_deck">Error, please select deck</string>
 </resources>

@@ -28,31 +28,37 @@ import java.util.ArrayList;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.ui.component.deck.DeckListSV;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
 import m.co.rh.id.anavigator.annotation.NavInject;
-import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.aprovider.Provider;
 
-public class DeckSelectSVDialog extends StatefulViewDialog<Activity> implements View.OnClickListener {
-    @NavInject
-    private transient INavigator mNavigator;
+public class DeckSelectSVDialog extends StatefulViewDialog<Activity> implements RequireComponent<Provider>, View.OnClickListener {
+    private static final String TAG = DeckSelectSVDialog.class.getName();
+
     @NavInject
     private transient NavRoute mNavRoute;
+
+    private transient ILogger mLogger;
+
     @NavInject
     private DeckListSV mDeckListSV;
 
     @Override
-    protected void initState(Activity activity) {
-        super.initState(activity);
-        DeckListSV.ListMode listMode;
-        Args args = Args.of(mNavRoute);
-        if (args != null && args.mSelectMode == Args.MULTI_SELECT_MODE) {
-            listMode = DeckListSV.ListMode.multiSelectMode();
-        } else {
-            listMode = DeckListSV.ListMode.selectMode();
+    public void provideComponent(Provider provider) {
+        mLogger = provider.get(ILogger.class);
+        if (mDeckListSV == null) {
+            DeckListSV.ListMode listMode;
+            Args args = Args.of(mNavRoute);
+            if (args != null && args.mSelectMode == Args.MULTI_SELECT_MODE) {
+                listMode = DeckListSV.ListMode.multiSelectMode();
+            } else {
+                listMode = DeckListSV.ListMode.selectMode();
+            }
+            mDeckListSV = new DeckListSV(listMode);
         }
-        mDeckListSV = new DeckListSV(listMode);
-        mNavigator.injectRequired(this, mDeckListSV);
     }
 
     @Override
@@ -75,7 +81,11 @@ public class DeckSelectSVDialog extends StatefulViewDialog<Activity> implements 
             getNavigator().pop();
         } else if (viewId == R.id.button_ok) {
             ArrayList<Deck> selectedDeck = mDeckListSV.getSelectedDeck();
-            getNavigator().pop(Result.selectedDeck(selectedDeck));
+            if (!selectedDeck.isEmpty()) {
+                getNavigator().pop(Result.selectedDeck(selectedDeck));
+            } else {
+                mLogger.i(TAG, view.getContext().getString(R.string.error_please_select_deck));
+            }
         }
     }
 
