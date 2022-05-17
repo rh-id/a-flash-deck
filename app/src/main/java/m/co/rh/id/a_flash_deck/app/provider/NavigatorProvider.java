@@ -20,12 +20,19 @@ package m.co.rh.id.a_flash_deck.app.provider;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.CardShowActivity;
 import m.co.rh.id.a_flash_deck.app.MainActivity;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardDetailPage;
@@ -57,12 +64,20 @@ public class NavigatorProvider implements ProviderDisposable {
     private Provider mProvider;
     private CommonNavConfig mCommonNavConfig;
     private Map<Class<? extends Activity>, Navigator> mActivityNavigatorMap;
+    private ThreadPoolExecutor mThreadPoolExecutor;
+    private View mLoadingView;
 
     public NavigatorProvider(Application application, Provider provider) {
         mApplication = application;
         mProvider = provider;
         mActivityNavigatorMap = new LinkedHashMap<>();
         mCommonNavConfig = mProvider.get(CommonNavConfig.class);
+        int maxThread = Runtime.getRuntime().availableProcessors();
+        mThreadPoolExecutor = new ThreadPoolExecutor(maxThread, maxThread, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        mThreadPoolExecutor.allowCoreThreadTimeOut(true);
+        mThreadPoolExecutor.prestartAllCoreThreads();
+        mLoadingView = LayoutInflater.from(mProvider.getContext())
+                .inflate(R.layout.page_splash, null);
         setupMainActivityNavigator();
         setupCardShowActivityNavigator();
     }
@@ -97,6 +112,9 @@ public class NavigatorProvider implements ProviderDisposable {
         navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),
                 "anavigator/MainActivity.state"));
         navBuilder.setRequiredComponent(mProvider);
+        navBuilder.setMainHandler(mProvider.get(Handler.class));
+        navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);
+        navBuilder.setLoadingView(mLoadingView);
         NavConfiguration<Activity, StatefulView> navConfiguration = navBuilder.build();
         Navigator navigator = new Navigator(MainActivity.class, navConfiguration);
         mActivityNavigatorMap.put(MainActivity.class, navigator);
@@ -118,6 +136,9 @@ public class NavigatorProvider implements ProviderDisposable {
         navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),
                 "anavigator/CardShowActivity.state"));
         navBuilder.setRequiredComponent(mProvider);
+        navBuilder.setMainHandler(mProvider.get(Handler.class));
+        navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);
+        navBuilder.setLoadingView(mLoadingView);
         NavConfiguration<Activity, StatefulView> navConfiguration = navBuilder.build();
         Navigator navigator = new Navigator(CardShowActivity.class, navConfiguration);
         mActivityNavigatorMap.put(CardShowActivity.class, navigator);
@@ -135,9 +156,12 @@ public class NavigatorProvider implements ProviderDisposable {
                 mApplication.unregisterComponentCallbacks(navigator);
             }
             mActivityNavigatorMap.clear();
+            mThreadPoolExecutor.shutdown();
         }
         mActivityNavigatorMap = null;
         mProvider = null;
         mApplication = null;
+        mThreadPoolExecutor = null;
+        mLoadingView = null;
     }
 }
