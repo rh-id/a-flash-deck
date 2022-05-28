@@ -63,9 +63,4 @@ public class DatabaseProviderModule implements ProviderModule {
                         .addMigrations(DbMigration.getAllMigrations())
                         .build();
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // nothing to dispose
-    }
 }

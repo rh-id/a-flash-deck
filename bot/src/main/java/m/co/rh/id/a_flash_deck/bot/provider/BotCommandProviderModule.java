@@ -31,9 +31,4 @@ public class BotCommandProviderModule implements ProviderModule {
     public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerLazy(DeleteSuggestedCardCmd.class, () -> new DeleteSuggestedCardCmd(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // nothing to dispose
-    }
 }

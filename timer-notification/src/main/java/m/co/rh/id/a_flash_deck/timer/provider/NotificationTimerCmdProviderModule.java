@@ -35,9 +35,4 @@ public class NotificationTimerCmdProviderModule implements ProviderModule {
         providerRegistry.registerLazy(DeleteNotificationTimerCmd.class, () -> new DeleteNotificationTimerCmd(provider));
         providerRegistry.registerLazy(PagedNotificationTimerItemsCmd.class, () -> new PagedNotificationTimerItemsCmd(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // leave blank
-    }
 }

@@ -54,9 +54,4 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerModule(new NotificationTimerCmdProviderModule());
         providerRegistry.registerModule(new BotCommandProviderModule());
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // leave blank
-    }
 }

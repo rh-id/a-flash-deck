@@ -56,9 +56,4 @@ public class BotProviderModule implements ProviderModule {
                         BotDatabase.class, "a-flash-deck.bot.db")
                         .build();
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // nothing to dispose
-    }
 }

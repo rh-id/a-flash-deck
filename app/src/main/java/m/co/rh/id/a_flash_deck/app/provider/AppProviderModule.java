@@ -53,10 +53,4 @@ public class AppProviderModule implements ProviderModule {
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
         providerRegistry.register(NavigatorProvider.class, new NavigatorProvider(mApplication, provider));
     }
-
-
-    @Override
-    public void dispose(Provider provider) {
-        mApplication = null;
-    }
 }
