@@ -71,9 +71,9 @@ public class ExportImportCmdTest {
             @Override
             public void provides(ProviderRegistry providerRegistry, Provider provider) {
                 providerRegistry.registerModule(new TestDatabaseProviderModule(DBNAME));
-                providerRegistry.register(ExecutorService.class, Executors.newSingleThreadExecutor());
-                providerRegistry.register(ILogger.class, new AndroidLogger(ILogger.VERBOSE));
-                providerRegistry.register(FileHelper.class, new FileHelper(provider));
+                providerRegistry.register(ExecutorService.class, Executors::newSingleThreadExecutor);
+                providerRegistry.register(ILogger.class, () -> new AndroidLogger(ILogger.VERBOSE));
+                providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));
             }
 
             @Override

@@ -40,7 +40,7 @@ dependencies {
     api "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
-    api 'com.github.rh-id:a-provider:v0.0.20'
+    api 'com.github.rh-id:a-provider:v0.0.22'
     api "com.github.rh-id.a-navigator:a-navigator:$nav_version"
     api 'com.github.rh-id:a-logger:v0.0.3'
     api 'com.github.rh-id:rx-utils:v0.0.3'

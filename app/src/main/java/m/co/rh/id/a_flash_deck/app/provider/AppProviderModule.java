@@ -51,6 +51,6 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerAsync(AppShortcutHandler.class, () -> new AppShortcutHandler(provider));
 
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
-        providerRegistry.register(NavigatorProvider.class, new NavigatorProvider(mApplication, provider));
+        providerRegistry.register(NavigatorProvider.class, () -> new NavigatorProvider(mApplication, provider));
     }
 }
