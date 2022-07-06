@@ -18,10 +18,8 @@
 package m.co.rh.id.a_flash_deck.app;
 
 import android.app.Activity;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.multidex.MultiDex;
 import androidx.work.Configuration;
 
 import java.util.concurrent.ExecutorService;
@@ -53,12 +51,6 @@ public class MainApplication extends BaseApplication implements Configuration.Pr
                 System.exit(99);
             }
         });
-    }
-
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        MultiDex.install(this);
     }
 
     @Override
