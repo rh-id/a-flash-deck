@@ -1,0 +1,5 @@
+Release 1.6.6+37
+
+Fixes:
+* Android SDK memory leak
+* Optimize app
