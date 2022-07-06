@@ -380,3 +380,9 @@
   license: MIT License
   licenseUrl: https://api.github.com/licenses/mit
   url: https://github.com/rh-id/rx-utils
+- artifact: com.github.rh-id:concurrent-utils:+
+  name: concurrent-utils
+  copyrightHolder: Ruby Hartono
+  license: MIT License
+  licenseUrl: https://api.github.com/licenses/mit
+  url: https://github.com/rh-id/concurrent-utils
