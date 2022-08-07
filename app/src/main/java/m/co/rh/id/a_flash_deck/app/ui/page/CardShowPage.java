@@ -217,12 +217,12 @@ public class CardShowPage extends StatefulView<Activity> implements NavActivityL
     }
 
     @Override
-    public void onResume(Activity activity) {
+    public void onNavActivityResumed(Activity activity) {
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
-    public void onPause(Activity activity) {
+    public void onNavActivityPaused(Activity activity) {
         activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 

@@ -24,7 +24,6 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -109,8 +108,6 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.putAll(mCommonNavConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
                 new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);
-        navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),
-                "anavigator/MainActivity.state"));
         navBuilder.setRequiredComponent(mProvider);
         navBuilder.setMainHandler(mProvider.get(Handler.class));
         navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);
@@ -133,8 +130,6 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.putAll(mCommonNavConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
                 new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);
-        navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),
-                "anavigator/CardShowActivity.state"));
         navBuilder.setRequiredComponent(mProvider);
         navBuilder.setMainHandler(mProvider.get(Handler.class));
         navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);
