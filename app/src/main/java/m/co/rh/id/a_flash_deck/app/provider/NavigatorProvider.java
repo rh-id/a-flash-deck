@@ -42,6 +42,7 @@ import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DonationsPage;
+import m.co.rh.id.a_flash_deck.app.ui.page.HomePage;
 import m.co.rh.id.a_flash_deck.app.ui.page.NotificationTimerListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SettingsPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SplashPage;
@@ -88,12 +89,8 @@ public class NavigatorProvider implements ProviderDisposable {
     @SuppressWarnings("unchecked")
     private Navigator setupMainActivityNavigator() {
         Map<String, StatefulViewFactory<Activity, StatefulView>> navMap = new HashMap<>();
-        navMap.put(Routes.HOME_PAGE, (args, activity) -> {
-            if (args instanceof StatefulView) {
-                return (StatefulView) args;
-            }
-            return new SplashPage();
-        });
+        navMap.put(Routes.SPLASH_PAGE, (args, activity) -> new SplashPage(Routes.HOME_PAGE));
+        navMap.put(Routes.HOME_PAGE, (args, activity) -> new HomePage());
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
         navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
@@ -107,7 +104,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG, (args, activity) -> new NotificationTimerDetailSVDialog());
         navMap.putAll(mCommonNavConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
-                new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);
+                new NavConfiguration.Builder<>(Routes.SPLASH_PAGE, navMap);
         navBuilder.setRequiredComponent(mProvider);
         navBuilder.setMainHandler(mProvider.get(Handler.class));
         navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);

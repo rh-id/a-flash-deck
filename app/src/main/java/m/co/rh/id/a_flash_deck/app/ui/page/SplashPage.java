@@ -32,6 +32,12 @@ import m.co.rh.id.aprovider.Provider;
 public class SplashPage extends StatefulView<Activity> implements RequireNavigator {
     private transient INavigator mNavigator;
 
+    private String mNextPage;
+
+    public SplashPage(String nextPage) {
+        mNextPage = nextPage;
+    }
+
     @Override
     public void provideNavigator(INavigator navigator) {
         mNavigator = navigator;
@@ -43,7 +49,7 @@ public class SplashPage extends StatefulView<Activity> implements RequireNavigat
         Provider provider = BaseApplication.of(activity).getProvider();
         provider.get(Handler.class)
                 .postDelayed(() ->
-                        mNavigator.retry(new HomePage()), 1000);
+                        mNavigator.replace(mNextPage), 1000);
     }
 
     @Override
