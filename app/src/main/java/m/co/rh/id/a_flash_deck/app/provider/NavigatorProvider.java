@@ -24,7 +24,8 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import java.util.HashMap;
+import androidx.collection.ArrayMap;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -78,21 +79,12 @@ public class NavigatorProvider implements ProviderDisposable {
         mThreadPoolExecutor.prestartAllCoreThreads();
         mLoadingView = LayoutInflater.from(mProvider.getContext())
                 .inflate(R.layout.page_splash, null);
-        setupMainActivityNavigator();
-        setupCardShowActivityNavigator();
-    }
-
-    public INavigator getNavigator(Activity activity) {
-        return mActivityNavigatorMap.get(activity.getClass());
-    }
-
-    @SuppressWarnings("unchecked")
-    private Navigator setupMainActivityNavigator() {
-        Map<String, StatefulViewFactory<Activity, StatefulView>> navMap = new HashMap<>();
+        Map<String, StatefulViewFactory<Activity, StatefulView>> navMap = new ArrayMap<>();
         navMap.put(Routes.SPLASH_PAGE, (args, activity) -> new SplashPage(Routes.HOME_PAGE));
         navMap.put(Routes.HOME_PAGE, (args, activity) -> new HomePage());
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
+        navMap.put(Routes.CARD_SHOW_HOME_PAGE, (args, activity) -> new CardShowHomePage());
         navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
         navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
         navMap.put(Routes.DECK_DETAIL_DIALOG, (args, activity) -> new DeckDetailSVDialog());
@@ -103,6 +95,16 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.NOTIFICATION_TIMERS, (args, activity) -> new NotificationTimerListPage());
         navMap.put(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG, (args, activity) -> new NotificationTimerDetailSVDialog());
         navMap.putAll(mCommonNavConfig.getNavMap());
+        setupMainActivityNavigator(navMap);
+        setupCardShowActivityNavigator(navMap);
+    }
+
+    public INavigator getNavigator(Activity activity) {
+        return mActivityNavigatorMap.get(activity.getClass());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Navigator setupMainActivityNavigator(Map<String, StatefulViewFactory<Activity, StatefulView>> navMap) {
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
                 new NavConfiguration.Builder<>(Routes.SPLASH_PAGE, navMap);
         navBuilder.setRequiredComponent(mProvider);
@@ -118,15 +120,9 @@ public class NavigatorProvider implements ProviderDisposable {
     }
 
     @SuppressWarnings("unchecked")
-    private Navigator setupCardShowActivityNavigator() {
-        Map<String, StatefulViewFactory<Activity, StatefulView>> navMap = new HashMap<>();
-        navMap.put(Routes.HOME_PAGE, (args, activity) -> new CardShowHomePage());
-        navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
-        navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
-        navMap.put(Routes.DECK_SELECT_DIALOG, (args, activity) -> new DeckSelectSVDialog());
-        navMap.putAll(mCommonNavConfig.getNavMap());
+    private Navigator setupCardShowActivityNavigator(Map<String, StatefulViewFactory<Activity, StatefulView>> navMap) {
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
-                new NavConfiguration.Builder<>(Routes.HOME_PAGE, navMap);
+                new NavConfiguration.Builder<>(Routes.CARD_SHOW_HOME_PAGE, navMap);
         navBuilder.setRequiredComponent(mProvider);
         navBuilder.setMainHandler(mProvider.get(Handler.class));
         navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);
