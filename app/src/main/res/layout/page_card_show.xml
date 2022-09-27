@@ -4,7 +4,8 @@
     xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/pageBackground">
+    android:background="?attr/pageBackground"
+    android:keepScreenOn="true">
 
     <LinearLayout
         android:id="@id/container_content"

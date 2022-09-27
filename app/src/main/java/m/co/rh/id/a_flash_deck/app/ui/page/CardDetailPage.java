@@ -26,7 +26,6 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -62,13 +61,12 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
-import m.co.rh.id.anavigator.component.NavActivityLifecycle;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.anavigator.component.RequireNavRoute;
 import m.co.rh.id.aprovider.Provider;
 
-public class CardDetailPage extends StatefulView<Activity> implements RequireNavRoute, RequireComponent<Provider>, NavOnActivityResult, NavActivityLifecycle, Toolbar.OnMenuItemClickListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+public class CardDetailPage extends StatefulView<Activity> implements RequireNavRoute, RequireComponent<Provider>, NavOnActivityResult, Toolbar.OnMenuItemClickListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = CardDetailPage.class.getName();
 
     // browse and select image for question image
@@ -157,12 +155,6 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             }
         }
         initTextWatcher();
-    }
-
-    @Override
-    protected void initState(Activity activity) {
-        super.initState(activity);
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -267,7 +259,6 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
-        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -543,16 +534,6 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                 .e(TAG, e.getMessage(), e);
                     }
                 });
-    }
-
-    @Override
-    public void onNavActivityResumed(Activity activity) {
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-
-    @Override
-    public void onNavActivityPaused(Activity activity) {
-        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     public static class Result implements Serializable {
