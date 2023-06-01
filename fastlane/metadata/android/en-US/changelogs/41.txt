@@ -1,0 +1,4 @@
+Release 1.7.1+41
+
+Fixes:
+* Home page navigate back didn't close navigation menu
