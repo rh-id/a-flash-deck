@@ -47,19 +47,16 @@ import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.bot.provider.component.BotAnalytics;
 import m.co.rh.id.alogger.ILogger;
-import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavRoute;
 import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class TestPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, View.OnClickListener {
+public class TestPage extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, View.OnClickListener {
     private static final String TAG = TestPage.class.getName();
 
     private transient INavigator mNavigator;
-    private transient NavRoute mNavRoute;
 
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
@@ -71,11 +68,6 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
     @Override
     public void provideNavigator(INavigator navigator) {
         mNavigator = navigator;
-    }
-
-    @Override
-    public void provideNavRoute(NavRoute navRoute) {
-        mNavRoute = navRoute;
     }
 
     @Override
@@ -194,7 +186,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         FileHelper fileHelper = mSvProvider.get(FileHelper.class);
         Context context = mSvProvider.getContext();
         if (id == R.id.text_answer) {
-            View rootView = mNavigator.findView(mNavRoute);
+            View rootView = view.getRootView();
             ImageView answerImageView = rootView.findViewById(R.id.image_answer);
             TextView textAnswer = rootView.findViewById(R.id.text_answer);
             if (card.answerImage != null) {
