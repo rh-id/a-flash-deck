@@ -71,12 +71,14 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            ArrayList<Card> itemArrayList = mPagedCardItemsCmd.getAllCardItems();
-            Card item = itemArrayList.get(position);
-            ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-            Card itemFromHolder = itemViewHolder.getItem();
-            if (itemFromHolder == null || !itemFromHolder.equals(item)) {
-                itemViewHolder.setItem(item);
+            if (!isEmpty()) {
+                ArrayList<Card> itemArrayList = mPagedCardItemsCmd.getAllCardItems();
+                Card item = itemArrayList.get(position);
+                ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
+                Card itemFromHolder = itemViewHolder.getItem();
+                if (itemFromHolder == null || !itemFromHolder.equals(item)) {
+                    itemViewHolder.setItem(item);
+                }
             }
         }
     }
