@@ -38,7 +38,6 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.PagedCardItemsCmd;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
-import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -47,15 +46,12 @@ import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
 public class CardListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
-    private static final String TAG = CardListSV.class.getName();
-
     @NavInject
     private transient INavigator mNavigator;
 
     private transient Provider mSvProvider;
     private transient ExecutorService mExecutorService;
     private transient RxDisposer mRxDisposer;
-    private transient DeckChangeNotifier mDeckChangeNotifier;
     private transient PagedCardItemsCmd mPagedCardItemsCmd;
 
     private transient PublishSubject<String> mSearchStringSubject;
@@ -63,7 +59,7 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
     private transient CardRecyclerViewAdapter mCardRecyclerViewAdapter;
     private transient RecyclerView.OnScrollListener mOnScrollListener;
 
-    private SerialBehaviorSubject<Long> mDeckId;
+    private final SerialBehaviorSubject<Long> mDeckId;
 
     public CardListSV() {
         mDeckId = new SerialBehaviorSubject<>();
@@ -74,10 +70,7 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
         mSvProvider = provider.get(IStatefulViewProvider.class);
         mExecutorService = mSvProvider.get(ExecutorService.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
-        mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
         mPagedCardItemsCmd = mSvProvider.get(PagedCardItemsCmd.class);
-        mPagedCardItemsCmd.refresh();
-
         mSearchStringSubject = PublishSubject.create();
         mSearchTextWatcher = new TextWatcher() {
             @Override
@@ -104,7 +97,6 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
             }
         };
         mCardRecyclerViewAdapter = new CardRecyclerViewAdapter(
-                mPagedCardItemsCmd,
                 mNavigator, this);
     }
 
@@ -118,6 +110,7 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
         RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(mCardRecyclerViewAdapter);
         recyclerView.addOnScrollListener(mOnScrollListener);
+        View noRecord = rootLayout.findViewById(R.id.no_record);
         mRxDisposer.add("createView_onDeckIdChanged",
                 mDeckId.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aLong -> {
@@ -136,33 +129,21 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
                 .add("createView_onItemRefreshed",
                         mPagedCardItemsCmd.getCardsFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(decks -> mCardRecyclerViewAdapter.notifyItemRefreshed())
+                                .subscribe(decks -> {
+                                    mCardRecyclerViewAdapter.submitList(decks);
+                                    if (decks.isEmpty()) {
+                                        noRecord.setVisibility(View.VISIBLE);
+                                    } else {
+                                        noRecord.setVisibility(View.GONE);
+                                    }
+                                })
                 );
-        mRxDisposer
-                .add("createView_onItemAdded",
-                        mDeckChangeNotifier.getAddedCardFlow()
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(card -> {
-                                    mCardRecyclerViewAdapter.notifyItemAdded(card);
-                                    recyclerView.scrollToPosition(0);
-                                }));
-        mRxDisposer
-                .add("createView_onItemUpdated",
-                        mDeckChangeNotifier.getUpdatedCardFlow()
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(mCardRecyclerViewAdapter::notifyItemUpdated));
         mRxDisposer
                 .add("createView_onLoadingChanged",
                         mPagedCardItemsCmd.getLoadingFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(swipeRefreshLayout::setRefreshing)
                 );
-        mRxDisposer
-                .add("createView_onItemDeleted",
-                        mDeckChangeNotifier
-                                .getDeletedCardFlow().observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(mCardRecyclerViewAdapter::notifyItemDeleted));
-
         return rootLayout;
     }
 

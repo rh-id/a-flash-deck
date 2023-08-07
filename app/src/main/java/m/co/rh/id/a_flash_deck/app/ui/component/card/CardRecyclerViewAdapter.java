@@ -22,31 +22,28 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.app.provider.command.PagedCardItemsCmd;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 
-public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    public static final int VIEW_TYPE_DECK_ITEM = 0;
-    public static final int VIEW_TYPE_EMPTY_TEXT = 1;
+public class CardRecyclerViewAdapter extends ListAdapter<Card, RecyclerView.ViewHolder> {
 
-    private PagedCardItemsCmd mPagedCardItemsCmd;
-    private INavigator mNavigator;
-    private StatefulView mParentStatefulView;
-    private List<CardItemSV> mCreatedSvList;
+    private final INavigator mNavigator;
+    private final StatefulView mParentStatefulView;
+    private final List<CardItemSV> mCreatedSvList;
 
-    public CardRecyclerViewAdapter(PagedCardItemsCmd pagedCardItemsCmd,
-                                   INavigator navigator, StatefulView parentStatefulView
+    public CardRecyclerViewAdapter(
+            INavigator navigator, StatefulView parentStatefulView
     ) {
-        mPagedCardItemsCmd = pagedCardItemsCmd;
+        super(new ItemCallback());
         mNavigator = navigator;
         mParentStatefulView = parentStatefulView;
         mCreatedSvList = new ArrayList<>();
@@ -55,85 +52,23 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (VIEW_TYPE_EMPTY_TEXT == viewType) {
-            View view = UiUtils.getActivity(parent).getLayoutInflater().inflate(R.layout.no_record, parent, false);
-            return new EmptyViewHolder(view);
-        } else {
-            Activity activity = UiUtils.getActivity(parent);
-            CardItemSV cardItemSV = new CardItemSV();
-            mNavigator.injectRequired(mParentStatefulView, cardItemSV);
-            View view = cardItemSV.buildView(activity, parent);
-            mCreatedSvList.add(cardItemSV);
-            return new ItemViewHolder(view, cardItemSV, mPagedCardItemsCmd);
-        }
+        Activity activity = UiUtils.getActivity(parent);
+        CardItemSV cardItemSV = new CardItemSV();
+        mNavigator.injectRequired(mParentStatefulView, cardItemSV);
+        View view = cardItemSV.buildView(activity, parent);
+        mCreatedSvList.add(cardItemSV);
+        return new ItemViewHolder(view, cardItemSV);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            if (!isEmpty()) {
-                ArrayList<Card> itemArrayList = mPagedCardItemsCmd.getAllCardItems();
-                Card item = itemArrayList.get(position);
-                ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-                Card itemFromHolder = itemViewHolder.getItem();
-                if (itemFromHolder == null || !itemFromHolder.equals(item)) {
-                    itemViewHolder.setItem(item);
-                }
+            Card item = getItem(position);
+            ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
+            Card itemFromHolder = itemViewHolder.getItem();
+            if (itemFromHolder == null || !itemFromHolder.equals(item)) {
+                itemViewHolder.setItem(item);
             }
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        if (isEmpty()) {
-            return 1;
-        }
-        return mPagedCardItemsCmd.getAllCardItems().size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (isEmpty()) {
-            return VIEW_TYPE_EMPTY_TEXT;
-        }
-        return VIEW_TYPE_DECK_ITEM;
-    }
-
-    private boolean isEmpty() {
-        if (mPagedCardItemsCmd == null) {
-            return true;
-        }
-        return mPagedCardItemsCmd.getAllCardItems().size() == 0;
-    }
-
-    public void notifyItemAdded(Card card) {
-        int existingIdx = findItem(card);
-        if (existingIdx == -1) {
-            Long deckId = mPagedCardItemsCmd.getDeckId();
-            if (deckId == null || deckId.equals(card.deckId)) {
-                mPagedCardItemsCmd.getAllCardItems()
-                        .add(0, card);
-                notifyItemInserted(0);
-            }
-        }
-    }
-
-    public void notifyItemUpdated(Card card) {
-        int existingIdx = findItem(card);
-        if (existingIdx != -1) {
-            ArrayList<Card> cards = mPagedCardItemsCmd.getAllCardItems();
-            cards.remove(existingIdx);
-            cards.add(existingIdx, card);
-            notifyItemChanged(existingIdx);
-        }
-    }
-
-    public void notifyItemDeleted(Card card) {
-        int removedIdx = findItem(card);
-        if (removedIdx != -1) {
-            mPagedCardItemsCmd.getAllCardItems()
-                    .remove(removedIdx);
-            notifyItemRemoved(removedIdx);
         }
     }
 
@@ -146,32 +81,12 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
-    private int findItem(Card card) {
-        ArrayList<Card> cards =
-                mPagedCardItemsCmd.getAllCardItems();
-        int size = cards.size();
-        int removedIdx = -1;
-        for (int i = 0; i < size; i++) {
-            if (card.id.equals(cards.get(i).id)) {
-                removedIdx = i;
-                break;
-            }
-        }
-        return removedIdx;
-    }
-
-    public void notifyItemRefreshed() {
-        notifyItemRangeChanged(0, getItemCount());
-    }
-
     protected static class ItemViewHolder extends RecyclerView.ViewHolder {
-        private CardItemSV mCardItemSV;
-        private PagedCardItemsCmd mPagedCardItemsCmd;
+        private final CardItemSV mCardItemSV;
 
-        public ItemViewHolder(@NonNull View itemView, CardItemSV cardItemSV, PagedCardItemsCmd pagedCardItemsCmd) {
+        public ItemViewHolder(@NonNull View itemView, CardItemSV cardItemSV) {
             super(itemView);
             mCardItemSV = cardItemSV;
-            mPagedCardItemsCmd = pagedCardItemsCmd;
         }
 
         public void setItem(Card card) {
@@ -183,9 +98,16 @@ public class CardRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
-    protected static class EmptyViewHolder extends RecyclerView.ViewHolder {
-        public EmptyViewHolder(@NonNull View itemView) {
-            super(itemView);
+    protected static class ItemCallback extends DiffUtil.ItemCallback<Card> {
+
+        @Override
+        public boolean areItemsTheSame(@NonNull Card oldItem, @NonNull Card newItem) {
+            return oldItem.id.equals(newItem.id);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Card oldItem, @NonNull Card newItem) {
+            return oldItem.equals(newItem);
         }
     }
 }

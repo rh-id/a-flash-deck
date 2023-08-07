@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -37,9 +38,8 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 
 public class PagedCardItemsCmd implements ProviderDisposable {
-    private Context mAppContext;
-    private ExecutorService mExecutorService;
-    private DeckDao mDeckDao;
+    private final ExecutorService mExecutorService;
+    private final DeckDao mDeckDao;
     private int mLimit;
     private Long mDeckId;
     private String mSearch;
@@ -48,30 +48,25 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     private final CompositeDisposable mCompositeDisposable;
 
     public PagedCardItemsCmd(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mDeckDao = provider.get(DeckDao.class);
+        DeckChangeNotifier deckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mCardItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
         mCompositeDisposable = new CompositeDisposable();
-        mCompositeDisposable.add(provider.get(DeckChangeNotifier.class)
-                .getMovedCardFlow().subscribe(moveCardEvent -> {
-                    ArrayList<Card> cardArrayList = getAllCardItems();
-                    if (cardArrayList != null && !cardArrayList.isEmpty()) {
-                        Card movedCard = moveCardEvent.getMovedCard();
-                        for (Card card : cardArrayList) {
-                            if (card.id.equals(movedCard.id)) {
-                                if (isSearching()) {
-                                    doSearch();
-                                } else {
-                                    load();
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }));
+        mCompositeDisposable.add(deckChangeNotifier.getMovedCardFlow()
+                .observeOn(Schedulers.from(mExecutorService))
+                .subscribe(moveCardEvent -> refresh()));
+        mCompositeDisposable.add(deckChangeNotifier.getAddedCardFlow()
+                .observeOn(Schedulers.from(mExecutorService))
+                .subscribe(card -> refresh()));
+        mCompositeDisposable.add(deckChangeNotifier.getUpdatedCardFlow()
+                .observeOn(Schedulers.from(mExecutorService))
+                .subscribe(card -> refresh()));
+        mCompositeDisposable.add(deckChangeNotifier.getDeletedCardFlow()
+                .observeOn(Schedulers.from(mExecutorService))
+                .subscribe(card -> refresh()));
     }
 
     private boolean isSearching() {
@@ -174,15 +169,11 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     }
 
     private void resetPage() {
-        mLimit = 10;
+        mLimit = 100;
     }
 
     public void setDeckId(Long deckId) {
         mDeckId = deckId;
-    }
-
-    public Long getDeckId() {
-        return mDeckId;
     }
 
     @Override
