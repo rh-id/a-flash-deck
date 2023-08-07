@@ -52,7 +52,7 @@ dependencies {
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api 'androidx.drawerlayout:drawerlayout:1.2.0'
     api 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    api 'androidx.recyclerview:recyclerview:1.3.0'
+    api 'androidx.recyclerview:recyclerview:1.3.1'
     api 'androidx.exifinterface:exifinterface:1.3.6'
     api "androidx.work:work-runtime:$work_version"
 
