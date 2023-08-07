@@ -14,7 +14,7 @@ if (System.getenv("SIGNING_KEY") != null) {
 }
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     signingConfigs {
         release {
@@ -27,7 +27,7 @@ android {
     defaultConfig {
         applicationId "m.co.rh.id.a_flash_deck"
         minSdk 21
-        targetSdk 33
+        targetSdk 34
         versionCode 43
         versionName "1.7.3"
         vectorDrawables.useSupportLibrary = true
