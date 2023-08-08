@@ -31,7 +31,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
+import co.rh.id.lib.rx3_utils.subject.SerialOptionalBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
@@ -59,10 +59,10 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
     private transient CardRecyclerViewAdapter mCardRecyclerViewAdapter;
     private transient RecyclerView.OnScrollListener mOnScrollListener;
 
-    private final SerialBehaviorSubject<Long> mDeckId;
+    private final SerialOptionalBehaviorSubject<Long> mDeckId;
 
     public CardListSV() {
-        mDeckId = new SerialBehaviorSubject<>();
+        mDeckId = new SerialOptionalBehaviorSubject<>(null);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer.add("createView_onDeckIdChanged",
                 mDeckId.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aLong -> {
-                            mPagedCardItemsCmd.setDeckId(aLong);
+                            mPagedCardItemsCmd.setDeckId(aLong.orElse(null));
                             mPagedCardItemsCmd.refresh();
                         }));
         mRxDisposer
@@ -171,7 +171,7 @@ public class CardListSV extends StatefulView<Activity> implements RequireCompone
         mPagedCardItemsCmd.refresh();
     }
 
-    public void setDeckId(long deckId) {
+    public void setDeckId(Long deckId) {
         mDeckId.onNext(deckId);
     }
 }

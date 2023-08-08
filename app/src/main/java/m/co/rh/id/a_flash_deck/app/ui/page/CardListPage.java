@@ -57,8 +57,6 @@ public class CardListPage extends StatefulView<Activity> implements Toolbar.OnMe
         Args args = Args.of(mNavRoute);
         if (args != null) {
             mCardListSV.setDeckId(args.getDeck().id);
-        } else {
-            mCardListSV.setDeckId(Long.MIN_VALUE);
         }
     }
 
