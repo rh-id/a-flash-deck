@@ -1,0 +1,4 @@
+Release 1.7.6+46
+
+Fixes:
+* Card list blank when open from menu
