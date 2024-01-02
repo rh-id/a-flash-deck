@@ -52,6 +52,9 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     namespace 'm.co.rh.id.a_flash_deck'
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {
