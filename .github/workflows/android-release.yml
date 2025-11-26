@@ -15,9 +15,10 @@ jobs:
         with:
           java-version: 17
           distribution: 'adopt'
-          cache: gradle
-      - name: Make Gradle executable
-        run: chmod +x ./gradlew
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v5
+
       - name: Build with Gradle
         run: ./gradlew build
         env:
