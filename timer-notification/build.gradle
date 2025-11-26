@@ -3,10 +3,10 @@ plugins {
 }
 
 android {
-    compileSdk 34
+    compileSdk = 36
 
     defaultConfig {
-        minSdk 21
+        minSdk 23
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
     implementation project(path: ':base')
 }
