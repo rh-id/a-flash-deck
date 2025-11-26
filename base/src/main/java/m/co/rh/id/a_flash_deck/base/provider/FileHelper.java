@@ -299,10 +299,18 @@ public class FileHelper {
 
     private void copyImage(Uri content, File outFile, int width, int height) throws IOException {
         ContentResolver contentResolver = mAppContext.getContentResolver();
-        FileDescriptor fd = contentResolver.openFileDescriptor(
-                content, "r").getFileDescriptor();
-        InputStream fis = new FileInputStream(fd);
+        InputStream fis = contentResolver.openInputStream(content);
+        if (fis == null) {
+            throw new IOException("Unable to open input stream for " + content);
+        }
+
         BitmapFactory.Options bmOptions = getBitmapOptionForCompression(fis, width, height);
+        try {
+            fis.close();
+        } catch (IOException e) {
+            mLogger.get().e(TAG, "Error closing stream", e);
+        }
+
         OutputStream fileOutputStream = new BufferedOutputStream(
                 new FileOutputStream(outFile), 10240);
         Bitmap bitmap = processExifAttr(mAppContext, content, bmOptions);
@@ -331,15 +339,48 @@ public class FileHelper {
 
     private Bitmap processExifAttr(Context context, Uri imageUri, BitmapFactory.Options bmOptions) throws IOException {
         ContentResolver contentResolver = context.getContentResolver();
-        FileDescriptor fd = contentResolver.openFileDescriptor(
-                imageUri, "r").getFileDescriptor();
-        ExifInterface exifInterface = new ExifInterface(fd);
+        InputStream inputStream = contentResolver.openInputStream(imageUri);
+        if (inputStream == null) {
+            throw new IOException("Unable to open stream for URI: " + imageUri);
+        }
+
+        if (!inputStream.markSupported()) {
+            inputStream = new BufferedInputStream(inputStream);
+        }
+        inputStream.mark(Integer.MAX_VALUE); // Mark the beginning of the stream
+
+        ExifInterface exifInterface = new ExifInterface(inputStream);
         int rotation = getRotation(exifInterface);
 
-        // get fd again
-        fd = contentResolver.openFileDescriptor(
-                imageUri, "r").getFileDescriptor();
-        Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fd, null, bmOptions);
+        try {
+            inputStream.reset(); // Reset the stream to the beginning
+        } catch (IOException e) {
+            mLogger.get().w(TAG, "Failed to reset input stream, trying to reopen.", e);
+            // If reset fails, close and reopen the stream
+            try {
+                inputStream.close();
+            } catch (IOException closeErr) {
+                mLogger.get().e(TAG, "Error closing initial stream", closeErr);
+            }
+            inputStream = contentResolver.openInputStream(imageUri);
+            if (inputStream == null) {
+                throw new IOException("Unable to open stream for URI: " + imageUri);
+            }
+        }
+
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, bmOptions);
+        if (bitmap == null) {
+            // Add logging or throw an exception if bitmap decoding fails
+            mLogger.get().e(TAG, "BitmapFactory.decodeStream returned null for " + imageUri);
+            throw new IOException("Failed to decode bitmap from stream for URI: " + imageUri);
+        }
+
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            mLogger.get().e(TAG, "Error closing stream", e);
+        }
+
         if (rotation != 0) {
             Matrix matrix = new Matrix();
             matrix.setRotate(rotation);
