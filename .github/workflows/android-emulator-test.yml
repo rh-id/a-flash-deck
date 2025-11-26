@@ -16,10 +16,10 @@ jobs:
         target: [ default, google_apis ]
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'adopt'
