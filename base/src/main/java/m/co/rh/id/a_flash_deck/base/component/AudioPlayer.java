@@ -24,7 +24,6 @@ import android.net.Uri;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
@@ -33,15 +32,13 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class AudioPlayer implements ProviderDisposable {
     private static final String TAG = AudioPlayer.class.getName();
 
-    private Context mAppContext;
-    private ProviderValue<FileHelper> mFileHelper;
-    private ProviderValue<ILogger> mLogger;
-    private ReentrantLock mLock;
+    private final Context mAppContext;
+    private final ProviderValue<ILogger> mLogger;
+    private final ReentrantLock mLock;
     private volatile MediaPlayer mediaPlayer;
 
     public AudioPlayer(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
-        mFileHelper = provider.lazyGet(FileHelper.class);
         mLogger = provider.lazyGet(ILogger.class);
         mLock = new ReentrantLock();
     }
@@ -64,6 +61,15 @@ public class AudioPlayer implements ProviderDisposable {
             mediaPlayer.start();
         } catch (Exception e) {
             mLogger.get().e(TAG, e.getMessage(), e);
+            // Clean up MediaPlayer if any step fails
+            if (mediaPlayer != null) {
+                try {
+                    mediaPlayer.release();
+                } catch (Exception releaseException) {
+                    mLogger.get().e(TAG, "Error releasing MediaPlayer: " + releaseException.getMessage());
+                }
+                mediaPlayer = null;
+            }
         } finally {
             mLock.unlock();
         }
@@ -71,13 +77,21 @@ public class AudioPlayer implements ProviderDisposable {
 
     public void stop() {
         mLock.lock();
-        if (mediaPlayer != null) {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.stop();
+        try {
+            if (mediaPlayer != null) {
+                try {
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.stop();
+                    }
+                } catch (RuntimeException e) {
+                    mLogger.get().e(TAG, "Error stopping player: " + e.getMessage(), e);
+                }
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                mediaPlayer = null;
             }
-            mediaPlayer.reset();
-            mediaPlayer.release();
-            mediaPlayer = null;
+        } finally {
+            mLock.unlock(); // Always release lock
         }
         mLock.unlock();
     }
