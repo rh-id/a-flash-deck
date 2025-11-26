@@ -17,17 +17,20 @@
 
 package m.co.rh.id.a_flash_deck.app.provider.component;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -67,8 +70,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<FileHelper> mFileHelper;
     private final ProviderValue<AudioPlayer> mAudioPlayer;
     private final ProviderValue<BotAnalytics> mBotAnalytics;
-    private QueueSubject<NotificationTimerEvent> mNotificationTimerSubject;
-    private ReentrantLock mLock;
+    private final QueueSubject<NotificationTimerEvent> mNotificationTimerSubject;
+    private final ReentrantLock mLock;
 
     public AppNotificationHandler(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -85,6 +88,9 @@ public class AppNotificationHandler implements IAppNotificationHandler {
 
     @Override
     public void postNotificationTimer(NotificationTimer notificationTimer, Card selectedCard) {
+        if (ActivityCompat.checkSelfPermission(mAppContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         mLock.lock();
         createNotificationTimerNotificationChannel();
         AndroidNotification androidNotification = new AndroidNotification();
@@ -93,10 +99,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mAndroidNotificationRepo.get().insertNotification(androidNotification);
         Intent receiverIntent = new Intent(mAppContext, CardShowActivity.class);
         receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-        int intentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intentFlag = PendingIntent.FLAG_IMMUTABLE;
-        }
+
+        int intentFlag = PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
                 intentFlag);
         Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
@@ -108,7 +112,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
                 .setSmallIcon(R.drawable.ic_notification_launcher)
                 .setColorized(true)
-                .setColor(mAppContext.getResources().getColor(R.color.teal_custom))
+                .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
                 .setContentTitle(title)
                 .setContentText(content)
                 .setStyle(new NotificationCompat.BigTextStyle()
@@ -135,10 +139,11 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     intentFlag);
             builder.addAction(R.drawable.ic_keyboard_voice_black, mAppContext.getString(R.string.play_voice), questionVoicePendingIntent);
         }
+
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-        notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
-                androidNotification.requestId,
-                builder.build());
+            notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
+                    androidNotification.requestId,
+                    builder.build());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             NotificationCompat.Builder summaryBuilder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
                     .setSmallIcon(R.drawable.ic_notification_launcher)
@@ -150,6 +155,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     .setGroupSummary(true);
             notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER, GROUP_SUMMARY_ID_NOTIFICATION_TIMER, summaryBuilder.build());
         }
+
         mLock.unlock();
     }
 
@@ -169,6 +175,9 @@ public class AppNotificationHandler implements IAppNotificationHandler {
 
     @Override
     public void postGeneralMessage(String title, String content) {
+        if (ActivityCompat.checkSelfPermission(mAppContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         mLock.lock();
         createGeneralMessageNotificationChannel();
         AndroidNotification androidNotification = new AndroidNotification();
@@ -176,10 +185,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mAndroidNotificationRepo.get().insertNotification(androidNotification);
         Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
         receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-        int intentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intentFlag = PendingIntent.FLAG_IMMUTABLE;
-        }
+
+        int intentFlag = PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
                 intentFlag);
         Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
@@ -189,7 +196,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_GENERAL_MESSAGE)
                 .setSmallIcon(R.drawable.ic_notification_launcher)
                 .setColorized(true)
-                .setColor(mAppContext.getResources().getColor(R.color.teal_custom))
+                .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
                 .setContentTitle(title)
                 .setContentText(content)
                 .setStyle(new NotificationCompat.BigTextStyle()
