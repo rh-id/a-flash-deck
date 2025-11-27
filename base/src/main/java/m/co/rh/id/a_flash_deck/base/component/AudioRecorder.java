@@ -32,15 +32,13 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class AudioRecorder implements ProviderDisposable {
     private static final String TAG = AudioRecorder.class.getName();
 
-    private Context mAppContext;
-    private ProviderValue<FileHelper> mFileHelper;
-    private ProviderValue<ILogger> mLogger;
-    private ReentrantLock mLock;
-    private volatile MediaRecorder mediaRecorder;
+    private final ProviderValue<FileHelper> mFileHelper;
+    private final ProviderValue<ILogger> mLogger;
+    private final ReentrantLock mLock;
+    private volatile MediaRecorder mMediaRecorder;
     private File mAudioRecordFile;
 
     public AudioRecorder(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
         mFileHelper = provider.lazyGet(FileHelper.class);
         mLogger = provider.lazyGet(ILogger.class);
         mLock = new ReentrantLock();
@@ -50,15 +48,25 @@ public class AudioRecorder implements ProviderDisposable {
         mLock.lock();
         try {
             mAudioRecordFile = mFileHelper.get().createTempFile("audio-record");
-            mediaRecorder = new MediaRecorder();
-            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mediaRecorder.setOutputFile(mAudioRecordFile.getAbsolutePath());
-            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            mediaRecorder.prepare();
-            mediaRecorder.start();
+            mMediaRecorder = new MediaRecorder();
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mMediaRecorder.setOutputFile(mAudioRecordFile.getAbsolutePath());
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mMediaRecorder.prepare();
+            mMediaRecorder.start();
         } catch (Exception e) {
             mLogger.get().e(TAG, e.getMessage(), e);
+            // Always clean up MediaRecorder on initialization failure
+            if (mMediaRecorder != null) {
+                try {
+                    mMediaRecorder.release();
+                } catch (Exception releaseException) {
+                    mLogger.get().e(TAG, "Error releasing MediaRecorder: " + releaseException.getMessage());
+                }
+                mMediaRecorder = null;
+            }
+            mAudioRecordFile = null; // Clear invalid file reference
         } finally {
             mLock.unlock();
         }
@@ -66,12 +74,19 @@ public class AudioRecorder implements ProviderDisposable {
 
     public void stopRecording() {
         mLock.lock();
-        if (mediaRecorder != null) {
-            mediaRecorder.stop();
-            mediaRecorder.release();
-            mediaRecorder = null;
+        try {
+            if (mMediaRecorder != null) {
+                try {
+                    mMediaRecorder.stop();
+                } catch (RuntimeException e) {
+                    mLogger.get().e(TAG, "Error stopping recorder: " + e.getMessage(), e);
+                }
+                mMediaRecorder.release();
+                mMediaRecorder = null;
+            }
+        } finally {
+            mLock.unlock(); // Always release lock
         }
-        mLock.unlock();
     }
 
     public File getAudioRecord() {
@@ -80,7 +95,7 @@ public class AudioRecorder implements ProviderDisposable {
 
     @Override
     public void dispose(Context context) {
-        if (mediaRecorder != null) {
+        if (mMediaRecorder != null) {
             stopRecording();
         }
     }
