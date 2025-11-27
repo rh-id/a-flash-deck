@@ -105,7 +105,7 @@
     <string name="deck_was_deleted">Dek %s sudah dihapus</string>
     <string name="buy_developer_a_coffee">Traktir developer secangkir kopi</string>
     <string name="donation_pitch">Dukung developer, traktir dengan secangkir kopi</string>
-    <string name="bitcoin">Bitcoin</string>
+    <string name="trakteer">Trakteer</string>
     <string name="donation_other_apps">Aplikasi lainnya dari developer: %s</string>
     <string name="donation_thank_you">Terima kasih atas bantuannya</string>
     <string name="flash_bot_button_accept">Ya, mari kita coba</string>

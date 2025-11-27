@@ -41,6 +41,6 @@ and finally RxAndroid to handle UI use cases.
 Consider donation to support this project
 <table>
   <tr>
-    <td><a href="https://trakteer.id/rh-id">https://trakteer.id/rh-id</a></td>
+    <td><a href="https://teer.id/rh-id">https://teer.id/rh-id</a></td>
   </tr>
 </table>
