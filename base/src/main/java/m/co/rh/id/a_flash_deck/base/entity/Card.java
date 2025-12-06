@@ -75,12 +75,19 @@ public class Card implements Serializable, Cloneable {
     @ColumnInfo(name = "answer_image")
     public String answerImage;
 
+    /**
+     * Whether the question and answer can be swapped when questioned
+     */
+    @ColumnInfo(name = "is_reversible_qa")
+    public boolean isReversibleQA;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Card card = (Card) o;
         return ordinal == card.ordinal &&
+                isReversibleQA == card.isReversibleQA &&
                 Objects.equals(id, card.id) &&
                 Objects.equals(deckId, card.deckId) &&
                 Objects.equals(question, card.question) &&
@@ -92,7 +99,7 @@ public class Card implements Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, deckId, ordinal, question, questionImage, questionVoice, answer, answerImage);
+        return Objects.hash(id, deckId, ordinal, question, questionImage, questionVoice, answer, answerImage, isReversibleQA);
     }
 
     @Override
@@ -126,6 +133,7 @@ public class Card implements Serializable, Cloneable {
             answerImageStr = "";
         }
         jsonObject.put("answerImage", answerImageStr);
+        jsonObject.put("isReversibleQA", isReversibleQA);
         return jsonObject;
     }
 
@@ -156,6 +164,11 @@ public class Card implements Serializable, Cloneable {
             if (answerImage.isEmpty()) {
                 answerImage = null;
             }
+        } catch (JSONException jsonException) {
+            // leave blank
+        }
+        try {
+            isReversibleQA = jsonObject.getBoolean("isReversibleQA");
         } catch (JSONException jsonException) {
             // leave blank
         }

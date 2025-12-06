@@ -32,6 +32,7 @@ import androidx.core.text.HtmlCompat;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Random;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
@@ -62,6 +63,7 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
     private transient Provider mSvProvider;
     private transient BehaviorSubject<Card> mCardStateSubject;
     private Card mCard;
+    private transient Random mRandom;
 
     @Override
     protected void initState(Activity activity) {
@@ -100,13 +102,28 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                 .add("createView_onCardShow",
                         mCardStateSubject.subscribe(
                                 card -> {
-                                    textQuestion.setText(HtmlCompat.fromHtml(card.question,
+                                    String question = card.question;
+                                    String answer = card.answer;
+                                    String questionImage = card.questionImage;
+                                    String answerImage = card.answerImage;
+                                    if (card.isReversibleQA) {
+                                        if (mRandom == null) {
+                                            mRandom = new Random();
+                                        }
+                                        if (mRandom.nextBoolean()) {
+                                            question = card.answer;
+                                            answer = card.question;
+                                            questionImage = card.answerImage;
+                                            answerImage = card.questionImage;
+                                        }
+                                    }
+                                    textQuestion.setText(HtmlCompat.fromHtml(question,
                                             HtmlCompat.FROM_HTML_MODE_LEGACY));
                                     textQuestion.setMovementMethod(LinkMovementMethod.getInstance());
-                                    textAnswer.setText(HtmlCompat.fromHtml(card.answer,
+                                    textAnswer.setText(HtmlCompat.fromHtml(answer,
                                             HtmlCompat.FROM_HTML_MODE_LEGACY));
                                     textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
-                                    if (card.questionImage != null) {
+                                    if (questionImage != null) {
                                         File file = mSvProvider.get(FileHelper.class).getCardQuestionImage(card.questionImage);
                                         questionImageView.setImageURI(Uri.fromFile(file));
                                         questionImageView.setVisibility(View.VISIBLE);
@@ -114,7 +131,7 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                                         questionImageView.setImageURI(null);
                                         questionImageView.setVisibility(View.GONE);
                                     }
-                                    if (card.answerImage != null) {
+                                    if (answerImage != null) {
                                         File file = mSvProvider.get(FileHelper.class).getCardAnswerImage(card.answerImage);
                                         answerImageView.setImageURI(Uri.fromFile(file));
                                         answerImageView.setVisibility(View.VISIBLE);

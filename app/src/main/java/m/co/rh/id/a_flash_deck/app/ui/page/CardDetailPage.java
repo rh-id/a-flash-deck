@@ -33,6 +33,8 @@ import android.widget.ImageView;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.android.material.checkbox.MaterialCheckBox;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -191,12 +193,15 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         ViewGroup voiceQuestionContainer = rootLayout.findViewById(R.id.container_voice_question);
         EditText editTextQuestion = rootLayout.findViewById(R.id.text_input_edit_question);
         EditText editTextAnswer = rootLayout.findViewById(R.id.text_input_edit_answer);
+        MaterialCheckBox reversibleCheckBox = rootLayout.findViewById(R.id.checkbox_reversible);
         if (mCard != null) {
             editTextQuestion.setText(mCard.question);
             editTextAnswer.setText(mCard.answer);
+            reversibleCheckBox.setChecked(mCard.isReversibleQA);
         }
         editTextQuestion.addTextChangedListener(mQuestionTextWatcher);
         editTextAnswer.addTextChangedListener(mAnswerTextWatcher);
+        reversibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCard.isReversibleQA = isChecked);
         mRxDisposer
                 .add("createView_questionValid",
                         mNewCardCmd

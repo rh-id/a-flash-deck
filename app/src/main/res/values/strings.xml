@@ -113,4 +113,5 @@
     <string name="notification_description_general_message">Used to show general message from app</string>
     <string name="title_import_deck">Import Deck</string>
     <string name="error_please_select_deck">Error, please select deck</string>
+    <string name="reversible_when_questioned">Reversible when questioned</string>
 </resources>
