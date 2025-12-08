@@ -99,6 +99,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         Button buttonQuestionVoice = rootLayout.findViewById(R.id.button_question_voice);
         buttonQuestionVoice.setOnClickListener(this);
+        Button buttonAnswerVoice = rootLayout.findViewById(R.id.button_answer_voice);
+        buttonAnswerVoice.setOnClickListener(this);
         TextView textProgress = rootLayout.findViewById(R.id.text_progress);
         Context context = mSvProvider.getContext();
         FileHelper fileHelper = mSvProvider.get(FileHelper.class);
@@ -108,26 +110,44 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                 testState -> {
                                     Card card = testState.currentCard();
                                     String progress = (testState.getCurrentCardIndex() + 1) + " / " + testState.getTotalCards();
-                                    textQuestion.setText(HtmlCompat.fromHtml(card.question, HtmlCompat.FROM_HTML_MODE_LEGACY));
+
+                                    final String questionText, questionImage, questionVoice;
+                                    if (card.isReversed) {
+                                        questionText = card.answer;
+                                        questionImage = card.answerImage;
+                                        questionVoice = card.answerVoice;
+                                    } else {
+                                        questionText = card.question;
+                                        questionImage = card.questionImage;
+                                        questionVoice = card.questionVoice;
+                                    }
+
+                                    textQuestion.setText(HtmlCompat.fromHtml(questionText, HtmlCompat.FROM_HTML_MODE_LEGACY));
                                     textQuestion.setMovementMethod(LinkMovementMethod.getInstance());
-                                    answerImageView.setImageURI(null);
-                                    answerImageView.setVisibility(View.GONE);
-                                    textAnswer.setText(context.getString(R.string.tap_to_view_answer));
-                                    textAnswer.setOnClickListener(this);
-                                    if (card.questionImage != null) {
+
+                                    if (questionImage != null) {
                                         questionImageView.setImageURI(Uri.fromFile(
-                                                fileHelper.getCardQuestionImage(card.questionImage)
+                                                card.isReversed ? fileHelper.getCardAnswerImage(questionImage) : fileHelper.getCardQuestionImage(questionImage)
                                         ));
                                         questionImageView.setVisibility(View.VISIBLE);
                                     } else {
                                         questionImageView.setImageURI(null);
                                         questionImageView.setVisibility(View.GONE);
                                     }
-                                    if (card.questionVoice != null) {
+
+                                    if (questionVoice != null) {
                                         buttonQuestionVoice.setVisibility(View.VISIBLE);
                                     } else {
                                         buttonQuestionVoice.setVisibility(View.GONE);
                                     }
+
+                                    // Reset answer part
+                                    textAnswer.setText(context.getString(R.string.tap_to_view_answer));
+                                    textAnswer.setOnClickListener(this);
+                                    answerImageView.setVisibility(View.GONE);
+                                    answerImageView.setImageURI(null);
+                                    buttonAnswerVoice.setVisibility(View.GONE);
+
                                     textProgress.setText(progress);
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
                                     buttonNext.setEnabled(testState.getCurrentCardIndex() != testState.getTotalCards() - 1);
@@ -189,16 +209,36 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             View rootView = view.getRootView();
             ImageView answerImageView = rootView.findViewById(R.id.image_answer);
             TextView textAnswer = rootView.findViewById(R.id.text_answer);
-            if (card.answerImage != null) {
-                answerImageView.setImageURI(Uri.fromFile(
-                        fileHelper.getCardAnswerImage(card.answerImage)
-                ));
-                answerImageView.setVisibility(View.VISIBLE);
+            Button buttonAnswerVoice = rootView.findViewById(R.id.button_answer_voice);
+            if (card.isReversed) {
+                if (card.questionImage != null) {
+                    answerImageView.setImageURI(Uri.fromFile(
+                            fileHelper.getCardQuestionImage(card.questionImage)
+                    ));
+                    answerImageView.setVisibility(View.VISIBLE);
+                } else {
+                    answerImageView.setImageURI(null);
+                    answerImageView.setVisibility(View.GONE);
+                }
+                textAnswer.setText(HtmlCompat.fromHtml(card.question, HtmlCompat.FROM_HTML_MODE_LEGACY));
+                if (card.questionVoice != null) {
+                    buttonAnswerVoice.setVisibility(View.VISIBLE);
+                }
             } else {
-                answerImageView.setImageURI(null);
-                answerImageView.setVisibility(View.GONE);
+                if (card.answerImage != null) {
+                    answerImageView.setImageURI(Uri.fromFile(
+                            fileHelper.getCardAnswerImage(card.answerImage)
+                    ));
+                    answerImageView.setVisibility(View.VISIBLE);
+                } else {
+                    answerImageView.setImageURI(null);
+                    answerImageView.setVisibility(View.GONE);
+                }
+                textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
+                if (card.answerVoice != null) {
+                    buttonAnswerVoice.setVisibility(View.VISIBLE);
+                }
             }
-            textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
             textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
             textAnswer.setOnClickListener(null);
             mBotAnalytics.trackOpenTestAnswer(card.id);
@@ -254,13 +294,20 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         } else if (id == R.id.image_question) {
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(
-                            fileHelper.getCardQuestionImage(card.questionImage)));
+                            card.isReversed ? fileHelper.getCardAnswerImage(card.answerImage) :
+                                    fileHelper.getCardQuestionImage(card.questionImage)));
         } else if (id == R.id.image_answer) {
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(
-                            fileHelper.getCardAnswerImage(card.answerImage)));
+                            card.isReversed ? fileHelper.getCardQuestionImage(card.questionImage) :
+                                    fileHelper.getCardAnswerImage(card.answerImage)));
         } else if (id == R.id.button_question_voice) {
-            File file = fileHelper.getCardQuestionVoice(card.questionVoice);
+            File file = card.isReversed ? fileHelper.getCardAnswerVoice(card.answerVoice) :
+                    fileHelper.getCardQuestionVoice(card.questionVoice);
+            mAudioPlayer.play(Uri.fromFile(file));
+        } else if (id == R.id.button_answer_voice) {
+            File file = card.isReversed ? fileHelper.getCardQuestionVoice(card.questionVoice) :
+                    fileHelper.getCardAnswerVoice(card.answerVoice);
             mAudioPlayer.play(Uri.fromFile(file));
         }
     }

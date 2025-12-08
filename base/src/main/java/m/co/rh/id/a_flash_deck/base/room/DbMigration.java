@@ -95,6 +95,7 @@ public class DbMigration {
     public static final Migration MIGRATION_10_11 = new Migration(10, 11) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE card ADD COLUMN `answer_voice` TEXT");
             database.execSQL("ALTER TABLE card ADD COLUMN `is_reversible_qa` INTEGER NOT NULL DEFAULT 0");
         }
     };

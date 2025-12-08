@@ -30,8 +30,6 @@ import androidx.exifinterface.media.ExifInterface;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,15 +46,16 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class FileHelper {
     private static final String TAG = FileHelper.class.getName();
 
-    private Context mAppContext;
-    private ProviderValue<ILogger> mLogger;
-    private File mLogFile;
-    private File mTempFileRoot;
-    private File mCardQuestionImageParent;
-    private File mCardAnswerImageParent;
-    private File mCardQuestionImageThumbnailParent;
-    private File mCardAnswerImageThumbnailParent;
-    private File mCardQuestionVoiceParent;
+    private final Context mAppContext;
+    private final ProviderValue<ILogger> mLogger;
+    private final File mLogFile;
+    private final File mTempFileRoot;
+    private final File mCardQuestionImageParent;
+    private final File mCardAnswerImageParent;
+    private final File mCardQuestionImageThumbnailParent;
+    private final File mCardAnswerImageThumbnailParent;
+    private final File mCardQuestionVoiceParent;
+    private final File mCardAnswerVoiceParent;
 
     public FileHelper(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -76,6 +75,8 @@ public class FileHelper {
         mCardAnswerImageThumbnailParent.mkdirs();
         mCardQuestionVoiceParent = new File(fileDir, "app/card/question/voice");
         mCardQuestionVoiceParent.mkdirs();
+        mCardAnswerVoiceParent = new File(fileDir, "app/card/answer/voice");
+        mCardAnswerVoiceParent.mkdirs();
     }
 
     public File createTempFile(String fileName) throws IOException {
@@ -228,9 +229,41 @@ public class FileHelper {
         }
     }
 
+    public File createCardAnswerVoice(File inFile, String fileName) throws IOException {
+        File outFile = new File(mCardAnswerVoiceParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyFile(Uri.fromFile(inFile), outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File createCardAnswerVoice(Uri content) throws IOException {
+        String fName = UUID.randomUUID().toString();
+        File outFile = new File(mCardAnswerVoiceParent, fName);
+        try {
+            outFile.createNewFile();
+            copyFile(content, outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
     public void deleteCardQuestionVoice(String fileName) {
         if (fileName != null && !fileName.isEmpty()) {
             File file = new File(mCardQuestionVoiceParent, fileName);
+            file.delete();
+        }
+    }
+
+    public void deleteCardAnswerVoice(String fileName) {
+        if (fileName != null && !fileName.isEmpty()) {
+            File file = new File(mCardAnswerVoiceParent, fileName);
             file.delete();
         }
     }
@@ -253,6 +286,10 @@ public class FileHelper {
 
     public File getCardQuestionVoice(String fileName) {
         return new File(mCardQuestionVoiceParent, fileName);
+    }
+
+    public File getCardAnswerVoice(String fileName) {
+        return new File(mCardAnswerVoiceParent, fileName);
     }
 
     public File createCardAnswerImage(File inFile, String fileName) throws IOException {

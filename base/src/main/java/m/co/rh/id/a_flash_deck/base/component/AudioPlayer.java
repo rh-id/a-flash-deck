@@ -93,7 +93,6 @@ public class AudioPlayer implements ProviderDisposable {
         } finally {
             mLock.unlock(); // Always release lock
         }
-        mLock.unlock();
     }
 
     @Override
