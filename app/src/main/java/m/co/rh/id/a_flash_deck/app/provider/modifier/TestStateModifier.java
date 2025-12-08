@@ -31,6 +31,7 @@ import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
@@ -165,6 +166,12 @@ public class TestStateModifier {
             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
         } else {
             Collections.shuffle(cardList);
+            for (Card card:cardList) {
+                Random random = new Random();
+                if(card.isReversibleQA){
+                    card.isReversed = random.nextBoolean();
+                }
+            }
             String uuid = UUID.randomUUID().toString();
             File stateFileParent = new File(mAppContext.getFilesDir(),
                     "test/state");
