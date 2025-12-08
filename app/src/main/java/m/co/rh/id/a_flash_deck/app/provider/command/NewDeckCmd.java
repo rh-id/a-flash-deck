@@ -33,8 +33,6 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class NewDeckCmd {
-    private static final String TAG = NewDeckCmd.class.getName();
-
     protected Context mAppContext;
     protected ExecutorService mExecutorService;
     protected DeckChangeNotifier mDeckChangeNotifier;
@@ -54,7 +52,7 @@ public class NewDeckCmd {
     public boolean valid(Deck deck) {
         boolean valid = false;
         if (deck != null) {
-            if (deck.name == null || deck.name.isEmpty()) {
+            if (deck.name == null || deck.name.isEmpty() || deck.name.trim().isEmpty()) {
                 mNameValidationSubject.onNext(mAppContext.getString(R.string.name_is_required));
             } else {
                 valid = true;
