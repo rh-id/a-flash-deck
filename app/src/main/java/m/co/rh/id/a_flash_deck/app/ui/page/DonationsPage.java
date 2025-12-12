@@ -29,8 +29,8 @@ public class DonationsPage extends StatefulView<Activity> implements View.OnClic
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_donations, container, false);
-        Button donateBitcoin = rootLayout.findViewById(R.id.button_donate);
-        donateBitcoin.setOnClickListener(this);
+        Button donate = rootLayout.findViewById(R.id.button_donate);
+        donate.setOnClickListener(this);
         TextView otherApps = rootLayout.findViewById(R.id.text_other_apps);
         String otherAppMsg = activity.getString(R.string.donation_other_apps, DEV_URL);
         otherApps.setText(HtmlCompat.fromHtml(otherAppMsg, HtmlCompat.FROM_HTML_MODE_LEGACY));
