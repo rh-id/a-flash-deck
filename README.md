@@ -32,6 +32,15 @@ A simple and easy to use flash card app to help you study.
 
 This project is a multi-module Android application.
 
+```mermaid
+graph TD
+    App[:app] --> Base[:base]
+    App --> Bot[:bot]
+    App --> Timer[:timer-notification]
+    Bot --> Base
+    Timer --> Base
+```
+
 *   `:app`: The main application module that contains the UI and presentation layer.
 *   `:base`: A library module that contains base classes and utilities shared across other modules.
 *   `:bot`: A library module that contains the logic for the "Flash bot" feature.
@@ -75,6 +84,26 @@ Here’s a breakdown of the workflow:
 
 *   **User Interaction**: User actions, handled in methods like `onClick`, trigger business logic by calling command classes (e.g., `mNewCardCmd`, `mTestStateModifier.startTest`). These commands perform operations and update the state, which in turn updates the UI through the reactive streams.
 
+```mermaid
+sequenceDiagram
+    participant Nav as Navigator
+    participant SV as StatefulView
+    participant UI as View (XML)
+    participant Rx as RxJava Subject
+
+    Nav->>SV: Instantiate (via Provider)
+    Nav->>SV: createView(activity, container)
+    SV->>UI: Inflate layout
+    SV->>UI: Find views & set listeners
+    SV->>Rx: Subscribe to state changes
+    Rx-->>SV: Emit current state
+    SV->>UI: Update UI
+
+    Note over Nav, SV: Navigation or Back Press
+    Nav->>SV: dispose()
+    SV->>Rx: Unsubscribe (prevent leaks)
+```
+
 ## Workflow
 
 The application's workflow is designed to be modular, scalable, and reactive. It follows a clear separation of concerns, with distinct layers for the UI, business logic, and data.
@@ -104,6 +133,25 @@ These commands are provided by the `CommandProviderModule` and are injected into
 ### End-to-End Data Flow
 
 The app's data flow is designed to be unidirectional and reactive, ensuring that the UI is always in sync with the underlying data. Here's a step-by-step overview of the data flow:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant SV as StatefulView
+    participant Cmd as Command
+    participant DAO as DAO/Room
+    participant Notifier
+    participant Rx as RxJava
+
+    User->>SV: Interaction (Click)
+    SV->>Cmd: Execute Command
+    Cmd->>DAO: Update Data
+    DAO-->>Cmd: Success
+    Cmd->>Notifier: Broadcast Change
+    Notifier->>Rx: Emit Event
+    Rx-->>SV: OnNext(Event)
+    SV->>UI: Update View
+```
 
 1.  **User Interaction**: The user interacts with a `StatefulView` (e.g., clicks a button).
 2.  **Command Execution**: The `StatefulView` invokes the appropriate command to handle the user's action.
