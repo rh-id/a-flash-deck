@@ -1,0 +1,9 @@
+Release 1.7.8+48
+
+Fixes:
+* Navbar overlap on Android 15++ (API level 35++)
+* Fix translation
+* Fix prevent empty deck name with spaces
+
+Feature:
+* Add Reversible cards capability during Test
