@@ -68,7 +68,7 @@ The app follows a modern Android architecture, utilizing a combination of establ
 
 The presentation layer is built on a custom component-based architecture centered around the `StatefulView` class. This pattern deviates from traditional MVP or MVVM in favor of a more self-contained and reactive approach.
 
-Here’s a breakdown of the workflow:
+Here's a breakdown of the workflow:
 
 *   **View and Logic Combined**: `StatefulView` classes (e.g., `HomePage`, `SettingsPage`) are responsible for both creating the Android `View` and handling the presentation logic. This makes each `StatefulView` a self-contained UI component.
 
@@ -80,7 +80,7 @@ Here’s a breakdown of the workflow:
 
 *   **UI Creation**: The `createView` method is where the UI is constructed. It inflates an XML layout, finds `View`s by their IDs, and sets up event listeners. It also subscribes to RxJava streams to react to state changes.
 
-*   **State Management and Reactivity**: The UI state is managed using RxJava’s `BehaviorSubject`. The UI elements subscribe to these subjects, so whenever the state changes (e.g., a test starts or stops), the UI updates automatically and reactively.
+*   **State Management and Reactivity**: The UI state is managed using RxJava's `BehaviorSubject`. The UI elements subscribe to these subjects, so whenever the state changes (e.g., a test starts or stops), the UI updates automatically and reactively.
 
 *   **User Interaction**: User actions, handled in methods like `onClick`, trigger business logic by calling command classes (e.g., `mNewCardCmd`, `mTestStateModifier.startTest`). These commands perform operations and update the state, which in turn updates the UI through the reactive streams.
 
@@ -104,35 +104,207 @@ sequenceDiagram
     SV->>Rx: Unsubscribe (prevent leaks)
 ```
 
-## Workflow
+## Technical Architecture Details
 
-The application's workflow is designed to be modular, scalable, and reactive. It follows a clear separation of concerns, with distinct layers for the UI, business logic, and data.
+### Module Organization
 
-### Data Layer
+The project follows a modular architecture with clear separation of concerns:
 
-The data layer is responsible for all data-related operations. It is built on top of the following components:
+```mermaid
+graph TB
+    subgraph "App Module (Presentation Layer)"
+        MainActivity[MainActivity]
+        CardShowActivity[CardShowActivity]
+        Pages[StatefulView Pages]
+        Dialogs[StatefulView Dialogs]
+        Components[UI Components]
+        Commands[Commands]
+        Receivers[Receivers]
+    end
 
-*   **Room Persistence Library**: The app uses Room for local data persistence. It has two databases:
-    *   `AppDatabase`: The main database for the app, managing entities like `Deck`, `Card`, `Test`, `AndroidNotification`, and `NotificationTimer`.
-    *   `BotDatabase`: A separate database for the "Flash bot" feature, managing entities like `CardLog` and `SuggestedCard`.
-*   **DAOs (Data Access Objects)**: Each entity has a corresponding DAO that defines the methods for accessing and manipulating the data in the database.
+    subgraph "Base Module (Core/Foundation)"
+        Entities[Room Entities]
+        DAOs[DAOs]
+        Database[AppDatabase]
+        Notifiers[RxJava Notifiers]
+        ProviderModules[Provider Modules]
+        CommonUI[Common UI Components]
+        Utils[Utilities]
+    end
 
-### Business Logic: The Command Pattern
+    subgraph "Bot Module (Analytics)"
+        BotEntities[Bot Entities]
+        BotDAOs[Bot DAOs]
+        BotDatabase[BotDatabase]
+        BotAnalytics[Analytics Logic]
+        BotWorkers[WorkManager Workers]
+        BotCommands[Bot Commands]
+    end
 
-The business logic is encapsulated in command classes, which follow the command pattern. These commands are responsible for executing specific business operations, such as creating a new deck or updating a card.
+    subgraph "Timer Notification Module"
+        TimerEntities[Timer UI Components]
+        TimerPages[Timer Pages]
+        TimerWorkers[Timer Workers]
+        TimerCommands[Timer Commands]
+    end
 
-Some of the key command classes include:
+    MainActivity -->|Navigates| Pages
+    MainActivity -->|Shows| Dialogs
+    Pages -->|Uses| Components
+    Pages -->|Executes| Commands
+    Commands -->|Update| DAOs
+    Commands -->|Notify| Notifiers
+    DAOs -->|Access| Database
 
-*   `NewDeckCmd`: Creates a new deck.
-*   `UpdateCardCmd`: Updates an existing card.
-*   `DeleteDeckCmd`: Deletes a deck.
-*   `ExportImportCmd`: Handles the export and import of decks.
+    BotWorkers -->|Access| BotDAOs
+    BotDAOs -->|Access| BotDatabase
+    BotWorkers -->|Uses| BotAnalytics
 
-These commands are provided by the `CommandProviderModule` and are injected into the `StatefulView`s where they are needed.
+    TimerWorkers -->|Access| DAOs
+    TimerWorkers -->|Use| TimerCommands
+```
 
-### End-to-End Data Flow
+### Layered Architecture
 
-The app's data flow is designed to be unidirectional and reactive, ensuring that the UI is always in sync with the underlying data. Here's a step-by-step overview of the data flow:
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        A[StatefulView]
+        B[XML Layouts]
+        C[Navigation]
+    end
+
+    subgraph "Business Logic Layer"
+        D[Commands]
+        E[TestStateModifier]
+        F[BotAnalytics]
+    end
+
+    subgraph "Data Layer"
+        G[DAOs]
+        H[Room Database]
+        I[Entities]
+    end
+
+    subgraph "Infrastructure Layer"
+        J[Provider]
+        K[WorkManager]
+        L[RxJava Notifiers]
+        M[File Helper]
+    end
+
+    A -->|Triggers| D
+    A -->|Subscribes| L
+    A -->|Navigates| C
+    D -->|Uses| G
+    G -->|Access| H
+    H -->|Maps| I
+    D -->|Notify| L
+    K -->|Executes| D
+    J -->|Provides| All
+```
+
+### Dependency Injection (a-provider)
+
+The app uses a custom service locator pattern through the `a-provider` library:
+
+- **Provider Initialization**: Created in `MainApplication.onCreate()` as the root `Provider`
+- **Module Registration**: Dependencies are registered via `ProviderModule` implementations
+- **Registration Types**:
+  - `register()`: Synchronous singleton registration
+  - `registerAsync()`: Asynchronous singleton registration (runs in background)
+  - `registerLazy()`: Lazy singleton (created on first use)
+  - `registerPool()`: Pool registration (creates new instances)
+- **Nested Providers**: Activities create nested providers with additional modules
+- **Disposal**: Automatic cleanup on app exit
+
+### Navigation (a-navigator)
+
+Navigation is managed by the `a-navigator` library:
+
+- **Route-Based Navigation**: Uses string route constants defined in `Routes` class
+- **Two Activities**:
+  - `MainActivity`: Main app navigation hub
+  - `CardShowActivity`: Dedicated activity for card display shortcuts
+- **Route Registration**: Routes map to `StatefulView` factories in `NavigatorProvider`
+- **Navigation Stack**: Maintains history for back navigation
+- **Transition Support**: Handles screen transitions and animations
+
+### Data Persistence
+
+The app uses Room Persistence Library with two databases:
+
+#### AppDatabase (base module)
+- **Entities**:
+  - `Deck`: Collection of flash cards
+  - `Card`: Individual flash card with front/back content
+  - `Test`: Test session tracking
+  - `AndroidNotification`: Notification history
+  - `NotificationTimer`: Scheduled notification timers
+- **Version**: 11 (with migrations defined in `DbMigration`)
+
+#### BotDatabase (bot module)
+- **Entities**:
+  - `CardLog`: Tracks user interactions with cards
+  - `SuggestedCard`: Cards suggested by the flash bot
+- **Version**: 1
+
+#### Database Schema
+```mermaid
+erDiagram
+    DECK ||--o{ CARD : contains
+    DECK ||--o{ TEST : uses
+    DECK ||--o{ NOTIFICATION_TIMER : schedules
+
+    CARD {
+        long id PK
+        long deck_id FK
+        text front_content
+        text back_content
+        text front_image_path
+        text back_image_path
+        text front_voice_path
+        text back_voice_path
+    }
+
+    DECK {
+        long id PK
+        text name
+        date created_date_time
+        date updated_date_time
+    }
+
+    TEST {
+        long id PK
+        date created_date_time
+        date updated_date_time
+    }
+
+    NOTIFICATION_TIMER {
+        long id PK
+        text name
+        text selected_deck_ids
+        int interval_minutes
+        text current_card_id
+        text displayed_card_ids
+    }
+
+    CARD_LOG {
+        long id PK
+        long card_id
+        text action
+        date created_date_time
+    }
+
+    SUGGESTED_CARD {
+        long id PK
+        long card_id
+    }
+```
+
+### Reactive Data Flow
+
+The app implements a reactive unidirectional data flow:
 
 ```mermaid
 sequenceDiagram
@@ -142,28 +314,194 @@ sequenceDiagram
     participant DAO as DAO/Room
     participant Notifier
     participant Rx as RxJava
+    participant DB as Database
 
     User->>SV: Interaction (Click)
     SV->>Cmd: Execute Command
     Cmd->>DAO: Update Data
+    DAO->>DB: Execute Query
+    DB-->>DAO: Result
     DAO-->>Cmd: Success
     Cmd->>Notifier: Broadcast Change
     Notifier->>Rx: Emit Event
     Rx-->>SV: OnNext(Event)
-    SV->>UI: Update View
+    SV->>SV: Update UI State
 ```
 
-1.  **User Interaction**: The user interacts with a `StatefulView` (e.g., clicks a button).
-2.  **Command Execution**: The `StatefulView` invokes the appropriate command to handle the user's action.
-3.  **Data Manipulation**: The command interacts with the data layer (via the DAOs) to create, read, update, or delete data.
-4.  **State Notification**: After the data is updated, the command uses a notifier (e.g., `DeckChangeNotifier`) to broadcast that the data has changed.
-5.  **UI Update**: The `StatefulView`s subscribe to these notifiers and update their UI in response to the change notifications. This is done reactively using `RxJava`, ensuring that the UI always reflects the current state of the data.
+### Command Pattern Implementation
 
-### Threading
+Business logic is encapsulated in command classes following the Command pattern:
 
-To ensure that the UI remains responsive, all database and business logic operations are performed on background threads. This is achieved through a combination of `RxJava` schedulers and a dedicated `ExecutorService`, which is provided by the `BaseProviderModule`.
+**Key Commands**:
+- `NewDeckCmd` / `UpdateDeckCmd` / `DeleteDeckCmd`: Deck management
+- `NewCardCmd` / `UpdateCardCmd` / `DeleteCardCmd`: Card management
+- `CopyCardCmd` / `MoveCardCmd`: Card operations
+- `ExportImportCmd`: Deck import/export
+- `PagedDeckItemsCmd` / `PagedCardItemsCmd`: Pagination
+- `DeleteSuggestedCardCmd`: Bot suggestion management
 
-## Testing
+**Command Flow**:
+1. Command receives input from `StatefulView`
+2. Validates input
+3. Executes on background thread using `ExecutorService`
+4. Updates database via DAO
+5. Notifies changes via `RxJava` notifiers
+6. Returns `Single<T>` reactive type
+
+### RxJava Notifiers
+
+Notifiers act as event hubs for data changes:
+
+- **DeckChangeNotifier**: Emits events for deck/card CRUD operations
+- **TestChangeNotifier**: Emits test session events (start, stop, state change)
+- **NotificationTimerChangeNotifier**: Emits timer configuration changes
+- **NotificationTimeChangeNotifier**: Emits notification time settings changes
+- **SuggestedCardChangeNotifier**: Emits flash bot suggestion changes
+
+Each notifier provides `Flowable<T>` streams for subscription.
+
+### Background Processing
+
+WorkManager is used for background tasks:
+
+**Key Workers**:
+- `NotificationTimerWorker`: Executes scheduled card notifications
+  - Validates time boundaries (start/end times)
+  - Selects random cards from configured decks
+  - Updates displayed card history
+  - Posts Android notification
+- `BotAnalyzeWorker`: Analyzes user behavior to suggest cards
+  - Tracks card interactions over 3 days
+  - Calculates scores based on notification opens, test answers
+  - Suggests cards with scores >= 3
+- `BotLogCleanerWorker`: Cleans up old card logs
+
+### Threading Strategy
+
+Thread management ensures UI responsiveness:
+
+- **Main Thread**: UI updates, view inflation, event handling
+- **ExecutorService**: Database operations, command execution
+- **ScheduledExecutorService**: Scheduled tasks
+- **WorkManager**: Background job execution
+- **RxJava Schedulers**:
+  - `AndroidSchedulers.mainThread()`: UI updates
+  - `ExecutorService` via `fromFuture()`: Background operations
+  - `subscribeOn()` / `observeOn()`: Thread control
+
+### Module Dependencies
+
+```
+app
+├── implementation project(':base')
+├── implementation project(':timer-notification')
+├── implementation project(':bot')
+
+timer-notification
+└── implementation project(':base')
+
+bot
+└── implementation project(':base')
+```
+
+### File Structure
+
+```
+app/src/main/java/m/co/rh/id/a_flash_deck/app/
+├── MainActivity.java
+├── CardShowActivity.java
+├── MainApplication.java
+├── provider/
+│   ├── AppProviderModule.java
+│   ├── CommandProviderModule.java
+│   ├── NavigatorProvider.java
+│   ├── StatefulViewProvider.java
+│   ├── command/
+│   ├── component/
+│   └── modifier/
+├── ui/
+│   ├── page/ (StatefulView pages)
+│   └── component/ (UI components)
+└── receiver/ (Broadcast receivers)
+
+base/src/main/java/m/co/rh/id/a_flash_deck/base/
+├── entity/ (Room entities)
+├── dao/ (Data access objects)
+├── room/ (Database configuration)
+├── provider/
+│   ├── BaseProviderModule.java
+│   ├── DatabaseProviderModule.java
+│   ├── RxProviderModule.java
+│   └── notifier/ (RxJava notifiers)
+├── component/ (Shared components)
+├── constants/ (Constants, routes, keys)
+└── ui/component/common/ (Common UI components)
+
+bot/src/main/java/m/co/rh/id/a_flash_deck/bot/
+├── entity/ (Bot entities)
+├── dao/ (Bot DAOs)
+├── room/ (Bot database)
+├── provider/
+│   ├── BotProviderModule.java
+│   ├── component/BotAnalytics.java
+│   └── notifier/
+└── workmanager/ (Bot workers)
+
+timer-notification/src/main/java/m/co/rh/id/a_flash_deck/timer/
+├── provider/
+│   └── command/ (Timer commands)
+├── ui/
+│   ├── page/ (Timer pages)
+│   └── component/ (Timer components)
+└── workmanager/ (Timer worker)
+```
+
+### StatefulView Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: Constructor
+    Created --> ProvideComponent: provideComponent(Provider)
+    ProvideComponent --> CreateView: createView(activity, container)
+    CreateView --> Active: View is visible
+    Active --> Active: User interactions
+    Active --> Disposing: Navigation/Back press
+    Disposing --> [*]: dispose(activity)
+```
+
+### Key Components
+
+**Core Components**:
+- `Provider`: Service locator for dependency injection
+- `INavigator`: Navigation controller
+- `StatefulView`: Self-contained UI component with logic
+- `AppBarSV`: Common app bar component
+- `RxDisposer`: Manages RxJava subscriptions
+
+**Data Components**:
+- `AppDatabase`: Main Room database
+- `BotDatabase`: Bot analytics database
+- DAOs: Data access interfaces
+- Entities: Room database tables
+
+**Business Components**:
+- Commands: Business logic operations
+- Modifiers: State modifiers (e.g., `TestStateModifier`)
+- Notifiers: RxJava event publishers
+
+### Build Configuration
+
+- **Gradle Plugin**: Android Gradle Plugin 8.13.2
+- **Compile SDK**: 36
+- **Min SDK**: 23
+- **Target SDK**: 36
+- **Java Version**: 1.8 (with desugaring support)
+- **Kotlin**: Not used (pure Java project)
+- **Room Version**: 2.8.4
+- **WorkManager Version**: 2.11.0
+- **a-navigator Version**: v0.0.68
+
+### Testing
 
 The project includes both unit and instrumentation tests, although the coverage could be improved. Here's a summary of the testing strategy:
 
@@ -173,7 +511,7 @@ The project includes both unit and instrumentation tests, although the coverage 
 
 *   **Areas for Improvement**: In addition to adding more unit tests, the project would benefit from UI tests using a framework like Espresso. This would allow for the verification of the application's user interface and user flows, ensuring that the app behaves as expected from the user's perspective.
 
-## CI/CD and Automation
+### CI/CD and Automation
 
 The project uses a combination of GitHub Actions and Fastlane to automate the build, test, and release process.
 
@@ -188,7 +526,6 @@ The project has three GitHub Actions workflows:
 ### Fastlane
 
 The project uses Fastlane to manage the app's metadata for the Google Play Store. This includes the app's title, description, screenshots, and changelogs. The metadata is stored in the `fastlane/metadata` directory and is organized by language.
-
 
 ## How to Build
 
