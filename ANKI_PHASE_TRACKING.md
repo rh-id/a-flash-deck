@@ -9,6 +9,38 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 - No database schema modifications
 - Map data at application layer only
 
+## User Decisions
+
+### Deck Name Conflicts
+**Decision:** Auto-rename with suffix
+- If deck name "My Deck" already exists, create "My Deck (2)"
+- If "My Deck (2)" exists, create "My Deck (3)"
+- Check against all existing deck names before import
+
+### HTML Parsing
+**Decision:** Use built-in `android.text.Html`
+- Use `Html.fromHtml()` for HTML stripping
+- Use `Html.toHtml()` for basic encoding if needed
+- No external libraries
+
+### Missing Media Files
+**Decision:** Import without media
+- Import card even if referenced media doesn't exist in APKG
+- Log warning for missing media
+- Continue with null media fields
+
+### Progress Indication
+**Decision:** Show simple loading spinner
+- Use existing loading UI patterns
+- No detailed progress bar (e.g., "Card 500 of 2000")
+- User sees spinner during operation
+
+### Thumbnail Generation
+**Decision:** Generate thumbnails using FileHelper
+- After copying images, call `createCardQuestionImageThumbnail()`
+- After copying images, call `createCardAnswerImageThumbnail()`
+- Use existing compression (320x180)
+
 ## Phases
 
 ### Phase 1: Create Anki Package Classes
@@ -22,8 +54,8 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 - [ ] Define AnkiNote, AnkiCard, AnkiDeck, AnkiNotetype classes
 - [ ] Implement ZIP extraction and SQLite database reading
 - [ ] Implement media file extraction and JSON parsing
-- [ ] Implement in-memory database creation with Anki schema
-- [ ] Implement database population methods
+- [ ] Implement file-based database creation (not in-memory)
+- [ ] Implement database population methods with transactions
 - [ ] Implement ZIP packaging for .apkg generation
 
 **Completion Criteria:** All parser/generator classes created and tested with unit tests
@@ -37,15 +69,22 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 
 **Files to Modify:**
 - [ ] `app/provider/command/ExportImportCmd.java`
+- [ ] `app/provider/CommandProviderModule.java`
 
 **Tasks:**
-- [ ] Implement importApkg() main method
-- [ ] Implement field parsing (text, image, voice from HTML)
+- [ ] Implement importApkg() main method (RxJava Single)
+- [ ] Implement field parsing using android.text.Html
+- [ ] Implement HTML entity decoding
+- [ ] Implement line break conversion (<br> → \n)
+- [ ] Implement Unicode NFC normalization
 - [ ] Implement deck name flattening (:: → - )
+- [ ] Implement deck name conflict resolution with suffix
 - [ ] Implement media file copying to FileHelper paths
+- [ ] Implement thumbnail generation for imported images
 - [ ] Implement Basic notetype detection
 - [ ] Implement error handling and validation
 - [ ] Add format detection in ExportImportCmd
+- [ ] Register AnkiImporter in CommandProviderModule
 
 **Completion Criteria:** Can import simple Anki deck and cards display correctly
 
@@ -58,15 +97,18 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 
 **Files to Modify:**
 - [ ] `app/provider/command/ExportImportCmd.java`
+- [ ] `app/provider/CommandProviderModule.java`
 
 **Tasks:**
-- [ ] Implement exportApkg() main method
+- [ ] Implement exportApkg() main method (RxJava Single)
 - [ ] Implement media scanning and sequential numbering
 - [ ] Implement note field construction (text + img + sound tags)
-- [ ] Implement GUID generation
-- [ ] Implement database population
-- [ ] Implement ZIP packaging
+- [ ] Implement GUID generation using UUID
+- [ ] Implement database population with transactions
+- [ ] Implement media JSON file creation (separate from DB)
+- [ ] Implement ZIP packaging with proper structure
 - [ ] Add export format parameter to ExportImportCmd
+- [ ] Register AnkiExporter in CommandProviderModule
 
 **Completion Criteria:** Can export Flash Deck to .apkg and import into Anki Desktop
 
@@ -98,14 +140,23 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 - [ ] Test import of deck with answer voice
 - [ ] Test import of deck with all media types
 - [ ] Test import of nested decks (flattening)
-- [ ] Test import of multiple images per field (first used)
+- [ ] Test import of multiple images in one field (first used)
 - [ ] Test import of Cloze cards (skipped with warning)
-- [ ] Test import of >2 field notetypes (skipped with warning)
+- [ ] Test import of >2 field notetype (skipped with warning)
+- [ ] Test import with duplicate deck names (auto-rename)
+- [ ] Test import of deck with empty name
+- [ ] Test import of deck with special characters (emoji, unicode)
+- [ ] Test import of deck with very long names
+- [ ] Test import of card with only media (no text)
+- [ ] Test import of missing media files (card without media)
 - [ ] Test export simple deck
 - [ ] Test export deck with media
 - [ ] Test export deck with reversible cards
+- [ ] Test export of deck with special characters
+- [ ] Test export of large deck (1000+ cards) for memory
 - [ ] Test round-trip: Anki → Flash Deck → Anki
 - [ ] Test round-trip: Flash Deck → Anki → Flash Deck
+- [ ] Verify card ordering preserved in round-trip
 - [ ] Fix any discovered bugs
 
 **Completion Criteria:** All test cases pass
@@ -117,8 +168,9 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 **Tasks:**
 - [ ] Add inline code comments for complex logic
 - [ ] Update README with Anki compatibility notes
-- [ ] Clean up temporary files in code
+- [ ] Clean up temporary files in code (try-finally)
 - [ ] Final code review
+- [ ] Verify no memory leaks in image processing
 
 **Completion Criteria:** Code is production-ready
 
@@ -145,3 +197,12 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 - Compatible with existing Room database (v11)
 - Using existing FileHelper for media storage
 - Using RxJava for async operations
+- Media JSON is separate ZIP file, NOT in database
+- Use file-based SQLite for export (not in-memory)
+- Use database transactions for bulk operations
+- Generate thumbnails for imported images
+- Use Unicode NFC normalization for text
+- Deck name conflicts auto-resolve with suffix
+- Missing media: import card without media, log warning
+- HTML parsing: use android.text.Html (built-in)
+- Progress: simple loading spinner only

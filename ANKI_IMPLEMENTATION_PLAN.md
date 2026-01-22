@@ -325,15 +325,22 @@ Implement bidirectional Anki `.apkg` format compatibility for Flash Deck without
 - Purpose: Generate `.apkg` files
 - Methods:
   ```java
-  public static SQLiteDatabase createInMemoryDatabase()
+  public static SQLiteDatabase createTempDatabase(File dbFile)  // FILE-based, NOT in-memory
   public static void createTables(SQLiteDatabase db)
   public static void insertBasicNotetype(SQLiteDatabase db)
   public static long insertDeck(SQLiteDatabase db, String deckName)
   public static long insertNote(SQLiteDatabase db, String guid, long deckId, long notetypeId, String field1, String field2)
   public static long insertCard(SQLiteDatabase db, long noteId, long deckId, int ordinal)
-  public static void insertMediaMapping(SQLiteDatabase db, Map<String, Integer> mediaMap)
-  public static File generateApkg(SQLiteDatabase db, Map<String, File> mediaFiles, String outputFileName)
+  public static void insertColData(SQLiteDatabase db, String modelsJson, String decksJson)  // For col table
+  public static String createMediaJson(Map<String, Integer> mediaMap)  // JSON string for separate file
+  public static File generateApkg(File dbFile, Map<String, File> mediaFiles, String mediaJson, String outputFileName)
   ```
+
+**CRITICAL CHANGES:**
+- Use `createTempDatabase(File dbFile)` to create a file-based database, not in-memory
+- `insertMediaMapping()` removed - media mapping is a separate ZIP file, not in database
+- `createMediaJson()` creates JSON string for the `media` file entry
+- `generateApkg()` takes `File dbFile` path and `String mediaJson` separately
 
 ---
 
@@ -352,32 +359,40 @@ public Single<List<DeckModel>> importApkg(File apkgFile)
 ```
 1. Validate file is .apkg
 2. Parse APKG structure:
-   - Extract SQLite database
-   - Extract media files to temp
+   - Extract SQLite database to temp file
+   - Extract media files to temp directory
    - Parse media JSON mapping
 3. Read Anki data:
    - Read all notetypes, filter for Basic (2 fields)
    - Read all notes that match Basic notetype
    - Read all cards for those notes
    - Read all decks
-4. Build Flash Deck models:
+4. Resolve deck name conflicts:
+   - Check each deck name against existing Flash Deck names
+   - Auto-rename with suffix: "My Deck" → "My Deck (2)" → "My Deck (3)"
+5. Build Flash Deck models:
    For each Anki note:
    a. Parse flds by \x1f → field1, field2
    b. Parse HTML/media from fields:
+      - Use android.text.Html.fromHtml() for parsing
+      - Decode HTML entities (&nbsp;, &amp;, etc.)
+      - Convert <br> tags to \n
       - Extract first <img src="...">
       - Extract [sound:...]
       - Strip HTML tags for plain text
+      - Apply Unicode NFC normalization
    c. For each card referencing this note:
       - Create Card entity
       - Map media files
-      - Assign to deck (flatten name)
-5. Copy media files from temp to FileHelper paths:
+      - Assign to deck (flatten name, use resolved name)
+6. Copy media files from temp to FileHelper paths:
    - questionImage → mCardQuestionImageParent
    - answerImage → mCardAnswerImageParent
    - questionVoice → mCardQuestionVoiceParent
    - answerVoice → mCardAnswerVoiceParent
-6. Clean up temp files
-7. Return List<DeckModel>
+   - Generate thumbnails using FileHelper methods
+7. Clean up temp files (try-finally)
+8. Return List<DeckModel>
 ```
 
 **Helper Methods:**
@@ -387,27 +402,41 @@ private String parseFieldImage(String htmlField)
 private String parseFieldVoice(String htmlField)
 private String flattenDeckName(String ankiDeckName)
 private boolean isBasicNotetype(AnkiNotetype notetype)
+private String resolveDeckNameConflict(String ankiDeckName)
 private void copyMediaToAppPaths(Map<String, File> mediaFiles, List<Card> cards)
+private void generateThumbnailsForMedia(List<Card> cards)
 ```
 
-**HTML Parsing Logic:**
+**HTML Parsing Logic (using android.text.Html):**
 ```java
-// Extract first image
-Pattern imgPattern = Pattern.compile("<img[^>]+src=\"([^\"]+)\"");
+// Decode HTML entities and convert to text
+Spanned spanned = Html.fromHtml(htmlField, Html.FROM_HTML_MODE_LEGACY);
+String text = spanned.toString();
+
+// Convert line breaks
+text = text.replace("<br>", "\n")
+           .replace("<br/>", "\n")
+           .replace("<br />", "\n");
+
+// Extract first image using regex (more robust pattern)
+Pattern imgPattern = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
 Matcher matcher = imgPattern.matcher(htmlField);
+String imageName = null;
 if (matcher.find()) {
-    return matcher.group(1);
+    imageName = matcher.group(1);
 }
 
 // Extract sound
 Pattern soundPattern = Pattern.compile("\\[sound:([^\\]]+)\\]");
 matcher = soundPattern.matcher(htmlField);
+String voiceName = null;
 if (matcher.find()) {
-    return matcher.group(1);
+    voiceName = matcher.group(1);
 }
 
-// Strip HTML for plain text
-return htmlField.replaceAll("<[^>]+>", "").trim();
+// Unicode NFC normalization
+import java.text.Normalizer;
+text = Normalizer.normalize(text, Normalizer.Form.NFC);
 ```
 
 **Deck Flattening:**
@@ -417,15 +446,39 @@ private String flattenDeckName(String ankiDeckName) {
 }
 ```
 
+**Deck Name Conflict Resolution:**
+```java
+private String resolveDeckNameConflict(String ankiDeckName) {
+    String baseName = flattenDeckName(ankiDeckName);
+    String resolvedName = baseName;
+    int suffix = 2;
+    List<Deck> existingDecks = mDeckDao.getAllDecks();
+    Set<String> existingNames = new HashSet<>();
+    for (Deck deck : existingDecks) {
+        existingNames.add(deck.name);
+    }
+    while (existingNames.contains(resolvedName)) {
+        resolvedName = baseName + " (" + suffix + ")";
+        suffix++;
+    }
+    return resolvedName;
+}
+```
+
 **Error Handling:**
 - Log warnings for:
   - Non-Basic notetypes (skip)
   - Notes with >2 fields (skip)
-  - Cards with missing media files (log, skip media)
+  - Notes with only 1 field (use empty string for field 2)
+  - Cards with missing media files (log, import card without media)
+  - Multiple images in one field (use first, log warning)
 - Throw exceptions for:
-  - Invalid APKG format
+  - Invalid APKG format (not a ZIP)
+  - Missing collection.anki21 in ZIP
   - Corrupt database
   - IO errors
+- Temporary file cleanup in try-finally block
+- Database transactions for bulk operations
 
 ---
 
@@ -442,31 +495,40 @@ public Single<File> exportApkg(List<Deck> deckList)
 
 **Algorithm:**
 ```
-1. Gather all cards from selected decks
+1. Gather all cards from selected decks using DeckDao
 2. Scan for unique media references:
    For each card:
-   - If questionImage exists → add to media map
-   - If answerImage exists → add to media map
+   - If questionImage exists → add to media map with original extension
+   - If answerImage exists → add to media map with original extension
    - If questionVoice exists → add to media map
    - If answerVoice exists → add to media map
 3. Assign sequential numbers to media files (0, 1, 2, ...)
 4. Create SQLite database via ApkgGenerator:
-   a. Insert Basic notetype
-   b. Insert deck records
-   c. For each card:
-      - Generate GUID using UUID4().hex()
-      - Construct field strings:
-        field1 = question + <img> tag + [sound] tag
-        field2 = answer + <img> tag + [sound] tag
-      - Insert note with flds = field1 + \x1f + field2
-      - Insert card record
-   d. Insert media JSON mapping into col table
-5. Create ZIP archive:
-   - Add collection.anki21 (SQLite database)
-   - Add collection.anki2 (dummy legacy file)
-   - Add media (JSON mapping file)
-   - Add media files with numeric names
-6. Return ZIP file
+   a. Create temp database file using SQLiteDatabase.openOrCreateDatabase()
+   b. Use transaction for bulk operations:
+      db.beginTransaction()
+      try {
+         Insert Basic notetype
+         Insert deck records
+         For each card:
+            - Generate GUID using UUID4().hex()
+            - Construct field strings with proper HTML
+            - Insert note with flds = field1 + \x1f + field2
+            - Insert card record
+         Insert col data (models, decks JSON)
+         db.setTransactionSuccessful()
+      } finally {
+         db.endTransaction()
+      }
+5. Create media JSON string (separate from database):
+   - Convert media map to JSON: {"0": "file.jpg", "1": "audio.mp3"}
+6. Create ZIP archive:
+   - Add collection.anki21 (SQLite database file)
+   - Add collection.anki2 (empty/minimal database file for legacy)
+   - Add media (JSON mapping string as separate entry at root)
+   - Add media files with numeric names at root
+7. Clean up temp database file
+8. Return ZIP file
 ```
 
 **Helper Methods:**
@@ -474,15 +536,22 @@ public Single<File> exportApkg(List<Deck> deckList)
 private String generateGuid()
 private String constructNoteField(String text, String image, String voice)
 private Map<String, Integer> buildMediaMap(List<DeckModel> deckModels)
+private String createMediaJson(Map<String, Integer> mediaMap)
 private void packageMediaFiles(ZipOutputStream zos, Map<String, Integer> mediaMap)
+private void copyDatabaseToZip(File dbFile, ZipOutputStream zos)
 ```
 
 **Note Field Construction:**
 ```java
 private String constructNoteField(String text, String image, String voice) {
     StringBuilder sb = new StringBuilder();
-    if (text != null) sb.append(text);
+    if (text != null) {
+        // Apply Unicode NFC normalization
+        text = Normalizer.normalize(text, Normalizer.Form.NFC);
+        sb.append(text);
+    }
     if (image != null) {
+        // Preserve original extension (.jpg, .png, .gif, etc.)
         sb.append("<img src=\"").append(image).append("\">");
     }
     if (voice != null) {
@@ -503,22 +572,31 @@ private String constructNoteField(String text, String image, String voice) {
 //   "audio.mp3" → 1
 //   "icon.png" → 2
 
-// ZIP structure:
-//   collection.anki21
-//   collection.anki2
-//   media → {"0": "photo1.jpg", "1": "audio.mp3", "2": "icon.png"}
-//   0 → photo1.jpg file
-//   1 → audio.mp3 file
-//   2 → icon.png file
+// Create media JSON string:
+//   String mediaJson = "{\"0\":\"photo1.jpg\",\"1\":\"audio.mp3\",\"2\":\"icon.png\"}";
+
+// ZIP structure (EXACT):
+//   collection.anki21 (SQLite database file - main)
+//   collection.anki2 (empty/minimal database - legacy compat)
+//   media (JSON mapping file - SEPARATE entry at root)
+//   0 (photo1.jpg file)
+//   1 (audio.mp3 file)
+//   2 (icon.png file)
 ```
 
 **Error Handling:**
 - Log warnings for:
-  - Missing media files (skip, continue)
+  - Missing media files (skip, continue, import card without media)
 - Throw exceptions for:
-  - Failed to create database
+  - Failed to create temp database file
+  - Failed to populate database
+  - Failed to copy database to ZIP
+  - Failed to create media JSON
   - Failed to copy media files
   - IO errors
+- Use try-finally to clean up temp database file
+- Use database transactions for bulk inserts
+- Use RxJava Single pattern (no blockingGet)
 
 ---
 
@@ -532,6 +610,7 @@ public Single<List<DeckModel>> importFile(File file) {
     return Single.fromFuture(mExecutorService.submit(() -> {
         // Check for Anki format
         if (file.getName().toLowerCase().endsWith(".apkg")) {
+            // Return result directly from AnkiImporter (already Single)
             return new AnkiImporter(mProvider)
                     .importApkg(file)
                     .blockingGet();
@@ -540,6 +619,18 @@ public Single<List<DeckModel>> importFile(File file) {
         // Existing logic for native format
         // ... (current implementation)
     }));
+}
+```
+
+**Alternative (better RxJava pattern):**
+```java
+public Single<List<DeckModel>> importFile(File file) {
+    if (file.getName().toLowerCase().endsWith(".apkg")) {
+        // Delegate to AnkiImporter which returns Single
+        return new AnkiImporter(mProvider).importApkg(file);
+    }
+    // Existing logic for native format
+    // ... (current implementation returning Single)
 }
 ```
 
@@ -603,10 +694,12 @@ app/src/main/java/m/co/rh/id/a_flash_deck/app/
 │   ├── ApkgParser.java                        # APKG parsing utilities
 │   └── ApkgGenerator.java                     # APKG generation utilities
 │
-├── provider/command/
-│   ├── ExportImportCmd.java                   # MODIFIED - add format detection
-│   ├── AnkiImporter.java                      # NEW - import logic
-│   └── AnkiExporter.java                      # NEW - export logic
+├── provider/
+│   ├── CommandProviderModule.java               # MODIFIED - register AnkiImporter/Exporter
+│   └── command/
+│       ├── ExportImportCmd.java               # MODIFIED - add format detection
+│       ├── AnkiImporter.java                  # NEW - import logic
+│       └── AnkiExporter.java                  # NEW - export logic
 │
 └── ui/page/
     └── HomePage.java                          # MODIFIED - accept .apkg files
@@ -734,6 +827,15 @@ CREATE TABLE col (
 - [ ] Import deck with multiple images in one field (verify first used)
 - [ ] Import deck with Cloze cards (verify skipped/warned)
 - [ ] Import deck with >2 field notetype (verify skipped/warned)
+- [ ] Import with duplicate deck names (verify auto-rename with suffix)
+- [ ] Import deck with empty name (verify default handling)
+- [ ] Import deck with special characters (emoji, unicode)
+- [ ] Import deck with very long names
+- [ ] Import card with only media (no text)
+- [ ] Import missing media files (verify card imported, media null)
+- [ ] Import HTML with entities (&nbsp;, &amp;, etc.) (verify decoded)
+- [ ] Import HTML with line breaks (<br>) (verify converted to \n)
+- [ ] Verify thumbnails generated for imported images
 
 **Export Tests:**
 - [ ] Export simple deck to .apkg
@@ -744,6 +846,13 @@ CREATE TABLE col (
 - [ ] Export deck with reversible cards (verify single card exported)
 - [ ] Export deck with no media
 - [ ] Export deck with all media types
+- [ ] Export deck with special characters in names
+- [ ] Export large deck (1000+ cards) - verify no memory issues
+- [ ] Verify ZIP structure matches Anki format (collection.anki21, media file at root)
+- [ ] Verify media JSON is correct format
+- [ ] Verify database transactions improve performance
+- [ ] Verify Unicode NFC normalization applied
+- [ ] Verify image file extensions preserved (.jpg, .png, etc.)
 
 **Round-trip Tests:**
 - [ ] Anki → Flash Deck → Anki (compare)
@@ -756,14 +865,16 @@ CREATE TABLE col (
 **Required (likely already available):**
 - `java.util.zip.*` - ZIP handling
 - `android.database.sqlite.*` - SQLite support
-- `java.util.regex.*` - HTML parsing
+- `android.text.Html` - HTML parsing (built-in)
+- `java.text.Normalizer` - Unicode normalization (built-in)
 - `java.util.UUID` - GUID generation
+- `org.json.*` - JSON creation (built-in)
 
-**No new external dependencies needed**
+**No new external dependencies needed** ✓
 
 ---
 
-## Important Notes
+## Important Implementation Notes
 
 - No database schema changes required ✓
 - All mapping happens in memory
@@ -775,3 +886,42 @@ CREATE TABLE col (
 - Reversible cards: export as single card, not two notes
 - Deck hierarchy: flatten with " - " separator
 - Format selection: simple format parameter in exportFile() method
+- **Media JSON is separate ZIP file, NOT in database** (CRITICAL)
+- **Use file-based SQLite for export, NOT in-memory** (CRITICAL)
+- **Use database transactions for bulk operations**
+- **Use android.text.Html for HTML parsing, NOT simple regex**
+- **Generate thumbnails for imported images using FileHelper**
+- **Unicode NFC normalization for all text**
+- **Auto-rename deck names with suffix on conflicts**
+- **Missing media: import card without media, log warning**
+- **Progress: simple loading spinner**
+- **Register AnkiImporter/Exporter in CommandProviderModule**
+- **Clean up temp files with try-finally**
+- **Preserve image file extensions** (.jpg, .png, .gif, etc.)
+
+---
+
+## Critical Decisions Summary
+
+| Decision | Choice |
+|----------|---------|
+| Deck name conflicts | Auto-rename with suffix ("Deck" → "Deck (2)") |
+| HTML parsing | Use built-in android.text.Html |
+| Missing media | Import card without media, log warning |
+| Progress indication | Simple loading spinner |
+| Thumbnail generation | Yes, using FileHelper methods |
+
+---
+
+## Implementation Gotchas
+
+1. **Media JSON Location**: Must be separate file entry in ZIP, NOT in `col` table
+2. **SQLite Creation**: Must use file-based database for export, NOT in-memory
+3. **HTML Parsing**: Use `android.text.Html.fromHtml()` for proper entity decoding
+4. **Image Extensions**: Preserve original extensions (.jpg, .png, etc.), don't force .jpg
+5. **Line Breaks**: Convert `<br>`, `<br/>`, `<br />` to `\n`
+6. **Unicode**: Always normalize to NFC format
+7. **Transactions**: Wrap bulk database operations in transactions
+8. **RxJava**: Don't use `blockingGet()`, chain Singles properly
+9. **Temp Files**: Clean up with try-finally, not try-catch
+10. **Provider Registration**: Must register new commands in CommandProviderModule.java
