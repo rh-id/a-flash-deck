@@ -90,6 +90,7 @@
     <string name="title_notification_timers">Pengatur Waktu Notifikasi</string>
     <string name="edit">Edit</string>
     <string name="title_export_deck">Ekspor Dek</string>
+    <string name="error_invalid_apkg">Anki deck file tidak valid (.apkg)</string>
     <string name="error_failed_to_create_file">Gagal membuat file</string>
     <string name="error_failed_to_open_file">Gagal membuka file</string>
     <string name="error_failed_to_parse_file">Gagal mengurai file</string>

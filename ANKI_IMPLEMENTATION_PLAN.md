@@ -347,13 +347,14 @@ Implement bidirectional Anki `.apkg` format compatibility for Flash Deck without
 ### Phase 2: Implement AnkiImporter
 
 **2.1 Create `AnkiImporter.java`**
-- Location: `app/src/main/java/m/co/rh/id/a_flash_deck/app/provider/command/AnkiImporter.java`
+- Location: `app/src/main/java/m/co/rh/id/a_flash_deck/app/provider/component/AnkiImporter.java`
 - Constructor: Takes `Provider` dependency
 
 **Main Method:**
 ```java
-public Single<List<DeckModel>> importApkg(File apkgFile)
+public List<DeckModel> importApkg(File apkgFile)
 ```
+**Note:** Method returns `List<DeckModel>` directly (not wrapped in RxJava `Single`). The `ExportImportCmd.importFile()` method wraps the call with `Single.fromFuture()` for async execution.
 
 **Algorithm:**
 ```
@@ -607,30 +608,29 @@ private String constructNoteField(String text, String image, String voice) {
 **Add new import logic:**
 ```java
 public Single<List<DeckModel>> importFile(File file) {
-    return Single.fromFuture(mExecutorService.submit(() -> {
-        // Check for Anki format
-        if (file.getName().toLowerCase().endsWith(".apkg")) {
-            // Return result directly from AnkiImporter (already Single)
-            return new AnkiImporter(mProvider)
-                    .importApkg(file)
-                    .blockingGet();
-        }
+    // Check for Anki format
+    if (file.getName().toLowerCase().endsWith(".apkg")) {
+        // AnkiImporter returns List<DeckModel> directly
+        // Wrap in Single.fromFuture for async execution
+        return Single.fromFuture(mExecutorService.submit(() -> mAnkiImporter.importApkg(file)));
+    }
 
-        // Existing logic for native format
-        // ... (current implementation)
-    }));
+    // Existing logic for native format
+    // ... (current implementation)
 }
 ```
 
-**Alternative (better RxJava pattern):**
+**Constructor changes:**
 ```java
-public Single<List<DeckModel>> importFile(File file) {
-    if (file.getName().toLowerCase().endsWith(".apkg")) {
-        // Delegate to AnkiImporter which returns Single
-        return new AnkiImporter(mProvider).importApkg(file);
-    }
-    // Existing logic for native format
-    // ... (current implementation returning Single)
+protected AnkiImporter mAnkiImporter;
+
+public ExportImportCmd(Provider provider) {
+    mAppContext = provider.getContext().getApplicationContext();
+    mExecutorService = provider.get(ExecutorService.class);
+    mLogger = provider.get(ILogger.class);
+    mDeckDao = provider.get(DeckDao.class);
+    mFileHelper = provider.get(FileHelper.class);
+    mAnkiImporter = provider.get(AnkiImporter.class); // Get AnkiImporter from provider
 }
 ```
 
@@ -671,11 +671,17 @@ intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
 
 **6.1 Modify `strings.xml`**
 
-Add:
+Add to `app/src/main/res/values/strings.xml` and `app/src/main/res/values-in/strings.xml`:
+```xml
+<string name="error_invalid_apkg">Not a valid Anki deck file (.apkg)</string>
+```
+
+**Note:** The Indonesian translation in `values-in/strings.xml` says "Anki deck file tidak valid (.apkg)".
+
+Additional planned strings (not yet added):
 ```xml
 <string name="msg_importing_anki">Importing Anki deck...</string>
 <string name="msg_exporting_anki">Exporting to Anki format...</string>
-<string name="error_invalid_apkg">Not a valid Anki deck file (.apkg)</string>
 <string name="warning_only_basic_cards">Warning: Only Basic (2-field) cards will be imported. Other card types will be skipped.</string>
 <string name="warning_multiple_images">Warning: Multiple images in one field detected. Using first image only.</string>
 <string name="warning_missing_media">Warning: Media file not found: %s</string>
@@ -690,22 +696,25 @@ Add:
 ```
 app/src/main/java/m/co/rh/id/a_flash_deck/app/
 ├── anki/                                       # NEW PACKAGE
-│   ├── AnkiModels.java                        # DTOs (AnkiNote, AnkiCard, AnkiDeck, AnkiNotetype)
+│   ├── model/                                # Anki DTOs (AnkiNote, AnkiCard, AnkiDeck, AnkiNotetype)
 │   ├── ApkgParser.java                        # APKG parsing utilities
 │   └── ApkgGenerator.java                     # APKG generation utilities
 │
 ├── provider/
-│   ├── CommandProviderModule.java               # MODIFIED - register AnkiImporter/Exporter
-│   └── command/
-│       ├── ExportImportCmd.java               # MODIFIED - add format detection
+│   ├── AppProviderModule.java                 # MODIFIED - register AnkiImporter/Exporter
+│   ├── CommandProviderModule.java               # (No changes)
+│   └── component/
 │       ├── AnkiImporter.java                  # NEW - import logic
-│       └── AnkiExporter.java                  # NEW - export logic
+│       └── AnkiExporter.java                  # NEW - export logic (Phase 3)
+│   └── command/
+│       └── ExportImportCmd.java               # MODIFIED - add format detection
 │
 └── ui/page/
-    └── HomePage.java                          # MODIFIED - accept .apkg files
+    └── HomePage.java                          # MODIFIED - accept .apkg files (Phase 4)
 
 app/src/main/res/
-└── values/strings.xml                         # MODIFIED - add new strings
+├── values/strings.xml                         # MODIFIED - add new strings
+└── values-in/strings.xml                     # MODIFIED - Indonesian translations
 ```
 
 ---
@@ -910,6 +919,7 @@ CREATE TABLE col (
 | Missing media | Import card without media, log warning |
 | Progress indication | Simple loading spinner |
 | Thumbnail generation | Yes, using FileHelper methods |
+| Registration location | AppProviderModule.java (not CommandProviderModule) |
 
 ---
 

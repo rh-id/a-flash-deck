@@ -1,5 +1,5 @@
 /*
- *     Copyright (C) 2021 Ruby Hartono
+ *     Copyright (C) 2021-2026 Ruby Hartono
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.app.provider;
 
 import android.app.Application;
 
+import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
@@ -49,6 +50,7 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerLazy(TestStateModifier.class, () -> new TestStateModifier(provider));
         providerRegistry.registerAsync(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
         providerRegistry.registerAsync(AppShortcutHandler.class, () -> new AppShortcutHandler(provider));
+        providerRegistry.registerLazy(AnkiImporter.class, () -> new AnkiImporter(provider));
 
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
         providerRegistry.register(NavigatorProvider.class, () -> new NavigatorProvider(mApplication, provider));

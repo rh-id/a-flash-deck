@@ -83,28 +83,30 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 ---
 
 ### Phase 2: Implement AnkiImporter
-**Status:** ⬜ Not Started
-**Files to Create:**
-- [ ] `app/provider/command/AnkiImporter.java`
+**Status:** ✅ Completed
+**Files Created:**
+- [x] `app/provider/component/AnkiImporter.java`
 
-**Files to Modify:**
-- [ ] `app/provider/command/ExportImportCmd.java`
-- [ ] `app/provider/CommandProviderModule.java`
+**Files Modified:**
+- [x] `app/provider/command/ExportImportCmd.java`
+- [x] `app/provider/AppProviderModule.java`
+- [x] `app/src/main/res/values/strings.xml`
+- [x] `app/src/main/res/values-in/strings.xml`
 
-**Tasks:**
-- [ ] Implement importApkg() main method (RxJava Single)
-- [ ] Implement field parsing using android.text.Html
-- [ ] Implement HTML entity decoding
-- [ ] Implement line break conversion (<br> → \n)
-- [ ] Implement Unicode NFC normalization
-- [ ] Implement deck name flattening (:: → - )
-- [ ] Implement deck name conflict resolution with suffix
-- [ ] Implement media file copying to FileHelper paths
-- [ ] Implement thumbnail generation for imported images
-- [ ] Implement Basic notetype detection
-- [ ] Implement error handling and validation
-- [ ] Add format detection in ExportImportCmd
-- [ ] Register AnkiImporter in CommandProviderModule
+**Tasks Completed:**
+- [x] Implement importApkg() main method (returns List<DeckModel> directly)
+- [x] Implement field parsing using android.text.Html
+- [x] Implement HTML entity decoding
+- [x] Implement line break conversion (<br> → \n)
+- [x] Implement Unicode NFC normalization
+- [x] Implement deck name flattening (:: → - )
+- [x] Implement deck name conflict resolution with suffix
+- [x] Implement media file copying to FileHelper paths
+- [x] Implement thumbnail generation for imported images
+- [x] Implement Basic notetype detection
+- [x] Implement error handling and validation
+- [x] Add format detection in ExportImportCmd (wraps AnkiImporter in Single.fromFuture)
+- [x] Register AnkiImporter in AppProviderModule
 
 **Completion Criteria:** Can import simple Anki deck and cards display correctly
 
@@ -113,11 +115,11 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 ### Phase 3: Implement AnkiExporter
 **Status:** ⬜ Not Started
 **Files to Create:**
-- [ ] `app/provider/command/AnkiExporter.java`
+- [ ] `app/provider/component/AnkiExporter.java`
 
 **Files to Modify:**
 - [ ] `app/provider/command/ExportImportCmd.java`
-- [ ] `app/provider/CommandProviderModule.java`
+- [ ] `app/provider/AppProviderModule.java`
 
 **Tasks:**
 - [ ] Implement exportApkg() main method (RxJava Single)
@@ -128,7 +130,7 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 - [ ] Implement media JSON file creation (separate from DB)
 - [ ] Implement ZIP packaging with proper structure
 - [ ] Add export format parameter to ExportImportCmd
-- [ ] Register AnkiExporter in CommandProviderModule
+- [ ] Register AnkiExporter in AppProviderModule
 
 **Completion Criteria:** Can export Flash Deck to .apkg and import into Anki Desktop
 
@@ -137,16 +139,14 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 ### Phase 4: Update UI Components
 **Status:** ⬜ Not Started
 **Files to Modify:**
-- [ ] `app/ui/page/HomePage.java`
-- [ ] `app/res/values/strings.xml`
+- [ ] `app/src/main/java/m/co/rh/id/a_flash_deck/app/ui/page/HomePage.java`
 
 **Tasks:**
 - [ ] Update file picker to accept .apkg files
-- [ ] Add string resources for Anki operations
 - [ ] Add warning messages for unsupported cards
-- [ ] Add progress messages for import/export
 
 **Completion Criteria:** User can import/export Anki decks from UI
+**Note:** String resources already added in Phase 2 (values/strings.xml and values-in/strings.xml)
 
 ---
 
@@ -201,12 +201,12 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 | Phase | Status | % Complete |
 |-------|--------|------------|
 | Phase 1 | ✅ Completed | 100% |
-| Phase 2 | ⬜ Not Started | 0% |
+| Phase 2 | ✅ Completed | 100% |
 | Phase 3 | ⬜ Not Started | 0% |
 | Phase 4 | ⬜ Not Started | 0% |
 | Phase 5 | ⬜ Not Started | 0% |
 | Phase 6 | ⬜ Not Started | 0% |
-| **Overall** | **🔄 In Progress** | **17%** |
+| **Overall** | **🔄 In Progress** | **33%** |
 
 ---
 
