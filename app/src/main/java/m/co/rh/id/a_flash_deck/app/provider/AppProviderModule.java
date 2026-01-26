@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.app.provider;
 
 import android.app.Application;
 
+import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
@@ -51,6 +52,7 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerAsync(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
         providerRegistry.registerAsync(AppShortcutHandler.class, () -> new AppShortcutHandler(provider));
         providerRegistry.registerLazy(AnkiImporter.class, () -> new AnkiImporter(provider));
+        providerRegistry.registerLazy(AnkiExporter.class, () -> new AnkiExporter(provider));
 
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
         providerRegistry.register(NavigatorProvider.class, () -> new NavigatorProvider(mApplication, provider));

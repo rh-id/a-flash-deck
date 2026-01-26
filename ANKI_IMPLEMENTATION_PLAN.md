@@ -486,13 +486,14 @@ private String resolveDeckNameConflict(String ankiDeckName) {
 ### Phase 3: Implement AnkiExporter
 
 **3.1 Create `AnkiExporter.java`**
-- Location: `app/src/main/java/m/co/rh/id/a_flash_deck/app/provider/command/AnkiExporter.java`
+- Location: `app/src/main/java/m/co/rh/id/a_flash_deck/app/provider/component/AnkiExporter.java`
 - Constructor: Takes `Provider` dependency
 
 **Main Method:**
 ```java
-public Single<File> exportApkg(List<Deck> deckList)
+public File exportApkg(List<Deck> deckList)
 ```
+**Note:** Method returns `File` directly (not wrapped in RxJava `Single`). The `ExportImportCmd.exportFile()` method wraps the call with `Single.fromFuture()` for async execution, matching the pattern used for AnkiImporter.
 
 **Algorithm:**
 ```
@@ -597,7 +598,7 @@ private String constructNoteField(String text, String image, String voice) {
   - IO errors
 - Use try-finally to clean up temp database file
 - Use database transactions for bulk inserts
-- Use RxJava Single pattern (no blockingGet)
+- AnkiImporter/Exporter methods return values directly, ExportImportCmd wraps with Single.fromFuture() for async execution
 
 ---
 
@@ -623,6 +624,7 @@ public Single<List<DeckModel>> importFile(File file) {
 **Constructor changes:**
 ```java
 protected AnkiImporter mAnkiImporter;
+protected AnkiExporter mAnkiExporter;
 
 public ExportImportCmd(Provider provider) {
     mAppContext = provider.getContext().getApplicationContext();
@@ -631,6 +633,7 @@ public ExportImportCmd(Provider provider) {
     mDeckDao = provider.get(DeckDao.class);
     mFileHelper = provider.get(FileHelper.class);
     mAnkiImporter = provider.get(AnkiImporter.class); // Get AnkiImporter from provider
+    mAnkiExporter = provider.get(AnkiExporter.class); // Get AnkiExporter from provider
 }
 ```
 
@@ -638,10 +641,18 @@ public ExportImportCmd(Provider provider) {
 ```java
 public Single<File> exportFile(List<Deck> deckList, String format) {
     if ("anki".equals(format)) {
-        return new AnkiExporter(mProvider)
-                .exportApkg(deckList);
+        // AnkiExporter returns File directly
+        // Wrap in Single.fromFuture for async execution
+        return Single.fromFuture(
+                mExecutorService.submit(() -> mAnkiExporter.exportApkg(deckList))
+        );
     }
-    return exportFile(deckList); // default/native
+    return exportNativeFile(deckList); // default/native
+}
+
+// Rename existing exportFile to exportNativeFile
+private Single<File> exportNativeFile(List<Deck> deckList) {
+    // ... existing export implementation
 }
 ```
 
@@ -904,7 +915,7 @@ CREATE TABLE col (
 - **Auto-rename deck names with suffix on conflicts**
 - **Missing media: import card without media, log warning**
 - **Progress: simple loading spinner**
-- **Register AnkiImporter/Exporter in CommandProviderModule**
+- **Register AnkiImporter/Exporter in AppProviderModule**
 - **Clean up temp files with try-finally**
 - **Preserve image file extensions** (.jpg, .png, .gif, etc.)
 

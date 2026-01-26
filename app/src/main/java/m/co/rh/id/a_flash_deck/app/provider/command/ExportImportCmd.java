@@ -47,6 +47,7 @@ import java.util.zip.ZipOutputStream;
 
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -66,6 +67,7 @@ public class ExportImportCmd {
 
     protected Context mAppContext;
     protected AnkiImporter mAnkiImporter;
+    protected AnkiExporter mAnkiExporter;
     protected ExecutorService mExecutorService;
     protected ILogger mLogger;
     protected DeckDao mDeckDao;
@@ -78,9 +80,23 @@ public class ExportImportCmd {
         mDeckDao = provider.get(DeckDao.class);
         mFileHelper = provider.get(FileHelper.class);
         mAnkiImporter = provider.get(AnkiImporter.class);
+        mAnkiExporter = provider.get(AnkiExporter.class);
     }
 
     public Single<File> exportFile(List<Deck> deckList) {
+        return exportFile(deckList, "native");
+    }
+
+    public Single<File> exportFile(List<Deck> deckList, String format) {
+        if ("anki".equals(format)) {
+            return Single.fromFuture(
+                    mExecutorService.submit(() -> mAnkiExporter.exportApkg(deckList))
+            );
+        }
+        return exportNativeFile(deckList);
+    }
+
+    private Single<File> exportNativeFile(List<Deck> deckList) {
         return Single.fromFuture(
                 mExecutorService.submit(() -> {
                     if (!deckList.isEmpty()) {
