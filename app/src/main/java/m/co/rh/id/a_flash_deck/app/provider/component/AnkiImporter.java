@@ -188,6 +188,10 @@ public class AnkiImporter {
             copyMediaToAppPaths(mediaFiles, mediaMapping, deckModelMap);
             generateThumbnailsForMedia(deckModelMap);
 
+            for (DeckModel deckModel : deckModelMap.values()) {
+                deckModel.getCardList().sort((c1, c2) -> Long.compare(c1.ordinal, c2.ordinal));
+            }
+
             List<DeckModel> result = new ArrayList<>(deckModelMap.values());
             return result;
         } catch (IOException | JSONException e) {
@@ -214,6 +218,9 @@ public class AnkiImporter {
         String plainText = spanned.toString();
 
         plainText = Normalizer.normalize(plainText, Normalizer.Form.NFC);
+
+        plainText = plainText.replaceAll("\\[sound:[^\\]]+\\]", "");
+        plainText = plainText.replace("\uFFFC", "");
 
         return plainText;
     }
