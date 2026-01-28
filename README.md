@@ -24,9 +24,32 @@ A simple and easy to use flash card app to help you study.
 * Add notification timer to periodically asking you question
 * Support dark mode and light mode
 * Easily export & share your decks to your friends
+* Import and export decks in Anki `.apkg` format (supports Basic cards with images and audio)
 * Record voices and attach images for the cards
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
 * Flash bot to smartly suggest list of card to test you
+
+### Anki Integration
+
+The app supports bidirectional import/export with Anki `.apkg` format:
+
+**Supported:**
+- Basic notetype cards (Front/Back fields)
+- Images (JPEG, PNG) for questions and answers
+- Audio recordings (MP3) for questions and answers
+- Nested deck hierarchies (flattened to single level with " - " separator)
+
+**Limitations:**
+- Only imports Basic notetype cards (other notetypes like Cloze are skipped)
+- Anki scheduling/review data is not imported or exported
+- Tags are not supported
+- HTML content is simplified (line breaks converted, basic image/audio tags preserved)
+
+**Technical Details:**
+- Uses file-based SQLite database for export (Anki 2.1 format)
+- Generates valid `.apkg` files compatible with Anki Desktop and AnkiMobile
+- Auto-resolves deck name conflicts with numeric suffixes
+- Gracefully handles missing media files during import
 
 ## Project Structure
 
