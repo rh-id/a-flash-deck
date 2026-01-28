@@ -17,6 +17,9 @@
 
 package m.co.rh.id.a_flash_deck.app.provider.component;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -135,9 +138,8 @@ public class AnkiTestDataHelper {
     /**
      * Creates a test JPEG image file with valid JPEG header.
      * 
-     * <p>The file contains a minimal valid JPEG header followed by 1KB of dummy data.
-     * This is sufficient for FileHelper to recognize the file type and process it
-     * correctly during tests.</p>
+     * <p>The file contains a properly structured JPEG using Android's Bitmap API.
+     * This creates a valid JPEG that BitmapFactory can decode correctly during tests.</p>
      * 
      * @param directory the directory where the image file should be created
      * @param fileName the name to give the image file
@@ -146,17 +148,13 @@ public class AnkiTestDataHelper {
      */
     public static File createTestImageFile(File directory, String fileName) throws IOException {
         File imageFile = new File(directory, fileName);
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        bitmap.eraseColor(Color.BLUE);
         FileOutputStream fos = new FileOutputStream(imageFile);
-        
-        byte[] fakeJpegHeader = new byte[]{
-            (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0,
-            0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
-            0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00
-        };
-        fos.write(fakeJpegHeader);
-        fos.write(new byte[1000]);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+        fos.flush();
         fos.close();
-        
+        bitmap.recycle();
         return imageFile;
     }
     
@@ -190,8 +188,8 @@ public class AnkiTestDataHelper {
     /**
      * Creates a test PNG image file with valid PNG signature.
      * 
-     * <p>The file contains the standard PNG file signature followed by 1KB of dummy data.
-     * This is useful for testing PNG-specific handling in the import/export code.</p>
+     * <p>The file contains a properly structured PNG using Android's Bitmap API.
+     * This creates a valid PNG that BitmapFactory can decode correctly during tests.</p>
      * 
      * @param directory the directory where the image file should be created
      * @param fileName the name to give the image file
@@ -200,16 +198,13 @@ public class AnkiTestDataHelper {
      */
     public static File createTestPngFile(File directory, String fileName) throws IOException {
         File imageFile = new File(directory, fileName);
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        bitmap.eraseColor(Color.RED);
         FileOutputStream fos = new FileOutputStream(imageFile);
-        
-        byte[] pngSignature = new byte[]{
-            (byte) 0x89, (byte) 0x50, (byte) 0x4E, (byte) 0x47, 
-            (byte) 0x0D, (byte) 0x0A, (byte) 0x1A, (byte) 0x0A
-        };
-        fos.write(pngSignature);
-        fos.write(new byte[1000]);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        fos.flush();
         fos.close();
-        
+        bitmap.recycle();
         return imageFile;
     }
 }
