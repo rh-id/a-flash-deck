@@ -375,7 +375,7 @@ public List<DeckModel> importApkg(File apkgFile)
    For each Anki note:
    a. Parse flds by \x1f → field1, field2
    b. Parse HTML/media from fields:
-      - Use android.text.Html.fromHtml() for parsing
+       - Use androidx.core.text.HtmlCompat.fromHtml() for parsing
       - Decode HTML entities (&nbsp;, &amp;, etc.)
       - Convert <br> tags to \n
       - Extract first <img src="...">
@@ -411,7 +411,7 @@ private void generateThumbnailsForMedia(List<Card> cards)
 **HTML Parsing Logic (using android.text.Html):**
 ```java
 // Decode HTML entities and convert to text
-Spanned spanned = Html.fromHtml(htmlField, Html.FROM_HTML_MODE_LEGACY);
+Spanned spanned = HtmlCompat.fromHtml(htmlField, HtmlCompat.FROM_HTML_MODE_LEGACY);
 String text = spanned.toString();
 
 // Convert line breaks
@@ -894,7 +894,7 @@ CREATE TABLE col (
 **Required (likely already available):**
 - `java.util.zip.*` - ZIP handling
 - `android.database.sqlite.*` - SQLite support
-- `android.text.Html` - HTML parsing (built-in)
+- `androidx.core.text.HtmlCompat` - HTML parsing (AndroidX)
 - `java.text.Normalizer` - Unicode normalization (built-in)
 - `java.util.UUID` - GUID generation
 - `org.json.*` - JSON creation (built-in)
@@ -918,7 +918,7 @@ CREATE TABLE col (
 - **Media JSON is separate ZIP file, NOT in database** (CRITICAL)
 - **Use file-based SQLite for export, NOT in-memory** (CRITICAL)
 - **Use database transactions for bulk operations**
-- **Use android.text.Html for HTML parsing, NOT simple regex**
+- **Use androidx.core.text.HtmlCompat for HTML parsing, NOT simple regex**
 - **Generate thumbnails for imported images using FileHelper**
 - **Unicode NFC normalization for all text**
 - **Auto-rename deck names with suffix on conflicts**
@@ -935,7 +935,7 @@ CREATE TABLE col (
 | Decision | Choice |
 |----------|---------|
 | Deck name conflicts | Auto-rename with suffix ("Deck" → "Deck (2)") |
-| HTML parsing | Use built-in android.text.Html |
+| HTML parsing | Use built-in androidx.core.text.HtmlCompat |
 | Missing media | Import card without media, log warning |
 | Progress indication | Simple loading spinner |
 | Thumbnail generation | Yes, using FileHelper methods |
@@ -947,7 +947,7 @@ CREATE TABLE col (
 
 1. **Media JSON Location**: Must be separate file entry in ZIP, NOT in `col` table
 2. **SQLite Creation**: Must use file-based database for export, NOT in-memory
-3. **HTML Parsing**: Use `android.text.Html.fromHtml()` for proper entity decoding
+3. **HTML Parsing**: Use `androidx.core.text.HtmlCompat.fromHtml()` for proper entity decoding
 4. **Image Extensions**: Preserve original extensions (.jpg, .png, etc.), don't force .jpg
 5. **Line Breaks**: Convert `<br>`, `<br/>`, `<br />` to `\n`
 6. **Unicode**: Always normalize to NFC format

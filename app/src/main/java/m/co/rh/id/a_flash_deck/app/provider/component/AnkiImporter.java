@@ -20,8 +20,9 @@ package m.co.rh.id.a_flash_deck.app.provider.component;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.text.Html;
 import android.text.Spanned;
+
+import androidx.core.text.HtmlCompat;
 
 import org.json.JSONException;
 
@@ -214,7 +215,7 @@ public class AnkiImporter {
                 .replace("<br/>", "\n")
                 .replace("<br />", "\n");
 
-        Spanned spanned = Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY);
+        Spanned spanned = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY);
         String plainText = spanned.toString();
 
         plainText = Normalizer.normalize(plainText, Normalizer.Form.NFC);

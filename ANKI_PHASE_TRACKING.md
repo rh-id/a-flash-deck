@@ -18,9 +18,9 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 - Check against all existing deck names before import
 
 ### HTML Parsing
-**Decision:** Use built-in `android.text.Html`
-- Use `Html.fromHtml()` for HTML stripping
-- Use `Html.toHtml()` for basic encoding if needed
+**Decision:** Use built-in `androidx.core.text.HtmlCompat`
+- Use `HtmlCompat.fromHtml()` for HTML stripping
+- Use `HtmlCompat.toHtml()` for basic encoding if needed
 - No external libraries
 
 ### Missing Media Files
@@ -303,5 +303,5 @@ Implement Anki `.apkg` format import/export compatibility for Flash Deck without
 - Use Unicode NFC normalization for text
 - Deck name conflicts auto-resolve with suffix
 - Missing media: import card without media, log warning
-- HTML parsing: use android.text.Html (built-in)
+- HTML parsing: use androidx.core.text.HtmlCompat (AndroidX)
 - Progress: simple loading spinner only
