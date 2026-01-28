@@ -108,7 +108,9 @@ public class ApkgParser {
             }
             JSONObject mediaJson = new JSONObject(sb.toString());
             Map<String, String> mediaMap = new HashMap<>();
-            for (String key : mediaJson.keySet()) {
+            java.util.Iterator<String> keys = mediaJson.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
                 mediaMap.put(key, mediaJson.getString(key));
             }
             return mediaMap;
@@ -218,7 +220,9 @@ public class ApkgParser {
             if (cursor.moveToFirst()) {
                 String modelsJson = cursor.getString(0);
                 JSONObject models = new JSONObject(modelsJson);
-                for (String key : models.keys()) {
+                java.util.Iterator<String> modelKeys = models.keys();
+                while (modelKeys.hasNext()) {
+                    String key = modelKeys.next();
                     JSONObject modelObj = models.getJSONObject(key);
                     AnkiNotetype notetype = new AnkiNotetype();
                     notetype.id = modelObj.getLong("id");

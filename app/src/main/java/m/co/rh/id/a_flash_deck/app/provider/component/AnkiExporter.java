@@ -45,7 +45,6 @@ import m.co.rh.id.aprovider.Provider;
 
 public class AnkiExporter {
     private static final String TAG = AnkiExporter.class.getName();
-    private static final String FIELD_SEPARATOR = "\u001f";
 
     protected Context mAppContext;
     protected ILogger mLogger;
@@ -86,61 +85,67 @@ public class AnkiExporter {
             SQLiteDatabase db = ApkgGenerator.createTempDatabase(dbFile);
             ApkgGenerator.createTables(db);
 
-            long notetypeId = insertBasicNotetypeAndGetId(db);
-
-            Map<Long, Long> deckIdMap = new LinkedHashMap<>();
-            for (Deck deck : deckList) {
-                long newDeckId = ApkgGenerator.insertDeck(db, deck.name);
-                deckIdMap.put(deck.id, newDeckId);
-            }
-
-            JSONObject decksJson = new JSONObject();
-            for (Map.Entry<Long, Long> entry : deckIdMap.entrySet()) {
-                Long originalId = entry.getKey();
-                Long newId = entry.getValue();
-                Deck deck = findDeckById(deckList, originalId);
-                if (deck != null) {
-                    JSONObject deckJson = new JSONObject();
-                    deckJson.put("name", deck.name);
-                    deckJson.put("conf", 1);
-                    deckJson.put("usn", -1);
-                    deckJson.put("mtime_secs", System.currentTimeMillis() / 1000);
-                    decksJson.put(String.valueOf(newId), deckJson);
-                }
-            }
-            ApkgGenerator.updateColDecks(db, decksJson.toString());
-
-            db.beginTransaction();
-            try {
-                for (Card card : allCards) {
-                    String guid = generateGuid();
-                    String field1 = constructNoteField(card.question, card.questionImage, card.questionVoice);
-                    String field2 = constructNoteField(card.answer, card.answerImage, card.answerVoice);
-
-                    Long deckId = deckIdMap.get(card.deckId);
-                    if (deckId == null) {
-                        deckId = deckIdMap.values().iterator().next();
-                    }
-
-                    long noteId = ApkgGenerator.insertNote(db, guid, deckId, notetypeId, field1, field2);
-                    ApkgGenerator.insertCard(db, noteId, deckId, card.ordinal);
-                }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-
-            db.close();
-
+            long notetypeId;
             Map<String, File> mediaFiles = new LinkedHashMap<>();
-            for (Map.Entry<String, Integer> entry : mediaMap.entrySet()) {
-                String mediaName = entry.getKey();
-                Integer numericId = entry.getValue();
-                File sourceFile = findMediaFile(allCards, mediaName);
-                if (sourceFile != null && sourceFile.exists()) {
-                    mediaFiles.put(String.valueOf(numericId), sourceFile);
-                } else {
-                    mLogger.w(TAG, "Media file not found: " + mediaName);
+            
+            try {
+                notetypeId = insertBasicNotetypeAndGetId(db);
+
+                Map<Long, Long> deckIdMap = new LinkedHashMap<>();
+                for (Deck deck : deckList) {
+                    long newDeckId = ApkgGenerator.insertDeck(db, deck.name);
+                    deckIdMap.put(deck.id, newDeckId);
+                }
+
+                JSONObject decksJson = new JSONObject();
+                for (Map.Entry<Long, Long> entry : deckIdMap.entrySet()) {
+                    Long originalId = entry.getKey();
+                    Long newId = entry.getValue();
+                    Deck deck = findDeckById(deckList, originalId);
+                    if (deck != null) {
+                        JSONObject deckJson = new JSONObject();
+                        deckJson.put("name", deck.name);
+                        deckJson.put("conf", 1);
+                        deckJson.put("usn", -1);
+                        deckJson.put("mtime_secs", System.currentTimeMillis() / 1000);
+                        decksJson.put(String.valueOf(newId), deckJson);
+                    }
+                }
+                ApkgGenerator.updateColDecks(db, decksJson.toString());
+
+                db.beginTransaction();
+                try {
+                    for (Card card : allCards) {
+                        String guid = generateGuid();
+                        String field1 = constructNoteField(card.question, card.questionImage, card.questionVoice);
+                        String field2 = constructNoteField(card.answer, card.answerImage, card.answerVoice);
+
+                        Long deckId = deckIdMap.get(card.deckId);
+                        if (deckId == null) {
+                            deckId = deckIdMap.values().iterator().next();
+                        }
+
+                        long noteId = ApkgGenerator.insertNote(db, guid, deckId, notetypeId, field1, field2);
+                        ApkgGenerator.insertCard(db, noteId, deckId, card.ordinal);
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+
+                for (Map.Entry<String, Integer> entry : mediaMap.entrySet()) {
+                    String mediaName = entry.getKey();
+                    Integer numericId = entry.getValue();
+                    File sourceFile = findMediaFile(allCards, mediaName);
+                    if (sourceFile != null && sourceFile.exists()) {
+                        mediaFiles.put(String.valueOf(numericId), sourceFile);
+                    } else {
+                        mLogger.w(TAG, "Media file not found: " + mediaName);
+                    }
+                }
+            } finally {
+                if (db != null) {
+                    db.close();
                 }
             }
 

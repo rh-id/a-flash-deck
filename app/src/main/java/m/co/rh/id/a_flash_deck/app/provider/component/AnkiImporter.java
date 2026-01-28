@@ -86,31 +86,36 @@ public class AnkiImporter {
                 mediaMapping = ApkgParser.parseMediaJson(zipFile);
             }
 
-            List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
+            List<AnkiNotetype> notetypes;
             List<AnkiNote> notes = new ArrayList<>();
             List<AnkiCard> cards = new ArrayList<>();
-            List<AnkiDeck> decks = ApkgParser.readDecks(db);
+            List<AnkiDeck> decks;
+            
+            try {
+                notetypes = ApkgParser.readNotetypes(db);
+                decks = ApkgParser.readDecks(db);
 
-            for (AnkiNotetype notetype : notetypes) {
-                if (ApkgParser.isBasicNotetype(notetype)) {
-                    List<AnkiNote> notetypeNotes = ApkgParser.readNotes(db, notetype.id);
-                    notes.addAll(notetypeNotes);
-                } else {
-                    mLogger.d(TAG, "Skipping non-Basic notetype: " + notetype.name);
+                for (AnkiNotetype notetype : notetypes) {
+                    if (ApkgParser.isBasicNotetype(notetype)) {
+                        List<AnkiNote> notetypeNotes = ApkgParser.readNotes(db, notetype.id);
+                        notes.addAll(notetypeNotes);
+                    } else {
+                        mLogger.d(TAG, "Skipping non-Basic notetype: " + notetype.name);
+                    }
                 }
-            }
 
-            if (notes.isEmpty()) {
+                if (notes.isEmpty()) {
+                    throw new ValidationException("No Basic cards found in APKG file");
+                }
+
+                List<Long> noteIds = new ArrayList<>();
+                for (AnkiNote note : notes) {
+                    noteIds.add(note.id);
+                }
+                cards.addAll(ApkgParser.readCards(db, noteIds));
+            } finally {
                 db.close();
-                throw new ValidationException("No Basic cards found in APKG file");
             }
-
-            List<Long> noteIds = new ArrayList<>();
-            for (AnkiNote note : notes) {
-                noteIds.add(note.id);
-            }
-            cards.addAll(ApkgParser.readCards(db, noteIds));
-            db.close();
 
             List<Deck> existingDecks = mDeckDao.getAllDecks();
             Set<String> existingNames = new HashSet<>();

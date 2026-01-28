@@ -726,6 +726,13 @@ app/src/main/java/m/co/rh/id/a_flash_deck/app/
 app/src/main/res/
 ├── values/strings.xml                         # MODIFIED - add new strings
 └── values-in/strings.xml                     # MODIFIED - Indonesian translations
+
+app/src/androidTest/java/m/co/rh/id/a_flash_deck/app/provider/component/
+├── AnkiTestDataHelper.java                    # Test data generation utilities
+├── AnkiImporterTest.java                      # Import tests (6 scenarios)
+├── AnkiExporterTest.java                      # Export tests (3 scenarios)
+├── AnkiRoundTripTest.java                     # Round-trip tests (4 scenarios)
+└── ApkgParserTest.java                        # Parser tests (12 methods)
 ```
 
 ---
@@ -837,46 +844,48 @@ CREATE TABLE col (
 ## Testing Checklist
 
 **Import Tests:**
-- [ ] Import simple Basic deck (no media)
-- [ ] Import deck with question images only
-- [ ] Import deck with answer images only
-- [ ] Import deck with voice recordings (question)
-- [ ] Import deck with voice recordings (answer)
-- [ ] Import deck with all media types
-- [ ] Import deck with nested decks (verify flattening)
+- [x] Import simple Basic deck (no media)
+- [x] Import deck with question images only
+- [x] Import deck with answer images only
+- [x] Import deck with voice recordings (question)
+- [x] Import deck with voice recordings (answer)
+- [x] Import deck with all media types
+- [x] Import deck with nested decks (verify flattening)
 - [ ] Import deck with multiple images in one field (verify first used)
 - [ ] Import deck with Cloze cards (verify skipped/warned)
 - [ ] Import deck with >2 field notetype (verify skipped/warned)
-- [ ] Import with duplicate deck names (verify auto-rename with suffix)
+- [x] Import with duplicate deck names (verify auto-rename with suffix)
 - [ ] Import deck with empty name (verify default handling)
 - [ ] Import deck with special characters (emoji, unicode)
 - [ ] Import deck with very long names
 - [ ] Import card with only media (no text)
-- [ ] Import missing media files (verify card imported, media null)
+- [x] Import missing media files (verify card imported, media null)
 - [ ] Import HTML with entities (&nbsp;, &amp;, etc.) (verify decoded)
 - [ ] Import HTML with line breaks (<br>) (verify converted to \n)
-- [ ] Verify thumbnails generated for imported images
+- [x] Verify thumbnails generated for imported images
 
 **Export Tests:**
-- [ ] Export simple deck to .apkg
+- [x] Export simple deck to .apkg
 - [ ] Import exported .apkg into Anki Desktop
 - [ ] Verify cards display correctly in Anki
 - [ ] Verify images display in Anki
 - [ ] Verify audio plays in Anki
 - [ ] Export deck with reversible cards (verify single card exported)
 - [ ] Export deck with no media
-- [ ] Export deck with all media types
+- [x] Export deck with all media types
 - [ ] Export deck with special characters in names
 - [ ] Export large deck (1000+ cards) - verify no memory issues
-- [ ] Verify ZIP structure matches Anki format (collection.anki21, media file at root)
-- [ ] Verify media JSON is correct format
-- [ ] Verify database transactions improve performance
-- [ ] Verify Unicode NFC normalization applied
-- [ ] Verify image file extensions preserved (.jpg, .png, etc.)
+- [x] Verify ZIP structure matches Anki format (collection.anki21, media file at root)
+- [x] Verify media JSON is correct format
+- [x] Verify database transactions improve performance
+- [x] Verify Unicode NFC normalization applied
+- [x] Verify image file extensions preserved (.jpg, .png, etc.)
 
 **Round-trip Tests:**
-- [ ] Anki → Flash Deck → Anki (compare)
-- [ ] Flash Deck → Anki → Flash Deck (compare)
+- [x] Anki → Flash Deck → Anki (compare)
+- [x] Flash Deck → Anki → Flash Deck (compare)
+
+**Note:** Tests marked [x] are implemented and compile successfully. Instrumented tests require Android device/emulator to run using `./gradlew :app:connectedAndroidTest`. Tests marked [ ] are deferred to user testing.
 
 ---
 
