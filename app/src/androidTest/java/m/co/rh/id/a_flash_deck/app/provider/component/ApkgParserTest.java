@@ -142,7 +142,7 @@ public class ApkgParserTest {
 
         assertNotNull(db);
         assertTrue(db.isOpen());
-        assertEquals(0, db.isReadOnly());
+        assertEquals(true, db.isReadOnly());
 
         db.close();
     }
@@ -254,14 +254,18 @@ public class ApkgParserTest {
 
         android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
-        List<AnkiNote> notes = ApkgParser.readNotes(db, 123456789L);
+        List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
+        assertTrue(notetypes.size() > 0);
+        long notetypeId = notetypes.get(0).id;
+
+        List<AnkiNote> notes = ApkgParser.readNotes(db, notetypeId);
 
         assertEquals(2, notes.size());
         
         AnkiNote note1 = notes.get(0);
         assertNotNull(note1.id);
         assertNotNull(note1.guid);
-        assertEquals(123456789L, note1.mid);
+        assertEquals(notetypeId, note1.mid);
         assertNotNull(note1.flds);
         assertNotNull(note1.tags);
 
@@ -287,17 +291,24 @@ public class ApkgParserTest {
 
         android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
+        List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
+        assertTrue(notetypes.size() > 0);
+        long notetypeId = notetypes.get(0).id;
+
+        List<AnkiNote> notes = ApkgParser.readNotes(db, notetypeId);
+        assertTrue(notes.size() > 0);
+
         List<Long> noteIds = new ArrayList<>();
-        noteIds.add(987654321L);
-        
+        noteIds.add(notes.get(0).id);
+
         List<AnkiCard> cards = ApkgParser.readCards(db, noteIds);
 
         assertTrue(cards.size() >= 1);
-        
+
         if (!cards.isEmpty()) {
             AnkiCard card = cards.get(0);
             assertNotNull(card.id);
-            assertEquals(987654321L, card.nid);
+            assertEquals(notes.get(0).id, card.nid);
             assertNotNull(card.did);
         }
 
@@ -345,6 +356,12 @@ public class ApkgParserTest {
 
         Deck deck2 = AnkiTestDataHelper.createTestDeck("Test Deck 2");
         deckDao.insertDeck(deck2);
+
+        Card card1 = AnkiTestDataHelper.createTestCard(deck1.id, 1, "Question 1", "Answer 1");
+        deckDao.insertCard(card1);
+
+        Card card2 = AnkiTestDataHelper.createTestCard(deck2.id, 1, "Question 2", "Answer 2");
+        deckDao.insertCard(card2);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck1, deck2)));
         assertNotNull(apkgFile);

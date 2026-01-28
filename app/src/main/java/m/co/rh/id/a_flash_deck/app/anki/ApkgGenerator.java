@@ -109,7 +109,7 @@ public class ApkgGenerator {
                 "type INTEGER NOT NULL)");
     }
 
-    public static void insertBasicNotetype(SQLiteDatabase db) throws JSONException {
+    public static long insertBasicNotetype(SQLiteDatabase db) throws JSONException {
         long notetypeId = System.currentTimeMillis() + (long)(Math.random() * 1000);
         JSONObject model = new JSONObject();
         model.put("id", notetypeId);
@@ -175,6 +175,7 @@ public class ApkgGenerator {
         } finally {
             db.endTransaction();
         }
+        return notetypeId;
     }
 
     public static long insertDeck(SQLiteDatabase db, String deckName) {
@@ -257,7 +258,7 @@ public class ApkgGenerator {
     }
 
     public static File generateApkg(File dbFile, Map<String, File> mediaFiles, String mediaJson, String outputFileName) throws IOException {
-        File outputFile = new File(dbFile.getParent(), outputFileName);
+        File outputFile = new File(new File(dbFile.getParent()).getParentFile(), outputFileName);
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile))) {
             ZipEntry dbEntry = new ZipEntry("collection.anki21");
             zos.putNextEntry(dbEntry);

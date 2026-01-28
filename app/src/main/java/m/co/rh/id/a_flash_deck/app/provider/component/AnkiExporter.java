@@ -89,7 +89,7 @@ public class AnkiExporter {
             Map<String, File> mediaFiles = new LinkedHashMap<>();
             
             try {
-                notetypeId = insertBasicNotetypeAndGetId(db);
+                notetypeId = ApkgGenerator.insertBasicNotetype(db);
 
                 Map<Long, Long> deckIdMap = new LinkedHashMap<>();
                 for (Deck deck : deckList) {
@@ -204,55 +204,6 @@ public class AnkiExporter {
             sb.append("[sound:").append(voice).append("]");
         }
         return sb.toString();
-    }
-
-    private long insertBasicNotetypeAndGetId(SQLiteDatabase db) throws JSONException {
-        long notetypeId = System.currentTimeMillis() + (long) (Math.random() * 1000);
-        JSONObject model = new JSONObject();
-        model.put("id", notetypeId);
-        model.put("name", "Basic");
-        model.put("type", 0);
-        model.put("css", ".card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; }");
-        model.put("latexPre", "[latex]");
-        model.put("latexPost", "[/latex]");
-
-        JSONArray flds = new JSONArray();
-        JSONObject frontField = new JSONObject();
-        frontField.put("name", "Front");
-        frontField.put("ord", 0);
-        frontField.put("sticky", false);
-        flds.put(frontField);
-
-        JSONObject backField = new JSONObject();
-        backField.put("name", "Back");
-        backField.put("ord", 1);
-        backField.put("sticky", false);
-        flds.put(backField);
-        model.put("flds", flds);
-
-        JSONArray tmpls = new JSONArray();
-        JSONObject card1 = new JSONObject();
-        card1.put("name", "Card 1");
-        card1.put("qfmt", "{{Front}}");
-        card1.put("afmt", "{{FrontSide}}<hr id=answer>{{Back}}");
-        card1.put("ord", 0);
-        tmpls.put(card1);
-
-        JSONObject card2 = new JSONObject();
-        card2.put("name", "Card 2");
-        card2.put("qfmt", "{{Back}}");
-        card2.put("afmt", "{{FrontSide}}<hr id=answer>{{Front}}");
-        card2.put("ord", 1);
-        tmpls.put(card2);
-
-        model.put("tmpls", tmpls);
-
-        JSONObject models = new JSONObject();
-        models.put(String.valueOf(notetypeId), model);
-
-        db.execSQL("UPDATE col SET models = ?", new Object[]{models.toString()});
-
-        return notetypeId;
     }
 
     private Deck findDeckById(List<Deck> decks, Long deckId) {
