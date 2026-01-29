@@ -131,12 +131,12 @@ public class ApkgParser {
                 note.mid = cursor.getLong(2);
                 note.mod = cursor.getLong(3);
                 note.usn = cursor.getInt(4);
-                note.tags = cursor.getString(5);
-                note.flds = cursor.getString(6);
-                note.sfld = cursor.getString(7);
+                note.tags = cursor.isNull(5) ? "" : cursor.getString(5);
+                note.flds = cursor.isNull(6) ? "" : cursor.getString(6);
+                note.sfld = cursor.isNull(7) ? "" : cursor.getString(7);
                 note.csum = cursor.getInt(8);
                 note.flags = cursor.getLong(9);
-                note.data = cursor.getString(10);
+                note.data = cursor.isNull(10) ? "" : cursor.getString(10);
                 notes.add(note);
             }
         } finally {
@@ -182,7 +182,7 @@ public class ApkgParser {
                 card.odue = cursor.getInt(14);
                 card.odid = cursor.getLong(15);
                 card.flags = cursor.getInt(16);
-                card.data = cursor.getString(17);
+                card.data = cursor.isNull(17) ? "" : cursor.getString(17);
                 cards.add(card);
             }
         } finally {
@@ -201,9 +201,9 @@ public class ApkgParser {
                 deck.name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 deck.mtimeStamp = cursor.getLong(cursor.getColumnIndexOrThrow("mtime_secs"));
                 deck.usn = cursor.getInt(cursor.getColumnIndexOrThrow("usn"));
-                deck.conf = cursor.getString(cursor.getColumnIndexOrThrow("conf"));
-                deck.common = cursor.getString(cursor.getColumnIndexOrThrow("common"));
-                deck.kind = cursor.getString(cursor.getColumnIndexOrThrow("kind"));
+                deck.conf = cursor.isNull(cursor.getColumnIndexOrThrow("conf")) ? "" : cursor.getString(cursor.getColumnIndexOrThrow("conf"));
+                deck.common = cursor.isNull(cursor.getColumnIndexOrThrow("common")) ? "" : cursor.getString(cursor.getColumnIndexOrThrow("common"));
+                deck.kind = cursor.isNull(cursor.getColumnIndexOrThrow("kind")) ? "" : cursor.getString(cursor.getColumnIndexOrThrow("kind"));
                 deck.children = new ArrayList<>();
                 decks.add(deck);
             }

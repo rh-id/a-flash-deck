@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,19 +96,21 @@ public class AnkiExporter {
                 notetypeId = ApkgGenerator.insertBasicNotetype(db);
 
                 Map<Long, Long> deckIdMap = new LinkedHashMap<>();
+                Map<Long, Deck> deckLookup = new HashMap<>();
                 for (Deck deck : deckList) {
                     if (deck.name == null || deck.name.isEmpty()) {
                         throw new ValidationException("Deck name is null or empty for deck ID: " + deck.id);
                     }
                     long newDeckId = ApkgGenerator.insertDeck(db, deck.name);
                     deckIdMap.put(deck.id, newDeckId);
+                    deckLookup.put(deck.id, deck);
                 }
 
                 JSONObject decksJson = new JSONObject();
                 for (Map.Entry<Long, Long> entry : deckIdMap.entrySet()) {
                     Long originalId = entry.getKey();
                     Long newId = entry.getValue();
-                    Deck deck = findDeckById(deckList, originalId);
+                    Deck deck = deckLookup.get(originalId);
                     if (deck != null) {
                         JSONObject deckJson = new JSONObject();
                         deckJson.put("name", deck.name);
@@ -210,15 +213,6 @@ public class AnkiExporter {
             sb.append("[sound:").append(voice).append("]");
         }
         return sb.toString();
-    }
-
-    private Deck findDeckById(List<Deck> decks, Long deckId) {
-        for (Deck deck : decks) {
-            if (deck.id.equals(deckId)) {
-                return deck;
-            }
-        }
-        return null;
     }
 
     private File findMediaFile(List<Card> cards, String mediaName) {

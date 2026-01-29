@@ -28,15 +28,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class ApkgGenerator {
     private static final String TAG = ApkgGenerator.class.getName();
+    private static final Random RANDOM = new Random();
 
     public static SQLiteDatabase createTempDatabase(File dbFile) {
         return SQLiteDatabase.openOrCreateDatabase(dbFile.getAbsolutePath(), null);
+    }
+
+    private static long generateUniqueId() {
+        long timestamp = System.currentTimeMillis();
+        long random = (long) (RANDOM.nextDouble() * Long.MAX_VALUE);
+        return timestamp ^ random;
     }
 
     public static void createTables(SQLiteDatabase db) {
@@ -110,7 +119,10 @@ public class ApkgGenerator {
     }
 
     public static long insertBasicNotetype(SQLiteDatabase db) throws JSONException {
-        long notetypeId = System.currentTimeMillis() + (long)(Math.random() * 1000);
+        if (db == null) {
+            throw new IllegalArgumentException("Database cannot be null");
+        }
+        long notetypeId = generateUniqueId();
         JSONObject model = new JSONObject();
         model.put("id", notetypeId);
         model.put("name", "Basic");
@@ -179,7 +191,13 @@ public class ApkgGenerator {
     }
 
     public static long insertDeck(SQLiteDatabase db, String deckName) {
-        long deckId = System.currentTimeMillis() + (long)(Math.random() * 1000);
+        if (db == null) {
+            throw new IllegalArgumentException("Database cannot be null");
+        }
+        if (deckName == null || deckName.isEmpty()) {
+            throw new IllegalArgumentException("Deck name cannot be null or empty");
+        }
+        long deckId = generateUniqueId();
         db.execSQL("INSERT INTO decks (id, conf, name, mtime_secs, usn, common, kind) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 new Object[]{
                         deckId,
@@ -194,10 +212,18 @@ public class ApkgGenerator {
     }
 
     public static long insertNote(SQLiteDatabase db, String guid, long deckId, long notetypeId, String field1, String field2) {
-        long noteId = System.currentTimeMillis() + (long)(Math.random() * 1000);
-        String flds = field1 + "\u001f" + field2;
-        String sfld = field1.length() > 0 ? field1 : field2;
-        int csum = (sfld != null ? sfld.hashCode() : 0);
+        if (db == null) {
+            throw new IllegalArgumentException("Database cannot be null");
+        }
+        if (guid == null || guid.isEmpty()) {
+            throw new IllegalArgumentException("GUID cannot be null or empty");
+        }
+        long noteId = generateUniqueId();
+        String safeField1 = field1 != null ? field1 : "";
+        String safeField2 = field2 != null ? field2 : "";
+        String flds = safeField1 + "\u001f" + safeField2;
+        String sfld = safeField1.length() > 0 ? safeField1 : safeField2;
+        int csum = sfld.hashCode();
         long mod = System.currentTimeMillis();
 
         db.execSQL("INSERT INTO notes (id, guid, mid, mod, usn, tags, flds, sfld, csum, flags, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -218,7 +244,16 @@ public class ApkgGenerator {
     }
 
     public static long insertCard(SQLiteDatabase db, long noteId, long deckId, int ordinal) {
-        long cardId = System.currentTimeMillis() + (long)(Math.random() * 1000);
+        if (db == null) {
+            throw new IllegalArgumentException("Database cannot be null");
+        }
+        if (noteId <= 0) {
+            throw new IllegalArgumentException("Note ID must be positive");
+        }
+        if (deckId <= 0) {
+            throw new IllegalArgumentException("Deck ID must be positive");
+        }
+        long cardId = generateUniqueId();
         long mod = System.currentTimeMillis();
 
         db.execSQL("INSERT INTO cards (id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -250,14 +285,30 @@ public class ApkgGenerator {
     }
 
     public static String createMediaJson(Map<String, Integer> mediaMap) throws JSONException {
+        if (mediaMap == null) {
+            throw new IllegalArgumentException("Media map cannot be null");
+        }
         JSONObject mediaJson = new JSONObject();
         for (Map.Entry<String, Integer> entry : mediaMap.entrySet()) {
-            mediaJson.put(String.valueOf(entry.getValue()), entry.getKey());
+            String key = entry.getKey();
+            Integer value = entry.getValue();
+            if (key != null && value != null) {
+                mediaJson.put(String.valueOf(value), key);
+            }
         }
         return mediaJson.toString();
     }
 
     public static File generateApkg(File dbFile, Map<String, File> mediaFiles, String mediaJson, String outputFileName) throws IOException {
+        if (dbFile == null) {
+            throw new IllegalArgumentException("Database file cannot be null");
+        }
+        if (outputFileName == null || outputFileName.isEmpty()) {
+            throw new IllegalArgumentException("Output filename cannot be null or empty");
+        }
+        if (mediaJson == null) {
+            throw new IllegalArgumentException("Media JSON cannot be null");
+        }
         File outputFile = new File(new File(dbFile.getParent()).getParentFile(), outputFileName);
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile))) {
             ZipEntry dbEntry = new ZipEntry("collection.anki21");
@@ -277,20 +328,26 @@ public class ApkgGenerator {
 
             ZipEntry mediaEntry = new ZipEntry("media");
             zos.putNextEntry(mediaEntry);
-            zos.write(mediaJson.getBytes());
+            zos.write(mediaJson.getBytes(StandardCharsets.UTF_8));
             zos.closeEntry();
 
-            for (Map.Entry<String, File> entry : mediaFiles.entrySet()) {
-                ZipEntry mediaFileEntry = new ZipEntry(entry.getKey());
-                zos.putNextEntry(mediaFileEntry);
-                try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(entry.getValue()))) {
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = bis.read(buffer)) != -1) {
-                        zos.write(buffer, 0, bytesRead);
+            if (mediaFiles != null) {
+                for (Map.Entry<String, File> entry : mediaFiles.entrySet()) {
+                    String key = entry.getKey();
+                    File file = entry.getValue();
+                    if (key != null && file != null && file.exists()) {
+                        ZipEntry mediaFileEntry = new ZipEntry(key);
+                        zos.putNextEntry(mediaFileEntry);
+                        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+                            byte[] buffer = new byte[4096];
+                            int bytesRead;
+                            while ((bytesRead = bis.read(buffer)) != -1) {
+                                zos.write(buffer, 0, bytesRead);
+                            }
+                        }
+                        zos.closeEntry();
                     }
                 }
-                zos.closeEntry();
             }
         }
         return outputFile;
