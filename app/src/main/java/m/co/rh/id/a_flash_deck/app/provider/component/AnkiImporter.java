@@ -58,6 +58,9 @@ public class AnkiImporter {
     private static final String TAG = AnkiImporter.class.getName();
     private static final String FIELD_SEPARATOR = "\u001f";
 
+    private final Pattern mImgPattern;
+    private final Pattern mSoundPattern;
+
     protected Context mAppContext;
     protected ILogger mLogger;
     protected DeckDao mDeckDao;
@@ -68,6 +71,8 @@ public class AnkiImporter {
         mLogger = provider.get(ILogger.class);
         mDeckDao = provider.get(DeckDao.class);
         mFileHelper = provider.get(FileHelper.class);
+        mImgPattern = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+        mSoundPattern = Pattern.compile("\\[sound:([^\\]]+)\\]");
     }
 
     public List<DeckModel> importApkg(File apkgFile) {
@@ -136,6 +141,10 @@ public class AnkiImporter {
 
             Map<Long, DeckModel> deckModelMap = new HashMap<>();
             for (AnkiNote note : notes) {
+                if (note.flds == null || note.flds.isEmpty()) {
+                    mLogger.d(TAG, "Skipping note with empty fields");
+                    continue;
+                }
                 String[] fields = note.flds.split(FIELD_SEPARATOR);
                 if (fields.length < 1) {
                     mLogger.d(TAG, "Skipping note with no fields");
@@ -231,8 +240,7 @@ public class AnkiImporter {
             return null;
         }
 
-        Pattern imgPattern = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = imgPattern.matcher(htmlField);
+        Matcher matcher = mImgPattern.matcher(htmlField);
         if (matcher.find()) {
             String imageName = matcher.group(1);
             return imageName;
@@ -245,8 +253,7 @@ public class AnkiImporter {
             return null;
         }
 
-        Pattern soundPattern = Pattern.compile("\\[sound:([^\\]]+)\\]");
-        Matcher matcher = soundPattern.matcher(htmlField);
+        Matcher matcher = mSoundPattern.matcher(htmlField);
         if (matcher.find()) {
             String voiceName = matcher.group(1);
             return voiceName;
@@ -269,10 +276,15 @@ public class AnkiImporter {
     }
 
     private void copyMediaToAppPaths(Map<String, File> mediaFiles, Map<String, String> mediaMapping, Map<Long, DeckModel> deckModelMap) throws IOException {
+        Map<String, String> inverseMediaMap = new HashMap<>();
+        for (Map.Entry<String, String> entry : mediaMapping.entrySet()) {
+            inverseMediaMap.put(entry.getValue(), entry.getKey());
+        }
+
         for (DeckModel deckModel : deckModelMap.values()) {
             for (Card card : deckModel.getCardList()) {
                 if (card.questionImage != null) {
-                    String numericKey = findNumericKeyForMedia(card.questionImage, mediaMapping);
+                    String numericKey = inverseMediaMap.get(card.questionImage);
                     if (numericKey != null && mediaFiles.containsKey(numericKey)) {
                         File sourceFile = mediaFiles.get(numericKey);
                         String extension = getFileExtension(card.questionImage);
@@ -289,7 +301,7 @@ public class AnkiImporter {
                 }
 
                 if (card.answerImage != null) {
-                    String numericKey = findNumericKeyForMedia(card.answerImage, mediaMapping);
+                    String numericKey = inverseMediaMap.get(card.answerImage);
                     if (numericKey != null && mediaFiles.containsKey(numericKey)) {
                         File sourceFile = mediaFiles.get(numericKey);
                         String extension = getFileExtension(card.answerImage);
@@ -306,7 +318,7 @@ public class AnkiImporter {
                 }
 
                 if (card.questionVoice != null) {
-                    String numericKey = findNumericKeyForMedia(card.questionVoice, mediaMapping);
+                    String numericKey = inverseMediaMap.get(card.questionVoice);
                     if (numericKey != null && mediaFiles.containsKey(numericKey)) {
                         File sourceFile = mediaFiles.get(numericKey);
                         String newFileName = generateUniqueFileName();
@@ -319,7 +331,7 @@ public class AnkiImporter {
                 }
 
                 if (card.answerVoice != null) {
-                    String numericKey = findNumericKeyForMedia(card.answerVoice, mediaMapping);
+                    String numericKey = inverseMediaMap.get(card.answerVoice);
                     if (numericKey != null && mediaFiles.containsKey(numericKey)) {
                         File sourceFile = mediaFiles.get(numericKey);
                         String newFileName = generateUniqueFileName();
@@ -332,15 +344,6 @@ public class AnkiImporter {
                 }
             }
         }
-    }
-
-    private String findNumericKeyForMedia(String mediaName, Map<String, String> mediaMapping) {
-        for (Map.Entry<String, String> entry : mediaMapping.entrySet()) {
-            if (entry.getValue().equals(mediaName)) {
-                return entry.getKey();
-            }
-        }
-        return null;
     }
 
     private String getFileExtension(String fileName) {

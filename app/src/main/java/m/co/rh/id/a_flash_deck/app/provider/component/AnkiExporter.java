@@ -68,6 +68,9 @@ public class AnkiExporter {
 
             List<Long> deckIds = new ArrayList<>();
             for (Deck deck : deckList) {
+                if (deck.id == null) {
+                    throw new ValidationException("Deck with null ID found in export list");
+                }
                 deckIds.add(deck.id);
             }
 
@@ -87,12 +90,15 @@ public class AnkiExporter {
 
             long notetypeId;
             Map<String, File> mediaFiles = new LinkedHashMap<>();
-            
+
             try {
                 notetypeId = ApkgGenerator.insertBasicNotetype(db);
 
                 Map<Long, Long> deckIdMap = new LinkedHashMap<>();
                 for (Deck deck : deckList) {
+                    if (deck.name == null || deck.name.isEmpty()) {
+                        throw new ValidationException("Deck name is null or empty for deck ID: " + deck.id);
+                    }
                     long newDeckId = ApkgGenerator.insertDeck(db, deck.name);
                     deckIdMap.put(deck.id, newDeckId);
                 }
@@ -122,7 +128,7 @@ public class AnkiExporter {
 
                         Long deckId = deckIdMap.get(card.deckId);
                         if (deckId == null) {
-                            deckId = deckIdMap.values().iterator().next();
+                            throw new ValidationException("Card deck ID not found in export list: " + card.deckId);
                         }
 
                         long noteId = ApkgGenerator.insertNote(db, guid, deckId, notetypeId, field1, field2);
@@ -151,7 +157,7 @@ public class AnkiExporter {
 
             String mediaJson = ApkgGenerator.createMediaJson(mediaMap);
 
-            String outputFileName = "deck_export.apkg";
+            String outputFileName = "deck_export_" + System.currentTimeMillis() + ".apkg";
             File outputFile = ApkgGenerator.generateApkg(dbFile, mediaFiles, mediaJson, outputFileName);
 
             return outputFile;
