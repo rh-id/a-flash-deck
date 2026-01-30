@@ -123,21 +123,27 @@ public class ExportImportCmd {
                                     File questionImage = mFileHelper.getCardQuestionImage(card.questionImage);
                                     ZipEntry questionImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_QUESTION_DIR + card.questionImage);
                                     zipOutputStream.putNextEntry(questionImageZip);
-                                    mFileHelper.copyStream(new FileInputStream(questionImage), zipOutputStream);
+                                    try (FileInputStream fis = new FileInputStream(questionImage)) {
+                                        mFileHelper.copyStream(fis, zipOutputStream);
+                                    }
                                     zipOutputStream.closeEntry();
                                 }
                                 if (card.answerImage != null) {
                                     File answerImage = mFileHelper.getCardAnswerImage(card.answerImage);
                                     ZipEntry answerImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_ANSWER_DIR + card.answerImage);
                                     zipOutputStream.putNextEntry(answerImageZip);
-                                    mFileHelper.copyStream(new FileInputStream(answerImage), zipOutputStream);
+                                    try (FileInputStream fis = new FileInputStream(answerImage)) {
+                                        mFileHelper.copyStream(fis, zipOutputStream);
+                                    }
                                     zipOutputStream.closeEntry();
                                 }
                                 if (card.questionVoice != null) {
                                     File file = mFileHelper.getCardQuestionVoice(card.questionVoice);
                                     ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_QUESTION_DIR + card.questionVoice);
                                     zipOutputStream.putNextEntry(zipEntry);
-                                    mFileHelper.copyStream(new FileInputStream(file), zipOutputStream);
+                                    try (FileInputStream fis = new FileInputStream(file)) {
+                                        mFileHelper.copyStream(fis, zipOutputStream);
+                                    }
                                     zipOutputStream.closeEntry();
                                 }
                             }
@@ -175,34 +181,31 @@ public class ExportImportCmd {
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_QUESTION_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_QUESTION_DIR.length() - 1);
-                                BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                                 File imageTempFile = mFileHelper.createImageTempFile();
-                                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile));
-                                mFileHelper.copyStream(bis, bos);
-                                bis.close();
-                                bos.close();
+                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
+                                    mFileHelper.copyStream(bis, bos);
+                                }
                                 mFileHelper.createCardQuestionImage(imageTempFile, fileName);
                                 mFileHelper.createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_ANSWER_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_ANSWER_DIR.length() - 1);
-                                BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                                 File imageTempFile = mFileHelper.createImageTempFile();
-                                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile));
-                                mFileHelper.copyStream(bis, bos);
-                                bis.close();
-                                bos.close();
+                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
+                                    mFileHelper.copyStream(bis, bos);
+                                }
                                 mFileHelper.createCardAnswerImage(imageTempFile, fileName);
                                 mFileHelper.createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_QUESTION_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length() - 1);
-                                BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                                 File tempFile = mFileHelper.createTempFile(fileName);
-                                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));
-                                mFileHelper.copyStream(bis, bos);
-                                bis.close();
-                                bos.close();
+                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                                    mFileHelper.copyStream(bis, bos);
+                                }
                                 mFileHelper.createCardQuestionVoice(tempFile, fileName);
                             }
                         }
@@ -237,18 +240,19 @@ public class ExportImportCmd {
 
     @NonNull
     private List<DeckModel> getDeckModelsFromJson(InputStream is) throws IOException, JSONException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-        String jsonString = bufferedReader.readLine();
-        JSONArray jsonArray = new JSONArray(jsonString);
-        int size = jsonArray.length();
-        List<DeckModel> deckModelsFromJson = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            DeckModel deckModel = new DeckModel();
-            deckModel.fromJson(jsonObject);
-            deckModelsFromJson.add(deckModel);
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is))) {
+            String jsonString = bufferedReader.readLine();
+            JSONArray jsonArray = new JSONArray(jsonString);
+            int size = jsonArray.length();
+            List<DeckModel> deckModelsFromJson = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                DeckModel deckModel = new DeckModel();
+                deckModel.fromJson(jsonObject);
+                deckModelsFromJson.add(deckModel);
+            }
+            return deckModelsFromJson;
         }
-        return deckModelsFromJson;
     }
 
     public Single<List<DeckModel>> importFile(Uri uri) {
