@@ -39,7 +39,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -103,49 +105,63 @@ public class ExportImportCmd {
                     if (!deckList.isEmpty()) {
                         File zipFile = mFileHelper.createTempFile("Decks.zip");
                         try {
+                            List<Card> allCards = mDeckDao.getCardsByDecks(deckList);
+                            Map<Long, List<Card>> cardsByDeckId = new HashMap<>();
+                            for (Card card : allCards) {
+                                cardsByDeckId.computeIfAbsent(card.deckId, k -> new ArrayList<>()).add(card);
+                            }
+                            
                             try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
                                 ZipEntry jsonZipEntry = new ZipEntry(ZIP_CONTENT_DECKS_JSON);
                                 zipOutputStream.putNextEntry(jsonZipEntry);
 
-                                JSONArray jsonArray = new JSONArray();
-                                List<Card> allCards = new ArrayList<>();
+                                zipOutputStream.write("[".getBytes(StandardCharsets.UTF_8));
+                                boolean firstDeck = true;
                                 for (Deck deck : deckList) {
-                                    List<Card> cardList = mDeckDao.getCardByDeckId(deck.id);
+                                    if (!firstDeck) {
+                                        zipOutputStream.write(",".getBytes(StandardCharsets.UTF_8));
+                                    }
+                                    firstDeck = false;
+                                    List<Card> cardList = cardsByDeckId.getOrDefault(deck.id, new ArrayList<>());
                                     DeckModel deckModel = new DeckModel(deck, cardList);
-                                    jsonArray.put(deckModel.toJson());
-                                    allCards.addAll(cardList);
+                                    zipOutputStream.write(deckModel.toJson().toString().getBytes(StandardCharsets.UTF_8));
                                 }
-                                zipOutputStream.write(jsonArray.toString().getBytes(StandardCharsets.UTF_8));
+                                zipOutputStream.write("]".getBytes(StandardCharsets.UTF_8));
                                 zipOutputStream.closeEntry();
 
-                                // next entries are images
                                 for (Card card : allCards) {
                                     if (card.questionImage != null) {
                                         File questionImage = mFileHelper.getCardQuestionImage(card.questionImage);
-                                        ZipEntry questionImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_QUESTION_DIR + card.questionImage);
-                                        zipOutputStream.putNextEntry(questionImageZip);
-                                        try (FileInputStream fis = new FileInputStream(questionImage)) {
-                                            mFileHelper.copyStream(fis, zipOutputStream);
+                                        if (questionImage != null && questionImage.exists() && questionImage.canRead()) {
+                                            ZipEntry questionImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_QUESTION_DIR + card.questionImage);
+                                            zipOutputStream.putNextEntry(questionImageZip);
+                                            try (FileInputStream fis = new FileInputStream(questionImage)) {
+                                                mFileHelper.copyStream(fis, zipOutputStream);
+                                            }
+                                            zipOutputStream.closeEntry();
                                         }
-                                        zipOutputStream.closeEntry();
                                     }
                                     if (card.answerImage != null) {
                                         File answerImage = mFileHelper.getCardAnswerImage(card.answerImage);
-                                        ZipEntry answerImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_ANSWER_DIR + card.answerImage);
-                                        zipOutputStream.putNextEntry(answerImageZip);
-                                        try (FileInputStream fis = new FileInputStream(answerImage)) {
-                                            mFileHelper.copyStream(fis, zipOutputStream);
+                                        if (answerImage != null && answerImage.exists() && answerImage.canRead()) {
+                                            ZipEntry answerImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_ANSWER_DIR + card.answerImage);
+                                            zipOutputStream.putNextEntry(answerImageZip);
+                                            try (FileInputStream fis = new FileInputStream(answerImage)) {
+                                                mFileHelper.copyStream(fis, zipOutputStream);
+                                            }
+                                            zipOutputStream.closeEntry();
                                         }
-                                        zipOutputStream.closeEntry();
                                     }
                                     if (card.questionVoice != null) {
                                         File file = mFileHelper.getCardQuestionVoice(card.questionVoice);
-                                        ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_QUESTION_DIR + card.questionVoice);
-                                        zipOutputStream.putNextEntry(zipEntry);
-                                        try (FileInputStream fis = new FileInputStream(file)) {
-                                            mFileHelper.copyStream(fis, zipOutputStream);
+                                        if (file != null && file.exists() && file.canRead()) {
+                                            ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_QUESTION_DIR + card.questionVoice);
+                                            zipOutputStream.putNextEntry(zipEntry);
+                                            try (FileInputStream fis = new FileInputStream(file)) {
+                                                mFileHelper.copyStream(fis, zipOutputStream);
+                                            }
+                                            zipOutputStream.closeEntry();
                                         }
-                                        zipOutputStream.closeEntry();
                                     }
                                 }
                             }
