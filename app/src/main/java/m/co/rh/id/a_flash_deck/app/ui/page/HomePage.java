@@ -343,7 +343,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             String chooserMessage = activity.getString(R.string.title_import_deck);
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
-            intent.setType("application/zip");
+            intent.setType("*/*");
+            String[] mimeTypes = {"application/zip", "application/octet-stream", "application/vnd.anki.apkg"};
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
             intent = Intent.createChooser(intent, chooserMessage);
             activity.startActivityForResult(intent, REQUEST_CODE_IMPORT_DECK);
         } else if (id == R.id.button_flash_bot_accept) {

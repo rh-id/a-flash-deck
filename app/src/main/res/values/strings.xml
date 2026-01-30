@@ -90,6 +90,7 @@
     <string name="title_notification_timers">Notification Timers</string>
     <string name="edit">Edit</string>
     <string name="title_export_deck">Export Deck</string>
+    <string name="error_invalid_apkg">Not a valid Anki deck file (.apkg)</string>
     <string name="error_failed_to_create_file">Failed to create file</string>
     <string name="error_failed_to_open_file">Failed to open file</string>
     <string name="error_failed_to_parse_file">Failed to parse file</string>

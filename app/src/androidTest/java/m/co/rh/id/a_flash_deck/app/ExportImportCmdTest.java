@@ -41,6 +41,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
+import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
+import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -74,6 +76,8 @@ public class ExportImportCmdTest {
                 providerRegistry.register(ExecutorService.class, Executors::newSingleThreadExecutor);
                 providerRegistry.register(ILogger.class, () -> new AndroidLogger(ILogger.VERBOSE));
                 providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));
+                providerRegistry.registerLazy(AnkiImporter.class, () -> new AnkiImporter(provider));
+                providerRegistry.registerLazy(AnkiExporter.class, () -> new AnkiExporter(provider));
             }
 
             @Override
