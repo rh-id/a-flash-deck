@@ -82,6 +82,17 @@
                     app:icon="@drawable/ic_unarchive_black" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_export_anki"
+                    style="@style/Theme.Aflashdeck.HomeMenuButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:gravity="center"
+                    android:text="@string/title_export_anki"
+                    app:icon="@drawable/ic_unarchive_black" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_import_deck"
                     style="@style/Theme.Aflashdeck.HomeMenuButton"
                     android:layout_width="0dp"

@@ -133,12 +133,14 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         Button startTestButton = rootLayout.findViewById(R.id.button_start_test);
         Button addNotificationButton = rootLayout.findViewById(R.id.button_add_notification);
         Button exportDeckButton = rootLayout.findViewById(R.id.button_export_deck);
+        Button exportAnkiButton = rootLayout.findViewById(R.id.button_export_anki);
         Button importDeckButton = rootLayout.findViewById(R.id.button_import_deck);
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
         addNotificationButton.setOnClickListener(this);
         exportDeckButton.setOnClickListener(this);
+        exportAnkiButton.setOnClickListener(this);
         importDeckButton.setOnClickListener(this);
         ViewGroup cardOnGoingTest = rootLayout.findViewById(R.id.container_card_ongoing_test);
         cardOnGoingTest.setOnClickListener(this);
@@ -331,6 +333,37 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                         } else {
                                             provider.get(ILogger.class)
                                                     .d(TAG, "File exported: " + file.getAbsolutePath());
+                                            UiUtils.shareFile(context, file, file.getName());
+                                        }
+                                        compositeDisposable.dispose();
+                                    })
+                            );
+                        }
+                    });
+        } else if (id == R.id.button_export_anki) {
+            mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+                    (navigator, navRoute, activity, currentView) -> {
+                        DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute);
+                        if (result != null) {
+                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                            Context context = provider.getContext();
+                            CompositeDisposable compositeDisposable = new CompositeDisposable();
+                            compositeDisposable.add(provider.get(ExportImportCmd.class)
+                                    .exportFileAnki(result.getSelectedDeck())
+                                    .subscribe((file, throwable) -> {
+                                        if (throwable != null) {
+                                            if (throwable.getCause() instanceof ValidationException) {
+                                                String title = context.getString(R.string.error);
+                                                navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                        provider.get(CommonNavConfig.class).args_commonMessageDialog(title,
+                                                                throwable.getCause().getMessage()));
+                                            } else {
+                                                provider.get(ILogger.class)
+                                                        .e(TAG, throwable.getMessage(), throwable);
+                                            }
+                                        } else {
+                                            provider.get(ILogger.class)
+                                                    .d(TAG, "Anki file exported: " + file.getAbsolutePath());
                                             UiUtils.shareFile(context, file, file.getName());
                                         }
                                         compositeDisposable.dispose();

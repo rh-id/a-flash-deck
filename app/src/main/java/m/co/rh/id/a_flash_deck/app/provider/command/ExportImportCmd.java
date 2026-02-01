@@ -90,6 +90,10 @@ public class ExportImportCmd {
         return exportFile(deckList, "native");
     }
 
+    public Single<File> exportFileAnki(List<Deck> deckList) {
+        return exportFile(deckList, "anki");
+    }
+
     public Single<File> exportFile(List<Deck> deckList, String format) {
         if ("anki".equals(format)) {
             return Single.fromFuture(
