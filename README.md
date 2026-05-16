@@ -79,7 +79,7 @@ The app follows a modern Android architecture, utilizing a combination of establ
 
 *   **Navigation**: Navigation between screens is handled by the `a-navigator` library. This library provides a flexible and powerful way to manage navigation, including support for different screen types and transitions.
 
-*   **Reactive Programming**: The app makes extensive use of `RxJava` for handling asynchronous operations and UI events. This allows for a more concise and readable code, especially when dealing with complex asynchronous workflows.
+ *   **Reactive Programming**: The app makes extensive use of `RxJava 2` for handling asynchronous operations and UI events. This allows for a more concise and readable code, especially when dealing with complex asynchronous workflows.
 
 *   **Modular Design**: The app is divided into several modules, each with a specific responsibility. This promotes a clean separation of concerns and makes the codebase easier to understand and maintain.
 
@@ -288,6 +288,7 @@ erDiagram
         text back_image_path
         text front_voice_path
         text back_voice_path
+        boolean is_reversible_qa
     }
 
     DECK {
@@ -434,11 +435,16 @@ app/src/main/java/m/co/rh/id/a_flash_deck/app/
 ├── MainActivity.java
 ├── CardShowActivity.java
 ├── MainApplication.java
+├── anki/
+│   ├── ApkgParser.java
+│   ├── ApkgGenerator.java
+│   └── model/ (AnkiCard, AnkiDeck, AnkiField, AnkiNote, AnkiNotetype, AnkiTemplate)
 ├── provider/
 │   ├── AppProviderModule.java
 │   ├── CommandProviderModule.java
 │   ├── NavigatorProvider.java
 │   ├── StatefulViewProvider.java
+│   ├── StatefulViewProviderModule.java
 │   ├── command/
 │   ├── component/
 │   └── modifier/
@@ -451,14 +457,23 @@ base/src/main/java/m/co/rh/id/a_flash_deck/base/
 ├── entity/ (Room entities)
 ├── dao/ (Data access objects)
 ├── room/ (Database configuration)
+│   └── converter/ (Type converters)
 ├── provider/
 │   ├── BaseProviderModule.java
 │   ├── DatabaseProviderModule.java
 │   ├── RxProviderModule.java
+│   ├── FileHelper.java
+│   ├── IStatefulViewProvider.java
 │   └── notifier/ (RxJava notifiers)
 ├── component/ (Shared components)
 ├── constants/ (Constants, routes, keys)
-└── ui/component/common/ (Common UI components)
+├── exception/ (ValidationException)
+├── model/ (Event models, DeckModel, TestState)
+├── repository/ (AndroidNotificationRepo)
+├── rx/ (RxDisposer)
+└── ui/
+    ├── component/common/ (Common UI components)
+    └── recyclerview/ (CustomLinearLayoutManager)
 
 bot/src/main/java/m/co/rh/id/a_flash_deck/bot/
 ├── entity/ (Bot entities)
@@ -466,6 +481,7 @@ bot/src/main/java/m/co/rh/id/a_flash_deck/bot/
 ├── room/ (Bot database)
 ├── provider/
 │   ├── BotProviderModule.java
+│   ├── BotCommandProviderModule.java
 │   ├── component/BotAnalytics.java
 │   └── notifier/
 └── workmanager/ (Bot workers)
@@ -474,8 +490,8 @@ timer-notification/src/main/java/m/co/rh/id/a_flash_deck/timer/
 ├── provider/
 │   └── command/ (Timer commands)
 ├── ui/
-│   ├── page/ (Timer pages)
-│   └── component/ (Timer components)
+│   ├── component/timer/ (Timer components)
+│   └── page/ (Timer pages)
 └── workmanager/ (Timer worker)
 ```
 
@@ -512,27 +528,16 @@ stateDiagram-v2
 - Modifiers: State modifiers (e.g., `TestStateModifier`)
 - Notifiers: RxJava event publishers
 
-### Build Configuration
-
-- **Gradle Plugin**: Android Gradle Plugin 8.13.2
-- **Compile SDK**: 36
-- **Min SDK**: 23
-- **Target SDK**: 36
-- **Java Version**: 1.8 (with desugaring support)
-- **Kotlin**: Not used (pure Java project)
-- **Room Version**: 2.8.4
-- **WorkManager Version**: 2.11.0
-- **a-navigator Version**: v0.0.68
-
 ### Testing
 
-The project includes both unit and instrumentation tests, although the coverage could be improved. Here's a summary of the testing strategy:
+The project has instrumentation tests across modules:
+- `app/androidTest`: 7 test files covering Anki `.apkg` parsing, import, export, round-trip testing, and `ExportImportCmd`
+- `base/androidTest`: 2 test files covering JSON model serialization and database migrations (`DbMigrationTest`)
+- `app/test`: 1 unit test (boilerplate example)
 
-*   **Unit Tests**: The project has a `unitTest` artifact, but it currently only contains a boilerplate example. This is an area for improvement, as the business logic in the command classes and other components could be unit-tested with mocked dependencies.
+Tests use isolated in-memory databases and mock dependencies for hermetic testing.
 
-*   **Instrumentation Tests**: The project has an `androidTest` artifact with at least one meaningful test, `ExportImportCmdTest.java`. This test demonstrates a good approach to testing database interactions and file operations, using a separate `Provider` and an in-memory database to ensure that tests are hermetic and isolated.
-
-*   **Areas for Improvement**: In addition to adding more unit tests, the project would benefit from UI tests using a framework like Espresso. This would allow for the verification of the application's user interface and user flows, ensuring that the app behaves as expected from the user's perspective.
+*   **Areas for Improvement**: The project would benefit from UI tests using a framework like Espresso to verify the application's user interface and user flows, as well as more unit tests for the business logic in the command classes.
 
 ### CI/CD and Automation
 
@@ -558,7 +563,11 @@ The project uses Fastlane to manage the app's metadata for the Google Play Store
 
 ## Libraries Used
 
-The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and finally RxAndroid to handle UI use cases.
+The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and finally RxJava 2 / RxAndroid to handle UI use cases.
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 ## Support this project
 Consider donation to support this project
