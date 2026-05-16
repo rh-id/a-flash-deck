@@ -1,7 +1,8 @@
 plugins {
     id 'com.android.application'
-    id "com.cookpad.android.plugin.license-tools" version "1.2.8"
 }
+
+apply from: '../gradle/license-html-generator.gradle'
 
 def keyStoreFile = File.createTempFile("key", null)
 keyStoreFile.deleteOnExit()

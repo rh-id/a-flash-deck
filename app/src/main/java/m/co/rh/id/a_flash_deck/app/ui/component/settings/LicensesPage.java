@@ -32,7 +32,7 @@ public class LicensesPage extends StatefulView<Activity> {
         View view = activity.getLayoutInflater().inflate(R.layout.page_licenses,
                 container, false);
         WebView webView = view.findViewById(R.id.webView);
-        webView.getSettings().setJavaScriptEnabled(false);
+        webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl("file:///android_asset/licenses.html");
         return view;
     }
