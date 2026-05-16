@@ -1,5 +1,5 @@
 *.iml
-.gradle
+.gradle/
 /local.properties
 /.idea/
 .DS_Store
@@ -7,4 +7,15 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+*.apk
+*.aab
+*.hprof
+*.log
+*.keystore
+*.jks
+*.swp
+*~
+.env
+*.env
+nul
+secrets.properties
