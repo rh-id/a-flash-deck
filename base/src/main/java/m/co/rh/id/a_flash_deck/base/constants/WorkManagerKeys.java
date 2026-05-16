@@ -19,6 +19,9 @@ package m.co.rh.id.a_flash_deck.base.constants;
 
 public class WorkManagerKeys {
     public static final String LONG_NOTIFICATION_TIMER_ID = "KEY_LONG_NOTIFICATION_TIMER_ID";
+    public static final String AI_GENERATE_DECK_TOPIC = "KEY_AI_GENERATE_DECK_TOPIC";
+    public static final String AI_GENERATE_DECK_CARD_COUNT = "KEY_AI_GENERATE_DECK_CARD_COUNT";
+    public static final String AI_GENERATE_DECK_MODEL_ID = "KEY_AI_GENERATE_DECK_MODEL_ID";
 
     private WorkManagerKeys() {
     }

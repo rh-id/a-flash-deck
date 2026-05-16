@@ -15,12 +15,24 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package m.co.rh.id.a_flash_deck.base.constants;
+package m.co.rh.id.a_flash_deck.ai.provider.notifier;
 
-public class WorkManagerTags {
-    public static final String NOTIFICATION_TIMER = "TAG_NOTIFICATION_TIMER";
-    public static final String AI_GENERATE_DECK = "TAG_AI_GENERATE_DECK";
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
-    private WorkManagerTags() {
+public class ApiKeyChangeNotifier {
+    private PublishSubject<Boolean> mApiKeyChangeSubject;
+
+    public ApiKeyChangeNotifier() {
+        mApiKeyChangeSubject = PublishSubject.create();
+    }
+
+    public void onApiKeyChanged(boolean hasApiKey) {
+        mApiKeyChangeSubject.onNext(hasApiKey);
+    }
+
+    public Flowable<Boolean> getApiKeyChangeFlow() {
+        return Flowable.fromObservable(mApiKeyChangeSubject, BackpressureStrategy.BUFFER);
     }
 }

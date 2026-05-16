@@ -15,12 +15,22 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package m.co.rh.id.a_flash_deck.base.constants;
+package m.co.rh.id.a_flash_deck.ai.model;
 
-public class WorkManagerTags {
-    public static final String NOTIFICATION_TIMER = "TAG_NOTIFICATION_TIMER";
-    public static final String AI_GENERATE_DECK = "TAG_AI_GENERATE_DECK";
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-    private WorkManagerTags() {
+public class AiGeneratedDeck implements Serializable {
+    public String deckName;
+    public List<AiGeneratedCard> cards;
+
+    public AiGeneratedDeck() {
+        cards = new ArrayList<>();
+    }
+
+    public AiGeneratedDeck(String deckName, List<AiGeneratedCard> cards) {
+        this.deckName = deckName;
+        this.cards = cards != null ? cards : new ArrayList<>();
     }
 }

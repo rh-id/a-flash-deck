@@ -24,6 +24,7 @@ import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
+import m.co.rh.id.a_flash_deck.ai.provider.AiProviderModule;
 import m.co.rh.id.a_flash_deck.base.provider.BaseProviderModule;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
@@ -46,6 +47,7 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerModule(new CommandProviderModule());
         providerRegistry.registerModule(new RxProviderModule());
         providerRegistry.registerModule(new BotProviderModule());
+        providerRegistry.registerModule(new AiProviderModule());
 
         providerRegistry.registerPool(IStatefulViewProvider.class, () -> new StatefulViewProvider(provider));
         providerRegistry.registerLazy(TestStateModifier.class, () -> new TestStateModifier(provider));

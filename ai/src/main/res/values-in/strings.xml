@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Topik diperlukan</string>
+    <string name="ai_card_count_range">Jumlah kartu minimal 1</string>
+    <string name="title_ai_api_key">Kunci API</string>
+    <string name="hint_api_key">Masukkan kunci API Gemini Anda</string>
+    <string name="ai_settings">Pengaturan Gemini API</string>
+    <string name="ai_not_configured">AI belum dikonfigurasi. Ketuk untuk mengatur.</string>
+    <string name="ai_configured">AI sudah dikonfigurasi</string>
+    <string name="title_generate_deck">Buat Dek dengan Gemini</string>
+    <string name="hint_topic">Masukkan topik (cth. Perang Dunia 2)</string>
+    <string name="hint_card_count">Jumlah kartu</string>
+    <string name="generate">Buat</string>
+    <string name="generating_deck">Membuat dek…</string>
+    <string name="error_generating_deck">Error membuat dek</string>
+    <string name="success_generating_deck">Dek dibuat: %1$s (%2$d kartu)</string>
+    <string name="topic_is_required">Topik diperlukan</string>
+    <string name="remove">Hapus</string>
+    <string name="select_model">Pilih Model</string>
+    <string name="title_select_model">Pilih Model AI</string>
+    <string name="model_selected">Model: %s</string>
+    <string name="api_key_saved">Kunci API disimpan</string>
+    <string name="api_key_removed">Kunci API dihapus</string>
+    <string name="error_saving_api_key">Error menyimpan kunci API</string>
+    <string name="error_api_key_not_configured">Silakan atur kunci API Anda di Pengaturan terlebih dahulu</string>
+    <string name="error_fetching_models">Error mengambil model</string>
+    <string name="error_no_models_available">Tidak ada model yang tersedia</string>
+    <string name="current_model">Model saat ini: %s</string>
+    <string name="api_key_set">Kunci API sudah disimpan. Hapus untuk memasukkan yang baru.</string>
+    <string name="validating_api_key">Memvalidasi kunci API\u2026</string>
+    <string name="error_invalid_api_key">Kunci API tidak valid. Silakan periksa dan coba lagi.</string>
+    <string name="ai_notification_title">Pembuat Deck AI</string>
+    <string name="ai_generation_started">Membuat deck untuk \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Deck \"%s\" berhasil dibuat dengan %s kartu</string>
+    <string name="ai_generation_failed" formatted="false">Gagal membuat deck untuk \"%s\": %s</string>
+</resources>

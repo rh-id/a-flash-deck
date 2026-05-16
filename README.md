@@ -28,6 +28,7 @@ A simple and easy to use flash card app to help you study.
 * Record voices and attach images for the cards
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
 * Flash bot to smartly suggest list of card to test you
+* AI-powered deck generation using Google Gemini API
 
 ### Anki Integration
 
@@ -60,14 +61,17 @@ graph TD
     App[:app] --> Base[:base]
     App --> Bot[:bot]
     App --> Timer[:timer-notification]
+    App --> AI[:ai]
     Bot --> Base
     Timer --> Base
+    AI --> Base
 ```
 
 *   `:app`: The main application module that contains the UI and presentation layer.
 *   `:base`: A library module that contains base classes and utilities shared across other modules.
 *   `:bot`: A library module that contains the logic for the "Flash bot" feature.
 *   `:timer-notification`: A library module for handling timer-based notifications.
+*   `:ai`: A library module for AI-powered deck generation using the Gemini API.
 
 This project is intended for demo app for [a-navigator](https://github.com/rh-id/a-navigator) and [a-provider](https://github.com/rh-id/a-provider) library usage. The app still works as production even though it is demo app.
 
@@ -171,6 +175,14 @@ graph TB
         TimerCommands[Timer Commands]
     end
 
+    subgraph "AI Module (Gemini Integration)"
+        AiService[GeminiService]
+        AiWorker[GenerateDeckWorker]
+        AiSecurity[ApiKeyManager]
+        AiUI[AI UI Components]
+        AiNotifier[ApiKeyChangeNotifier]
+    end
+
     MainActivity -->|Navigates| Pages
     MainActivity -->|Shows| Dialogs
     Pages -->|Uses| Components
@@ -185,6 +197,10 @@ graph TB
 
     TimerWorkers -->|Access| DAOs
     TimerWorkers -->|Use| TimerCommands
+
+    AiWorker -->|Calls| AiService
+    AiService -->|Access| AiSecurity
+    AiWorker -->|Updates| DAOs
 ```
 
 ### Layered Architecture
@@ -201,6 +217,7 @@ graph TB
         D[Commands]
         E[TestStateModifier]
         F[BotAnalytics]
+        G_AI[GeminiService]
     end
 
     subgraph "Data Layer"
@@ -381,6 +398,7 @@ Notifiers act as event hubs for data changes:
 - **NotificationTimerChangeNotifier**: Emits timer configuration changes
 - **NotificationTimeChangeNotifier**: Emits notification time settings changes
 - **SuggestedCardChangeNotifier**: Emits flash bot suggestion changes
+- **ApiKeyChangeNotifier**: Emits API key configuration changes (AI module)
 
 Each notifier provides `Flowable<T>` streams for subscription.
 
@@ -399,6 +417,10 @@ WorkManager is used for background tasks:
   - Calculates scores based on notification opens, test answers
   - Suggests cards with scores >= 3
 - `BotLogCleanerWorker`: Cleans up old card logs
+- `GenerateDeckWorker`: Generates flash card decks from a topic using Gemini API
+  - Calls Gemini REST API with user-provided topic and card count
+  - Inserts generated deck and cards into database
+  - Posts success/failure notification on completion
 
 ### Threading Strategy
 
@@ -420,11 +442,15 @@ app
 ├── implementation project(':base')
 ├── implementation project(':timer-notification')
 ├── implementation project(':bot')
+├── implementation project(':ai')
 
 timer-notification
 └── implementation project(':base')
 
 bot
+└── implementation project(':base')
+
+ai
 └── implementation project(':base')
 ```
 
@@ -493,6 +519,19 @@ timer-notification/src/main/java/m/co/rh/id/a_flash_deck/timer/
 │   ├── component/timer/ (Timer components)
 │   └── page/ (Timer pages)
 └── workmanager/ (Timer worker)
+
+ai/src/main/java/m/co/rh/id/a_flash_deck/ai/
+├── command/ (GenerateDeckFromTopicCmd)
+├── model/ (AiGeneratedCard, AiGeneratedDeck, AvailableModel)
+├── provider/
+│   ├── AiProviderModule.java
+│   └── notifier/ (ApiKeyChangeNotifier)
+├── security/ (ApiKeyManager - Android Keystore encryption)
+├── service/ (GeminiService - REST API)
+├── ui/
+│   ├── component/settings/ (AiSettingsMenuSV)
+│   └── page/ (ApiKeyEntrySVDialog, GenerateDeckFromTopicSVDialog)
+└── workmanager/ (GenerateDeckWorker)
 ```
 
 ### StatefulView Lifecycle

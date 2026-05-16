@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import java.util.ArrayList;
 
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.ai.ui.component.settings.AiSettingsMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.LicensesMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.LogMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.NotificationTimeMenuSV;
@@ -48,6 +49,8 @@ public class SettingsPage extends StatefulView<Activity> {
     public SettingsPage() {
         mAppBarSV = new AppBarSV();
         mStatefulViews = new ArrayList<>();
+        AiSettingsMenuSV aiSettingsMenuSV = new AiSettingsMenuSV();
+        mStatefulViews.add(aiSettingsMenuSV);
         NotificationTimeMenuSV notificationTimeMenuSV = new NotificationTimeMenuSV();
         mStatefulViews.add(notificationTimeMenuSV);
         ThemeMenuSV themeMenuSV = new ThemeMenuSV();

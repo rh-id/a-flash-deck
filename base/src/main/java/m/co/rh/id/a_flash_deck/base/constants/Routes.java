@@ -33,6 +33,9 @@ public class Routes {
     public static final String NOTIFICATION_TIMERS = "/notificationTimers";
     public static final String NOTIFICATION_TIMER_DETAIL_DIALOG = "/notificationTimer/detailDialog";
 
+    public static final String AI_API_KEY_DIALOG = "/ai/apiKeyDialog";
+    public static final String AI_GENERATE_DECK_DIALOG = "/ai/generateDeckDialog";
+
     //Use CommonNavConfig.java to handle arguments and result return by common routes
     public static final String COMMON_BOOLEAN_DIALOG = "/common/booleanDialog";
     public static final String COMMON_MESSAGE_DIALOG = "/common/messageDialog";

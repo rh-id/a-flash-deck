@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Topic is required</string>
+    <string name="ai_card_count_range">Card count must be at least 1</string>
+    <string name="title_ai_api_key">API Key</string>
+    <string name="hint_api_key">Enter your Gemini API key</string>
+    <string name="ai_settings">Gemini API Settings</string>
+    <string name="ai_not_configured">AI not configured. Tap to set up.</string>
+    <string name="ai_configured">AI configured</string>
+    <string name="title_generate_deck">Generate Deck with Gemini</string>
+    <string name="hint_topic">Enter topic (e.g. World War 2)</string>
+    <string name="hint_card_count">Number of cards</string>
+    <string name="generate">Generate</string>
+    <string name="generating_deck">Generating deck.</string>
+    <string name="error_generating_deck">Error generating deck</string>
+    <string name="success_generating_deck">Deck generated: %1$s (%2$d cards)</string>
+    <string name="topic_is_required">Topic is required</string>
+    <string name="remove">Remove</string>
+    <string name="select_model">Select Model</string>
+    <string name="title_select_model">Select AI Model</string>
+    <string name="model_selected">Model: %s</string>
+    <string name="api_key_saved">API key saved</string>
+    <string name="api_key_removed">API key removed</string>
+    <string name="error_saving_api_key">Error saving API key</string>
+    <string name="error_api_key_not_configured">Please configure your API key in Settings first</string>
+    <string name="error_fetching_models">Error fetching models</string>
+    <string name="error_no_models_available">No models available</string>
+    <string name="current_model">Current model: %s</string>
+    <string name="api_key_set">API key is currently set. Remove it to enter a new one.</string>
+    <string name="validating_api_key">Validating API key\u2026</string>
+    <string name="error_invalid_api_key">Invalid API key. Please check and try again.</string>
+    <string name="ai_notification_title">AI Deck Generator</string>
+    <string name="ai_generation_started">Generating deck for \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Deck \"%s\" created with %s cards</string>
+    <string name="ai_generation_failed" formatted="false">Failed to generate deck for \"%s\": %s</string>
+</resources>

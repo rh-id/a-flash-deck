@@ -39,6 +39,8 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
+import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
@@ -135,6 +137,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         Button exportDeckButton = rootLayout.findViewById(R.id.button_export_deck);
         Button exportAnkiButton = rootLayout.findViewById(R.id.button_export_anki);
         Button importDeckButton = rootLayout.findViewById(R.id.button_import_deck);
+        Button generateDeckAiButton = rootLayout.findViewById(R.id.button_generate_deck_ai);
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
@@ -142,6 +145,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         exportDeckButton.setOnClickListener(this);
         exportAnkiButton.setOnClickListener(this);
         importDeckButton.setOnClickListener(this);
+        generateDeckAiButton.setOnClickListener(this);
         ViewGroup cardOnGoingTest = rootLayout.findViewById(R.id.container_card_ongoing_test);
         cardOnGoingTest.setOnClickListener(this);
         View flashBotContainer = rootLayout.findViewById(R.id.container_card_flash_bot);
@@ -381,6 +385,16 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
             intent = Intent.createChooser(intent, chooserMessage);
             activity.startActivityForResult(intent, REQUEST_CODE_IMPORT_DECK);
+        } else if (id == R.id.button_generate_deck_ai) {
+            GeminiService geminiService = mSvProvider.get(GeminiService.class);
+            if (geminiService.isConfigured()) {
+                mNavigator.push(Routes.AI_GENERATE_DECK_DIALOG);
+            } else {
+                String title = mSvProvider.getContext().getString(R.string.title_error);
+                String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
+                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                        mCommonNavConfig.args_commonMessageDialog(title, content));
+            }
         } else if (id == R.id.button_flash_bot_accept) {
             mRxDisposer
                     .add("onClick_flashBot_startTest",

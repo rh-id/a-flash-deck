@@ -64,6 +64,7 @@ dependencies {
     implementation project(path: ':base')
     implementation project(path: ':timer-notification')
     implementation project(path: ':bot')
+    implementation project(path: ':ai')
     implementation 'com.squareup.leakcanary:plumber-android:2.14'
 
     testImplementation 'junit:junit:4.13.2'
