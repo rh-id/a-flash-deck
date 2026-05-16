@@ -22,6 +22,7 @@ import androidx.work.WorkManager;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerTags;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
@@ -43,12 +44,12 @@ public class DeleteNotificationTimerCmd {
     }
 
     public Single<NotificationTimer> execute(NotificationTimer notificationTimer) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             mTimerNotificationDao.get().delete(notificationTimer);
             mNotificationTimerChangeNotifier.get().timerDeleted(notificationTimer);
             mWorkManager.get().cancelAllWorkByTag(WorkManagerTags.NOTIFICATION_TIMER +
                     notificationTimer.id);
             return notificationTimer;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 }

@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.app.provider.command;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
@@ -37,10 +38,10 @@ public class DeleteDeckCmd {
     }
 
     public Single<Deck> execute(Deck deck) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mDeckDao.deleteDeck(deck);
             mDeckChangeNotifier.deckDeleted(deck);
             return deck;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

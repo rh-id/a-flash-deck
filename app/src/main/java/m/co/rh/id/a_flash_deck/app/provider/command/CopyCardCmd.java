@@ -22,6 +22,7 @@ import android.net.Uri;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.CopyCardEvent;
@@ -48,8 +49,7 @@ public class CopyCardCmd {
     }
 
     public Single<CopyCardEvent> execute(CopyCardEvent copyCardEvent) {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     Card card = copyCardEvent.getCopyCard();
                     Uri questionImageUri;
                     if (card.questionImage != null) {
@@ -70,11 +70,29 @@ public class CopyCardCmd {
                         questionVoiceUri = null;
                     }
                     mDeckDao.copyCardToDeck(card, copyCardEvent.getDestinationDeck());
-                    mNewCardCmd.saveFiles(card, questionImageUri, answerImageUri, questionVoiceUri)
-                            .blockingGet();
-                    mDeckChangeNotifier.cardAdded(card);
-                    return copyCardEvent;
+                    return new CopyCardData(copyCardEvent, card, questionImageUri, answerImageUri, questionVoiceUri);
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService))
+                .flatMap(data -> mNewCardCmd.saveFiles(data.card, data.questionImageUri, data.answerImageUri, data.questionVoiceUri)
+                        .map(card -> {
+                            mDeckChangeNotifier.cardAdded(card);
+                            return data.copyCardEvent;
+                        }));
+    }
+
+    private static class CopyCardData {
+        final CopyCardEvent copyCardEvent;
+        final Card card;
+        final Uri questionImageUri;
+        final Uri answerImageUri;
+        final Uri questionVoiceUri;
+
+        CopyCardData(CopyCardEvent copyCardEvent, Card card, Uri questionImageUri, Uri answerImageUri, Uri questionVoiceUri) {
+            this.copyCardEvent = copyCardEvent;
+            this.card = card;
+            this.questionImageUri = questionImageUri;
+            this.answerImageUri = answerImageUri;
+            this.questionVoiceUri = questionVoiceUri;
+        }
     }
 }

@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
@@ -70,35 +71,35 @@ public class TestStateModifier {
     }
 
     public Single<TestState> previousCard(TestState testState) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             Test test = mTestDao.get().getTestById(testState.getTestId());
             testState.previousCard();
             serializeTest(testState, test);
             mTestChangeNotifier.get().testStateChange(testState);
             return testState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public Single<TestState> nextCard(TestState testState) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             Test test = mTestDao.get().getTestById(testState.getTestId());
             testState.nextCard();
             serializeTest(testState, test);
             mTestChangeNotifier.get().testStateChange(testState);
             return testState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public Single<TestState> stopActiveTest() {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             TestState testState = getActiveTestSync();
             return stopTestSync(testState);
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public Single<TestState> stopTest(TestState testState) {
-        return Single.fromFuture(mExecutorService.get().submit(() ->
-                stopTestSync(testState)));
+        return Single.fromCallable(() ->
+                stopTestSync(testState)).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     private TestState stopTestSync(TestState testState) {
@@ -114,8 +115,8 @@ public class TestStateModifier {
      * @return any test that is currently running
      */
     public Single<Optional<TestState>> getActiveTest() {
-        return Single.fromFuture(mExecutorService.get().submit(() ->
-                Optional.ofNullable(getActiveTestSync())));
+        return Single.fromCallable(() ->
+                Optional.ofNullable(getActiveTestSync())).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     @Nullable
@@ -137,27 +138,25 @@ public class TestStateModifier {
     }
 
     public Single<TestState> startTest(List<Deck> deckList) {
-        return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
                     if (deckList != null && !deckList.isEmpty()) {
                         return prepareTest(mDeckDao.get().getCardsByDecks(deckList));
                     } else {
                         throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                     }
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public Single<TestState> startTestWithCardIds(List<Long> cardIds) {
-        return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
                     if (cardIds != null && !cardIds.isEmpty()) {
                         return prepareTest(mDeckDao.get().findCardsByCardIds(cardIds));
                     } else {
                         throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                     }
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     @NonNull

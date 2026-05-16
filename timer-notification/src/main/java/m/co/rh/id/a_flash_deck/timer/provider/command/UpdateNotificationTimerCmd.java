@@ -23,6 +23,7 @@ import androidx.work.PeriodicWorkRequest;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerKeys;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerTags;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
@@ -38,8 +39,7 @@ public class UpdateNotificationTimerCmd extends NewNotificationTimerCmd {
 
     @Override
     public Single<NotificationTimer> execute(NotificationTimer notificationTimer) {
-        return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
                     if (!valid(notificationTimer)) {
                         throw new ValidationException(getValidationError());
                     }
@@ -62,6 +62,6 @@ public class UpdateNotificationTimerCmd extends NewNotificationTimerCmd {
                     }
                     return notificationTimer;
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 }

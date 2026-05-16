@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.app.provider.command;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.aprovider.Provider;
@@ -34,14 +35,14 @@ public class DeckQueryCmd {
     }
 
     public Single<Integer> countCards(Deck deck) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
                 mDeckDao.countCardByDeckId(deck.id))
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<Deck> getDeckById(long deckId) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
                 mDeckDao.getDeckById(deckId))
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 }

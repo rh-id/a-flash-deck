@@ -18,6 +18,7 @@
 package m.co.rh.id.a_flash_deck.app.provider.command;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.aprovider.Provider;
 
@@ -28,12 +29,11 @@ public class UpdateDeckCmd extends NewDeckCmd {
 
     @Override
     public Single<Deck> execute(Deck deck) {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     mDeckDao.updateDeck(deck);
                     mDeckChangeNotifier.deckUpdated(deck);
                     return deck;
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 }

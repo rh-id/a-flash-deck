@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
@@ -90,17 +91,16 @@ public class NewCardCmd {
     }
 
     public Single<Card> execute(Card card) {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     mDeckDao.insertCard(card);
                     mDeckChangeNotifier.cardAdded(card);
                     return card;
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<Card> saveFiles(Card card, Uri questionImage, Uri answerImage, Uri questionVoice) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     if (questionImage != null) {
                         try {
                             File questionImageFile = mFileHelper.createCardQuestionImage(questionImage);
@@ -142,13 +142,12 @@ public class NewCardCmd {
                     mDeckChangeNotifier.cardUpdated(card);
                     return card;
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<Integer> countDeck() {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> mDeckDao.countDeck())
-        );
+        return Single.fromCallable(() -> mDeckDao.countDeck())
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public String getValidationError() {

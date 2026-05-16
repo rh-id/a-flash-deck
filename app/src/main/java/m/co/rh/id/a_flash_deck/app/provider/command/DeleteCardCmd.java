@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.app.provider.command;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
@@ -40,10 +41,10 @@ public class DeleteCardCmd {
     }
 
     public Single<Card> execute(Card card) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mDeckDao.deleteCard(card);
             mDeckChangeNotifier.cardDeleted(card);
             return card;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

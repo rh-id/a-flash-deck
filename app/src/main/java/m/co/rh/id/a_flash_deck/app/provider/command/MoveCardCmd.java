@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.app.provider.command;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
@@ -40,12 +41,11 @@ public class MoveCardCmd {
     }
 
     public Single<MoveCardEvent> execute(MoveCardEvent moveCardEvent) {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     mDeckDao.moveCardToDeck(moveCardEvent.getMovedCard(), moveCardEvent.getDestinationDeck());
                     mDeckChangeNotifier.cardMoved(moveCardEvent);
                     return moveCardEvent;
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 }

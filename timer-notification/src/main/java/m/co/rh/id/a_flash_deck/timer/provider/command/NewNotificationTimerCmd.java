@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerKeys;
@@ -94,8 +95,7 @@ public class NewNotificationTimerCmd {
     }
 
     public Single<NotificationTimer> execute(NotificationTimer notificationTimer) {
-        return Single.fromFuture(
-                mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
                     if (!valid(notificationTimer)) {
                         throw new ValidationException(getValidationError());
                     } else {
@@ -124,7 +124,7 @@ public class NewNotificationTimerCmd {
                     mWorkManager.get().enqueue(workBuilder.build());
                     return notificationTimer;
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public String getValidationError() {

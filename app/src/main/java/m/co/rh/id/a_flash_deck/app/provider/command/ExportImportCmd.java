@@ -49,6 +49,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
@@ -96,16 +97,14 @@ public class ExportImportCmd {
 
     public Single<File> exportFile(List<Deck> deckList, String format) {
         if ("anki".equals(format)) {
-            return Single.fromFuture(
-                    mExecutorService.submit(() -> mAnkiExporter.exportApkg(deckList))
-            );
+            return Single.fromCallable(() -> mAnkiExporter.exportApkg(deckList))
+                    .subscribeOn(Schedulers.from(mExecutorService));
         }
         return exportNativeFile(deckList);
     }
 
     private Single<File> exportNativeFile(List<Deck> deckList) {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     if (!deckList.isEmpty()) {
                         File zipFile = mFileHelper.createTempFile("Decks.zip");
                         try {
@@ -181,17 +180,15 @@ public class ExportImportCmd {
                         throw new ValidationException(mAppContext.getString(R.string.error_no_deck_selected));
                     }
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<List<DeckModel>> importFile(File file) {
         if (file.getName().toLowerCase().endsWith(".apkg")) {
-            return Single.fromFuture(
-                    mExecutorService.submit(() -> mAnkiImporter.importApkg(file))
-            );
+            return Single.fromCallable(() -> mAnkiImporter.importApkg(file))
+                    .subscribeOn(Schedulers.from(mExecutorService));
         }
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     try (ZipFile zipFile = new ZipFile(file)) {
                         Enumeration<? extends ZipEntry> zipEntryEnumeration = zipFile.entries();
                         List<DeckModel> deckModelList = new ArrayList<>();
@@ -259,7 +256,7 @@ public class ExportImportCmd {
                         throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
                     }
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     @NonNull
@@ -280,12 +277,9 @@ public class ExportImportCmd {
     }
 
     public Single<List<DeckModel>> importFile(Uri uri) {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
-                    File file = mFileHelper
-                            .createTempFile("Deck-Import", uri);
-                    return this.importFile(file).blockingGet();
-                })
-        );
+        return Single.fromCallable(() ->
+                        mFileHelper.createTempFile("Deck-Import", uri))
+                .flatMap(this::importFile)
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 }

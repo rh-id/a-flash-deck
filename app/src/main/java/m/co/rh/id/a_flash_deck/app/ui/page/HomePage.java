@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
@@ -419,22 +420,22 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                                             if (commonNavConfig1.result_commonBooleanDialog(navRoute)) {
                                                                 Context context = provider.getContext();
                                                                 CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                                                ExecutorService executorService = provider.get(ExecutorService.class);
-                                                                compositeDisposable.add(
-                                                                        Single.fromFuture(
-                                                                                executorService.submit(() -> {
-                                                                                    provider.get(TestStateModifier.class).stopActiveTest().blockingGet();
-                                                                                    List<SuggestedCard> suggestedCardList = provider.get(SuggestedCardChangeNotifier.class)
-                                                                                            .getSuggestedCard();
-                                                                                    List<Long> cardIds = new ArrayList<>();
-                                                                                    if (!suggestedCardList.isEmpty()) {
-                                                                                        for (SuggestedCard suggestedCard : suggestedCardList) {
-                                                                                            cardIds.add(suggestedCard.cardId);
-                                                                                        }
-                                                                                    }
-                                                                                    return provider.get(TestStateModifier.class).startTestWithCardIds(cardIds).blockingGet();
-                                                                                })
-                                                                        ).observeOn(AndroidSchedulers.mainThread()).subscribe((testState, throwable1) -> {
+                                                                 ExecutorService executorService = provider.get(ExecutorService.class);
+                                                                 compositeDisposable.add(
+                                                                         provider.get(TestStateModifier.class).stopActiveTest()
+                                                                                 .subscribeOn(Schedulers.from(executorService))
+                                                                                 .flatMap(testState1 -> {
+                                                                                     List<SuggestedCard> suggestedCardList = provider.get(SuggestedCardChangeNotifier.class)
+                                                                                             .getSuggestedCard();
+                                                                                     List<Long> cardIds = new ArrayList<>();
+                                                                                     if (!suggestedCardList.isEmpty()) {
+                                                                                         for (SuggestedCard suggestedCard : suggestedCardList) {
+                                                                                             cardIds.add(suggestedCard.cardId);
+                                                                                         }
+                                                                                     }
+                                                                                     return provider.get(TestStateModifier.class).startTestWithCardIds(cardIds);
+                                                                                 })
+                                                                                 .observeOn(AndroidSchedulers.mainThread()).subscribe((testState, throwable1) -> {
                                                                             if (throwable1 != null) {
                                                                                 Throwable cause1 = throwable1.getCause();
                                                                                 if (cause1 == null)

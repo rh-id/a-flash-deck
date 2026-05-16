@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
@@ -63,13 +64,12 @@ public class NewDeckCmd {
     }
 
     public Single<Deck> execute(Deck deck) {
-        return Single.fromFuture(
-                mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     mDeckDao.insertDeck(deck);
                     mDeckChangeNotifier.deckAdded(deck);
                     return deck;
                 })
-        );
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     // validation message
