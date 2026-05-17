@@ -547,6 +547,13 @@ public class ApkgParserTest {
     private File createTestApkgWithoutMediaJson() throws IOException {
         File apkgFile = new File(tempDir, "no_media_json.apkg");
         java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(new FileOutputStream(apkgFile));
+
+        byte[] dummyData = new byte[]{0};
+        java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry("dummy");
+        zos.putNextEntry(entry);
+        zos.write(dummyData);
+        zos.closeEntry();
+
         zos.close();
         return apkgFile;
     }
