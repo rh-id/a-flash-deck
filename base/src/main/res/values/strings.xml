@@ -7,5 +7,6 @@
     <string name="error">Error</string>
     <string name="cancel">Cancel</string>
     <string name="share_image">Share image</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
+    <string name="save">Save</string>
 </resources>
