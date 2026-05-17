@@ -84,12 +84,13 @@ public class Card implements Serializable, Cloneable {
     /**
      * Whether the question and answer can be swapped when questioned
      */
-    @ColumnInfo(name = "is_reversible_qa")
+    @ColumnInfo(name = "is_reversible_qa", defaultValue = "0")
     public boolean isReversibleQA;
 
     /**
      * Whether this card is shown reversed, a.k.a question is answer and answer is question
      */
+    @ColumnInfo(defaultValue = "0")
     public boolean isReversed;
 
     @Override

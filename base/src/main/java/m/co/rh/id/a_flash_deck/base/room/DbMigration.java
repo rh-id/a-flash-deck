@@ -8,7 +8,7 @@ public class DbMigration {
         return new Migration[]{MIGRATION_1_2, MIGRATION_2_3,
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
-                MIGRATION_9_10, MIGRATION_10_11};
+                MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -97,6 +97,13 @@ public class DbMigration {
         public void migrate(SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE card ADD COLUMN `answer_voice` TEXT");
             database.execSQL("ALTER TABLE card ADD COLUMN `is_reversible_qa` INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    public static final Migration MIGRATION_11_12 = new Migration(11, 12) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE card ADD COLUMN `isReversed` INTEGER NOT NULL DEFAULT 0");
         }
     };
 }
