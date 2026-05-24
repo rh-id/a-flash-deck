@@ -106,12 +106,15 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
                 mNewDeckCmd = mSvProvider.get(NewDeckCmd.class);
             }
         }
-        mSvProvider.get(RxDisposer.class).add("titleChanged", mTitleSubject.subscribe(
-                textViewTitle::setText));
-        mSvProvider.get(RxDisposer.class).add("nameChanged", mNameSubject.subscribe(
-                editTextName::setText));
+        mSvProvider.get(RxDisposer.class).add("titleChanged", mTitleSubject
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(textViewTitle::setText));
+        mSvProvider.get(RxDisposer.class).add("nameChanged", mNameSubject
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(editTextName::setText));
         mSvProvider.get(RxDisposer.class).add("nameValid",
                 mNewDeckCmd.getNameValidation()
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
                             if (s.isEmpty()) {
                                 editTextName.setError(null);

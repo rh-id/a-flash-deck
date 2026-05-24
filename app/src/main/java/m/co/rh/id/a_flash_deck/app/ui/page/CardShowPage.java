@@ -98,7 +98,8 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onCardShow",
-                        mCardStateSubject.subscribe(
+                        mCardStateSubject.observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
                                 card -> {
                                     textQuestion.setText(HtmlCompat.fromHtml(card.question,
                                             HtmlCompat.FROM_HTML_MODE_LEGACY));

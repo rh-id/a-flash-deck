@@ -39,10 +39,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
@@ -205,7 +206,9 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mRxDisposer
                 .add("createView_questionValid",
                         mNewCardCmd
-                                .getQuestionValid().subscribe(s -> {
+                                .getQuestionValid()
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(s -> {
                             if (!s.isEmpty()) {
                                 editTextQuestion.setError(s);
                             } else {
@@ -215,7 +218,9 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mRxDisposer
                 .add("createView_answerValid",
                         mNewCardCmd
-                                .getAnswerValid().subscribe(s -> {
+                                .getAnswerValid()
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(s -> {
                             if (!s.isEmpty()) {
                                 editTextAnswer.setError(s);
                             } else {
@@ -400,6 +405,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                         compositeDisposable.add(
                                                 mNewCardCmd.saveFiles(card, questionImageUri,
                                                         answerImageUri, questionVoiceUri)
+                                                        .observeOn(AndroidSchedulers.mainThread())
                                                         .subscribe((card1, throwable1) -> {
                                                             if (throwable1 != null) {
                                                                 String message = throwable1.getMessage();
@@ -514,31 +520,19 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     public void setAnswerImageFile(Provider provider, Uri fullPhotoUri) {
-        provider.get(ExecutorService.class)
-                .execute(() -> {
-                    try {
-                        File resultFile = mFileHelper
-                                .createImageTempFile(fullPhotoUri);
-                        setAnswerImageFileSubject(resultFile);
-                    } catch (IOException e) {
-                        mLogger
-                                .e(TAG, e.getMessage(), e);
-                    }
-                });
+        Single.fromCallable(() -> mFileHelper.createImageTempFile(fullPhotoUri))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(resultFile -> setAnswerImageFileSubject(resultFile),
+                        e -> mLogger.e(TAG, e.getMessage(), e));
     }
 
     public void setQuestionImageFile(Provider provider, Uri fullPhotoUri) {
-        provider.get(ExecutorService.class)
-                .execute(() -> {
-                    try {
-                        File resultFile = mFileHelper
-                                .createImageTempFile(fullPhotoUri);
-                        setQuestionImageFileSubject(resultFile);
-                    } catch (IOException e) {
-                        mLogger
-                                .e(TAG, e.getMessage(), e);
-                    }
-                });
+        Single.fromCallable(() -> mFileHelper.createImageTempFile(fullPhotoUri))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(resultFile -> setQuestionImageFileSubject(resultFile),
+                        e -> mLogger.e(TAG, e.getMessage(), e));
     }
 
     public static class Result implements Serializable {

@@ -35,12 +35,10 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
@@ -324,6 +322,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                             CompositeDisposable compositeDisposable = new CompositeDisposable();
                             compositeDisposable.add(provider.get(ExportImportCmd.class)
                                     .exportFile(result.getSelectedDeck())
+                                    .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((file, throwable) -> {
                                         if (throwable != null) {
                                             if (throwable.getCause() instanceof ValidationException) {
@@ -355,6 +354,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                             CompositeDisposable compositeDisposable = new CompositeDisposable();
                             compositeDisposable.add(provider.get(ExportImportCmd.class)
                                     .exportFileAnki(result.getSelectedDeck())
+                                    .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((file, throwable) -> {
                                         if (throwable != null) {
                                             if (throwable.getCause() instanceof ValidationException) {
@@ -514,6 +514,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         CompositeDisposable compositeDisposable = new CompositeDisposable();
                         compositeDisposable.add(provider.get(TestStateModifier.class)
                                 .startTest(deckArrayList)
+                                .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((testState, throwable) -> {
                                     if (throwable != null) {
                                         Context context = provider.getContext();

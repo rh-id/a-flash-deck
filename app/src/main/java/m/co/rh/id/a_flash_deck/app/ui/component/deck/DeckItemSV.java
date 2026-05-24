@@ -149,6 +149,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                         }));
         mRxDisposer.add("createView_onCardAdded",
                 mDeckChangeNotifier.getAddedCardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
                             if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
@@ -156,6 +157,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                         }));
         mRxDisposer.add("createView_onCardDeleted",
                 mDeckChangeNotifier.getDeletedCardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
                             if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
@@ -163,6 +165,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                         }));
         mRxDisposer.add("createView_onCardMoved",
                 mDeckChangeNotifier.getMovedCardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(moveCardEvent -> {
                             Deck sourceDeck = moveCardEvent.getSourceDeck();
                             Deck destDeck = moveCardEvent.getDestinationDeck();

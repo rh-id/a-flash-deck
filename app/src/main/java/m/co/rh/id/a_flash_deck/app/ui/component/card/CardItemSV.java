@@ -120,6 +120,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                             }
                             mRxDisposer.add("createView_onChangeCard_getDeckById",
                                     mDeckQueryCmd.getDeckById(card.deckId)
+                                            .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe((deck, throwable) -> {
                                                 if (throwable != null) {
                                                     mLogger.e(TAG, context.getString(R.string.error_loading_deck), throwable);

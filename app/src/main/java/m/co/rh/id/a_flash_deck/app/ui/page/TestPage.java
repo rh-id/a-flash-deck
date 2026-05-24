@@ -106,7 +106,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         FileHelper fileHelper = mSvProvider.get(FileHelper.class);
         mRxDisposer
                 .add("createView_onTestState",
-                        mTestStateSubject.subscribe(
+                        mTestStateSubject.observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
                                 testState -> {
                                     Card card = testState.currentCard();
                                     String progress = (testState.getCurrentCardIndex() + 1) + " / " + testState.getTotalCards();
