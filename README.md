@@ -83,7 +83,7 @@ The app follows a modern Android architecture, utilizing a combination of establ
 
 *   **Navigation**: Navigation between screens is handled by the `a-navigator` library. This library provides a flexible and powerful way to manage navigation, including support for different screen types and transitions.
 
- *   **Reactive Programming**: The app makes extensive use of `RxJava 2` for handling asynchronous operations and UI events. This allows for a more concise and readable code, especially when dealing with complex asynchronous workflows.
+ *   **Reactive Programming**: The app makes extensive use of `RxJava` for handling asynchronous operations and UI events. This allows for a more concise and readable code, especially when dealing with complex asynchronous workflows.
 
 *   **Modular Design**: The app is divided into several modules, each with a specific responsibility. This promotes a clean separation of concerns and makes the codebase easier to understand and maintain.
 
@@ -281,7 +281,6 @@ The app uses Room Persistence Library with two databases:
   - `Test`: Test session tracking
   - `AndroidNotification`: Notification history
   - `NotificationTimer`: Scheduled notification timers
-- **Version**: 11 (with migrations defined in `DbMigration`)
 
 #### BotDatabase (bot module)
 - **Entities**:
@@ -602,7 +601,7 @@ The project uses Fastlane to manage the app's metadata for the Google Play Store
 
 ## Libraries Used
 
-The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and finally RxJava 2 / RxAndroid to handle UI use cases.
+The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and finally RxJava / RxAndroid to handle UI use cases.
 
 ## License
 
