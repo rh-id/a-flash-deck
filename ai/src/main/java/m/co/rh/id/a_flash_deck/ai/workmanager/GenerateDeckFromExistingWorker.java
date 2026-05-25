@@ -20,29 +20,22 @@ package m.co.rh.id.a_flash_deck.ai.workmanager;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import org.json.JSONArray;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import m.co.rh.id.a_flash_deck.ai.R;
-import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedCard;
 import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedDeck;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
-import m.co.rh.id.a_flash_deck.base.BaseApplication;
-import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerKeys;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
-import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
-public class GenerateDeckFromExistingWorker extends Worker {
+public class GenerateDeckFromExistingWorker extends BaseGenerateDeckWorker {
     private static final String TAG = GenerateDeckFromExistingWorker.class.getName();
 
     public GenerateDeckFromExistingWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -52,12 +45,9 @@ public class GenerateDeckFromExistingWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        Provider provider = BaseApplication.of(getApplicationContext()).getProvider();
+        Provider provider = getProvider();
         GeminiService geminiService = provider.get(GeminiService.class);
         DeckDao deckDao = provider.get(DeckDao.class);
-        DeckChangeNotifier deckChangeNotifier = provider.get(DeckChangeNotifier.class);
-        IAppNotificationHandler appNotificationHandler = provider.get(IAppNotificationHandler.class);
-        ILogger logger = provider.get(ILogger.class);
 
         String deckIdsJson = getInputData().getString(WorkManagerKeys.AI_GENERATE_FROM_EXISTING_DECK_IDS);
         String prompt = getInputData().getString(WorkManagerKeys.AI_GENERATE_FROM_EXISTING_PROMPT);
@@ -75,37 +65,18 @@ public class GenerateDeckFromExistingWorker extends Worker {
             ArrayList<Card> cards = new ArrayList<>(deckDao.findCardByDeckIds(deckIds));
 
             AiGeneratedDeck aiDeck = geminiService.generateDeckFromExisting(decks, cards, prompt, maxCards, modelId).blockingGet();
-            Deck deck = new Deck();
-            deck.name = aiDeck.deckName;
-            deck.createdDateTime = new Date();
-            deck.updatedDateTime = new Date();
-            deckDao.insertDeck(deck);
-            deckChangeNotifier.deckAdded(deck);
+            Deck deck = saveAiDeckToDatabase(aiDeck);
 
-            int ordinal = 0;
-            for (AiGeneratedCard aiCard : aiDeck.cards) {
-                Card card = new Card();
-                card.deckId = deck.id;
-                card.ordinal = ordinal++;
-                card.question = aiCard.question;
-                card.answer = aiCard.answer;
-                card.isReversibleQA = false;
-                deckDao.insertCard(card);
-                deckChangeNotifier.cardAdded(card);
-            }
-
-            Context context = getApplicationContext();
-            appNotificationHandler.postGeneralMessage(
-                    context.getString(R.string.ai_notification_title),
-                    context.getString(R.string.ai_generation_from_existing_success, deck.name, String.valueOf(aiDeck.cards.size())));
+            String notificationTitle = getApplicationContext().getString(R.string.ai_notification_title);
+            postNotification(notificationTitle,
+                    getApplicationContext().getString(R.string.ai_generation_from_existing_success, deck.name, String.valueOf(aiDeck.cards.size())));
 
             return Result.success();
         } catch (Exception exception) {
-            Context context = getApplicationContext();
-            appNotificationHandler.postGeneralMessage(
-                    context.getString(R.string.ai_notification_title),
-                    context.getString(R.string.ai_generation_from_existing_failed, exception.getMessage()));
-            logger.e(TAG, "Failed to generate deck from existing decks", exception);
+            String notificationTitle = getApplicationContext().getString(R.string.ai_notification_title);
+            postNotification(notificationTitle,
+                    getApplicationContext().getString(R.string.ai_generation_from_existing_failed, exception.getMessage()));
+            getLogger().e(TAG, "Failed to generate deck from existing decks", exception);
             return Result.failure();
         }
     }
