@@ -80,8 +80,8 @@ public class GeminiService {
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new IllegalStateException("API key is empty");
             }
-            String url = BASE_URL + "/models?key=" + URLEncoder.encode(apiKey, "UTF-8");
-            httpGet(url);
+            String url = BASE_URL + "/models";
+            httpGet(url, apiKey);
             return true;
         }).subscribeOn(Schedulers.from(mExecutorService));
     }
@@ -93,14 +93,14 @@ public class GeminiService {
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new IllegalStateException("API key not configured");
             }
-            String url = BASE_URL + "/models?key=" + URLEncoder.encode(apiKey, "UTF-8");
+            String url = BASE_URL + "/models";
             String nextPageToken = null;
             do {
                 String requestUrl = url;
                 if (nextPageToken != null) {
-                    requestUrl += "&pageToken=" + URLEncoder.encode(nextPageToken, "UTF-8");
+                    requestUrl += "?pageToken=" + URLEncoder.encode(nextPageToken, "UTF-8");
                 }
-                String responseBody = httpGet(requestUrl);
+                String responseBody = httpGet(requestUrl, apiKey);
                 JSONObject response = new JSONObject(responseBody);
                 JSONArray modelsArray = response.optJSONArray("models");
                 if (modelsArray != null) {
@@ -138,7 +138,7 @@ public class GeminiService {
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new IllegalStateException("API key not configured");
             }
-            String url = BASE_URL + "/models/" + URLEncoder.encode(modelId, "UTF-8") + ":generateContent?key=" + URLEncoder.encode(apiKey, "UTF-8");
+            String url = BASE_URL + "/models/" + URLEncoder.encode(modelId, "UTF-8") + ":generateContent";
             String userPrompt = "Create " + cardCount + " flash cards about \"" + topic +
                     "\". Return JSON: {\"deck_name\": string, \"cards\": [{\"question\": string, \"answer\": string}]}";
 
@@ -157,7 +157,7 @@ public class GeminiService {
                                     .put(new JSONObject().put("text", userPrompt)))));
             requestBody.put("generationConfig", generationConfig);
 
-            String responseBody = httpPost(url, requestBody);
+            String responseBody = httpPost(url, requestBody, apiKey);
             AiGeneratedDeck result = parseGenerateContentResponse(responseBody);
             return result;
         }).subscribeOn(Schedulers.from(mExecutorService));
@@ -169,7 +169,7 @@ public class GeminiService {
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new IllegalStateException("API key not configured");
             }
-            String url = BASE_URL + "/models/" + URLEncoder.encode(modelId, "UTF-8") + ":generateContent?key=" + URLEncoder.encode(apiKey, "UTF-8");
+            String url = BASE_URL + "/models/" + URLEncoder.encode(modelId, "UTF-8") + ":generateContent";
             String deckDataJson = buildDeckDataPayload(decks, cards);
             String userPrompt = deckDataJson + "\n\nUser instruction: \"" + prompt +
                     "\"\nMaximum cards to generate: " + maxCards;
@@ -189,7 +189,7 @@ public class GeminiService {
                                     .put(new JSONObject().put("text", userPrompt)))));
             requestBody.put("generationConfig", generationConfig);
 
-            String responseBody = httpPost(url, requestBody);
+            String responseBody = httpPost(url, requestBody, apiKey);
             AiGeneratedDeck result = parseGenerateContentResponse(responseBody);
             return result;
         }).subscribeOn(Schedulers.from(mExecutorService));
@@ -280,13 +280,14 @@ public class GeminiService {
         return new AiGeneratedDeck(deckName, cards);
     }
 
-    private String httpGet(String urlString) throws Exception {
+    private String httpGet(String urlString, String apiKey) throws Exception {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(urlString);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("x-goog-api-key", apiKey);
             connection.setConnectTimeout(30000);
             connection.setReadTimeout(30000);
             int responseCode = connection.getResponseCode();
@@ -309,7 +310,7 @@ public class GeminiService {
         }
     }
 
-    private String httpPost(String urlString, JSONObject body) throws Exception {
+    private String httpPost(String urlString, JSONObject body, String apiKey) throws Exception {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(urlString);
@@ -317,6 +318,7 @@ public class GeminiService {
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("x-goog-api-key", apiKey);
             connection.setConnectTimeout(30000);
             connection.setReadTimeout(300000);
             connection.setDoOutput(true);
