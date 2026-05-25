@@ -22,16 +22,14 @@ import android.content.SharedPreferences;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
+import android.util.Log;
 
 import java.security.KeyStore;
-import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-
-import m.co.rh.id.a_flash_deck.ai.model.AvailableModel;
 
 public class ApiKeyManager {
     private static final String ANDROID_KEYSTORE = "AndroidKeyStore";
@@ -78,6 +76,7 @@ public class ApiKeyManager {
             byte[] decrypted = cipher.doFinal(Base64.decode(encryptedBase64, Base64.NO_WRAP));
             return new String(decrypted, "UTF-8");
         } catch (Exception e) {
+            Log.e("ApiKeyManager", "Failed to decrypt API key", e);
             return null;
         }
     }

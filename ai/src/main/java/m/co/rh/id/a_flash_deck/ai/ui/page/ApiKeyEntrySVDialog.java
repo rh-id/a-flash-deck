@@ -132,7 +132,6 @@ public class ApiKeyEntrySVDialog extends StatefulViewDialog<Activity> implements
             getNavigator().pop();
         } else if (id == R.id.button_remove) {
             mApiKeyManager.removeApiKey();
-            mGeminiService.resetClient();
             mApiKeyChangeNotifier.onApiKeyChanged(false);
             getNavigator().pop();
         }
@@ -168,7 +167,6 @@ public class ApiKeyEntrySVDialog extends StatefulViewDialog<Activity> implements
                             } else {
                                 try {
                                     mApiKeyManager.saveApiKey(apiKey);
-                                    mGeminiService.resetClient();
                                     mApiKeyChangeNotifier.onApiKeyChanged(true);
                                     getNavigator().pop();
                                 } catch (Exception e) {

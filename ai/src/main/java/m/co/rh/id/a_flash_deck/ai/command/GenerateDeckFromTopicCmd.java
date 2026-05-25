@@ -34,8 +34,6 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 public class GenerateDeckFromTopicCmd {
-    private static final String TAG = GenerateDeckFromTopicCmd.class.getName();
-
     private final Context mContext;
     private final ProviderValue<WorkManager> mWorkManager;
     private final BehaviorSubject<String> mTopicValidationSubject;

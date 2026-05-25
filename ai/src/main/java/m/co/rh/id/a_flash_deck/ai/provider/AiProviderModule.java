@@ -24,6 +24,7 @@ import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromTopicCmd;
 import m.co.rh.id.a_flash_deck.ai.provider.notifier.ApiKeyChangeNotifier;
 import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -37,7 +38,7 @@ public class AiProviderModule implements ProviderModule {
                 new GeminiService(
                         provider.get(ApiKeyManager.class),
                         provider.get(ExecutorService.class),
-                        provider.getContext()));
+                        provider.get(ILogger.class)));
         providerRegistry.registerLazy(GenerateDeckFromTopicCmd.class, () ->
                 new GenerateDeckFromTopicCmd(provider));
         providerRegistry.registerLazy(GenerateDeckFromExistingCmd.class, () ->

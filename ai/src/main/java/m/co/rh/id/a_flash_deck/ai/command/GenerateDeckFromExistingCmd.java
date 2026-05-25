@@ -38,8 +38,6 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 public class GenerateDeckFromExistingCmd {
-    private static final String TAG = GenerateDeckFromExistingCmd.class.getName();
-
     private final Context mContext;
     private final ProviderValue<WorkManager> mWorkManager;
     private final BehaviorSubject<String> mPromptValidationSubject;

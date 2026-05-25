@@ -17,8 +17,6 @@
 
 package m.co.rh.id.a_flash_deck.ai.service;
 
-import android.content.Context;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -42,6 +40,7 @@ import m.co.rh.id.a_flash_deck.ai.model.AvailableModel;
 import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.alogger.ILogger;
 
 public class GeminiService {
     private static final String TAG = GeminiService.class.getName();
@@ -58,21 +57,18 @@ public class GeminiService {
             "Return JSON: {\"deck_name\": \"string\", \"cards\": [{\"question\": \"string\", \"answer\": \"string\"}]}";
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
-    private final Context mContext;
     private final ApiKeyManager mApiKeyManager;
     private final ExecutorService mExecutorService;
+    private final ILogger mLogger;
 
-    public GeminiService(ApiKeyManager apiKeyManager, ExecutorService executorService, Context context) {
+    public GeminiService(ApiKeyManager apiKeyManager, ExecutorService executorService, ILogger logger) {
         mApiKeyManager = apiKeyManager;
         mExecutorService = executorService;
-        mContext = context.getApplicationContext();
+        mLogger = logger;
     }
 
     public boolean isConfigured() {
         return mApiKeyManager.hasApiKey();
-    }
-
-    public void resetClient() {
     }
 
     public Single<Boolean> validateApiKey(String apiKey) {
@@ -243,11 +239,13 @@ public class GeminiService {
         JSONObject response = new JSONObject(responseBody);
         JSONArray candidatesArray = response.optJSONArray("candidates");
         if (candidatesArray == null || candidatesArray.length() == 0) {
+            mLogger.e(TAG, "No candidates in response");
             throw new RuntimeException("No candidates in response");
         }
         JSONObject candidate = candidatesArray.getJSONObject(0);
         JSONObject content = candidate.optJSONObject("content");
         if (content == null) {
+            mLogger.e(TAG, "No content in candidate");
             throw new RuntimeException("No content in candidate");
         }
         JSONArray partsArray = content.optJSONArray("parts");
@@ -296,12 +294,14 @@ public class GeminiService {
                 StringBuilder response = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    response.append(line);
+                    response.append(line).append('\n');
                 }
                 reader.close();
                 return response.toString();
             } else {
-                throw new RuntimeException("HTTP " + responseCode + ": " + readErrorStream(connection));
+                String errorResponse = readErrorStream(connection);
+                mLogger.e(TAG, "HTTP " + responseCode + ": " + errorResponse);
+                throw new RuntimeException("HTTP " + responseCode + ": " + errorResponse);
             }
         } finally {
             if (connection != null) {
@@ -334,12 +334,14 @@ public class GeminiService {
                 StringBuilder response = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    response.append(line);
+                    response.append(line).append('\n');
                 }
                 reader.close();
                 return response.toString();
             } else {
-                throw new RuntimeException("HTTP " + responseCode + ": " + readErrorStream(connection));
+                String errorResponse = readErrorStream(connection);
+                mLogger.e(TAG, "HTTP " + responseCode + ": " + errorResponse);
+                throw new RuntimeException("HTTP " + responseCode + ": " + errorResponse);
             }
         } finally {
             if (connection != null) {
@@ -357,7 +359,7 @@ public class GeminiService {
             StringBuilder errorResponse = new StringBuilder();
             String line;
             while ((line = errorReader.readLine()) != null) {
-                errorResponse.append(line);
+                errorResponse.append(line).append('\n');
             }
             errorReader.close();
             return errorResponse.toString();
