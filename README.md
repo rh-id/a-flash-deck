@@ -28,7 +28,7 @@ A simple and easy to use flash card app to help you study.
 * Record voices and attach images for the cards
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
 * Flash bot to smartly suggest list of card to test you
-* AI-powered deck generation using Google Gemini API
+* AI-powered deck generation using Google Gemini API (from topic or existing decks - translate, expand, transform)
 
 ### Anki Integration
 

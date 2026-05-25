@@ -33,4 +33,24 @@
     <string name="ai_generation_started">Generating deck for \"%s\"\u2026</string>
     <string name="ai_generation_success" formatted="false">Deck \"%s\" created with %s cards</string>
     <string name="ai_generation_failed" formatted="false">Failed to generate deck for \"%s\": %s</string>
+    <string name="title_generate_deck_from_existing">Generate Deck from Existing with Gemini</string>
+    <string name="summary_selected_decks">%1$d deck(s), %2$d total cards</string>
+    <string name="hint_prompt_instructions">What to do with these cards?</string>
+    <string name="hint_max_cards">Max cards to generate</string>
+    <string name="ai_prompt_is_required">Prompt is required</string>
+    <string name="ai_max_cards_range">Max cards must be at least 1</string>
+    <string name="ai_generation_from_existing_started">Generating deck from existing decks\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Deck \"%s\" created with %s cards</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Failed to generate deck: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Translate all cards to Indonesian</item>
+        <item>Create harder versions of these questions</item>
+        <item>Generate similar cards with different examples</item>
+        <item>Convert questions to fill-in-the-blank format</item>
+        <item>Create true/false cards from these questions</item>
+        <item>Summarize answers into shorter versions</item>
+        <item>Expand with more advanced questions</item>
+        <item>Create study notes style cards</item>
+    </string-array>
 </resources>

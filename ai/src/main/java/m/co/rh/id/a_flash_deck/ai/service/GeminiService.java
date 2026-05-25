@@ -29,7 +29,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
@@ -38,6 +40,8 @@ import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedCard;
 import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedDeck;
 import m.co.rh.id.a_flash_deck.ai.model.AvailableModel;
 import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
+import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.entity.Deck;
 
 public class GeminiService {
     private static final String TAG = GeminiService.class.getName();
@@ -45,6 +49,13 @@ public class GeminiService {
             "Create educational flash cards based on the given topic. " +
             "Each card should have a clear, concise question and a clear, accurate answer. " +
             "The deck name should be descriptive and appropriate for the topic.";
+    private static final String SYSTEM_INSTRUCTION_FROM_EXISTING = "You are a flash card creator and transformer. " +
+            "You will receive existing flash card decks in JSON format. " +
+            "Generate a NEW single deck based on the user's instructions. " +
+            "The user may want to translate, expand, create harder versions, or transform the cards. " +
+            "hasImage means the card has an image attached. hasVoice means the card has a voice recording attached. " +
+            "Each card has 'q' (question) and 'a' (answer) fields. " +
+            "Return JSON: {\"deck_name\": \"string\", \"cards\": [{\"question\": \"string\", \"answer\": \"string\"}]}";
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
     private final Context mContext;
@@ -147,27 +158,108 @@ public class GeminiService {
             requestBody.put("generationConfig", generationConfig);
 
             String responseBody = httpPost(url, requestBody);
-            JSONObject response = new JSONObject(responseBody);
-            JSONArray candidatesArray = response.optJSONArray("candidates");
-            if (candidatesArray == null || candidatesArray.length() == 0) {
-                throw new RuntimeException("No candidates in response");
-            }
-            JSONObject candidate = candidatesArray.getJSONObject(0);
-            JSONObject content = candidate.optJSONObject("content");
-            if (content == null) {
-                throw new RuntimeException("No content in candidate");
-            }
-            JSONArray partsArray = content.optJSONArray("parts");
-            if (partsArray == null || partsArray.length() == 0) {
-                throw new RuntimeException("No parts in content");
-            }
-            JSONObject part = partsArray.getJSONObject(0);
-            String responseText = part.optString("text", "");
-            if (responseText.isEmpty()) {
-                throw new RuntimeException("Empty response text");
-            }
-            return parseDeckResponse(responseText);
+            AiGeneratedDeck result = parseGenerateContentResponse(responseBody);
+            return result;
         }).subscribeOn(Schedulers.from(mExecutorService));
+    }
+
+    public Single<AiGeneratedDeck> generateDeckFromExisting(List<Deck> decks, List<Card> cards, String prompt, int maxCards, String modelId) {
+        return Single.fromCallable(() -> {
+            String apiKey = mApiKeyManager.getApiKey();
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new IllegalStateException("API key not configured");
+            }
+            String url = BASE_URL + "/models/" + URLEncoder.encode(modelId, "UTF-8") + ":generateContent?key=" + URLEncoder.encode(apiKey, "UTF-8");
+            String deckDataJson = buildDeckDataPayload(decks, cards);
+            String userPrompt = deckDataJson + "\n\nUser instruction: \"" + prompt +
+                    "\"\nMaximum cards to generate: " + maxCards;
+
+            JSONObject generationConfig = new JSONObject();
+            generationConfig.put("responseMimeType", "application/json");
+            generationConfig.put("candidateCount", 1);
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("systemInstruction", new JSONObject()
+                    .put("parts", new JSONArray()
+                            .put(new JSONObject().put("text", SYSTEM_INSTRUCTION_FROM_EXISTING))));
+            requestBody.put("contents", new JSONArray()
+                    .put(new JSONObject()
+                            .put("role", "user")
+                            .put("parts", new JSONArray()
+                                    .put(new JSONObject().put("text", userPrompt)))));
+            requestBody.put("generationConfig", generationConfig);
+
+            String responseBody = httpPost(url, requestBody);
+            AiGeneratedDeck result = parseGenerateContentResponse(responseBody);
+            return result;
+        }).subscribeOn(Schedulers.from(mExecutorService));
+    }
+
+    private String buildDeckDataPayload(List<Deck> decks, List<Card> cards) throws Exception {
+        Map<Long, List<Card>> cardsByDeckId = new HashMap<>();
+        for (Card card : cards) {
+            List<Card> deckCards = cardsByDeckId.get(card.deckId);
+            if (deckCards == null) {
+                deckCards = new ArrayList<>();
+                cardsByDeckId.put(card.deckId, deckCards);
+            }
+            deckCards.add(card);
+        }
+
+        JSONObject root = new JSONObject();
+        JSONArray decksArray = new JSONArray();
+        int totalCards = 0;
+
+        for (Deck deck : decks) {
+            JSONObject deckObj = new JSONObject();
+            deckObj.put("name", deck.name);
+
+            JSONArray cardsArray = new JSONArray();
+            List<Card> deckCards = cardsByDeckId.get(deck.id);
+            if (deckCards != null) {
+                for (Card card : deckCards) {
+                    JSONObject cardObj = new JSONObject();
+                    cardObj.put("q", card.question);
+                    cardObj.put("a", card.answer);
+                    cardObj.put("hasImage", (card.questionImage != null || card.answerImage != null));
+                    cardObj.put("hasVoice", (card.questionVoice != null || card.answerVoice != null));
+                    cardsArray.put(cardObj);
+                }
+            }
+            deckObj.put("cards", cardsArray);
+            deckObj.put("cardCount", cardsArray.length());
+            decksArray.put(deckObj);
+            totalCards += cardsArray.length();
+        }
+
+        root.put("decks", decksArray);
+        root.put("totalCards", totalCards);
+        root.put("totalDecks", decks.size());
+
+        return root.toString();
+    }
+
+    private AiGeneratedDeck parseGenerateContentResponse(String responseBody) throws Exception {
+        JSONObject response = new JSONObject(responseBody);
+        JSONArray candidatesArray = response.optJSONArray("candidates");
+        if (candidatesArray == null || candidatesArray.length() == 0) {
+            throw new RuntimeException("No candidates in response");
+        }
+        JSONObject candidate = candidatesArray.getJSONObject(0);
+        JSONObject content = candidate.optJSONObject("content");
+        if (content == null) {
+            throw new RuntimeException("No content in candidate");
+        }
+        JSONArray partsArray = content.optJSONArray("parts");
+        if (partsArray == null || partsArray.length() == 0) {
+            throw new RuntimeException("No parts in content");
+        }
+        JSONObject part = partsArray.getJSONObject(0);
+        String responseText = part.optString("text", "");
+        if (responseText.isEmpty()) {
+            throw new RuntimeException("Empty response text");
+        }
+        return parseDeckResponse(responseText);
     }
 
     private AiGeneratedDeck parseDeckResponse(String json) throws Exception {

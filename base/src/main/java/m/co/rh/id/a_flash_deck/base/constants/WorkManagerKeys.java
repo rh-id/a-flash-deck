@@ -22,6 +22,10 @@ public class WorkManagerKeys {
     public static final String AI_GENERATE_DECK_TOPIC = "KEY_AI_GENERATE_DECK_TOPIC";
     public static final String AI_GENERATE_DECK_CARD_COUNT = "KEY_AI_GENERATE_DECK_CARD_COUNT";
     public static final String AI_GENERATE_DECK_MODEL_ID = "KEY_AI_GENERATE_DECK_MODEL_ID";
+    public static final String AI_GENERATE_FROM_EXISTING_DECK_IDS = "KEY_AI_GENERATE_FROM_EXISTING_DECK_IDS";
+    public static final String AI_GENERATE_FROM_EXISTING_PROMPT = "KEY_AI_GENERATE_FROM_EXISTING_PROMPT";
+    public static final String AI_GENERATE_FROM_EXISTING_MAX_CARDS = "KEY_AI_GENERATE_FROM_EXISTING_MAX_CARDS";
+    public static final String AI_GENERATE_FROM_EXISTING_MODEL_ID = "KEY_AI_GENERATE_FROM_EXISTING_MODEL_ID";
 
     private WorkManagerKeys() {
     }

@@ -33,4 +33,24 @@
     <string name="ai_generation_started">Membuat deck untuk \"%s\"\u2026</string>
     <string name="ai_generation_success" formatted="false">Deck \"%s\" berhasil dibuat dengan %s kartu</string>
     <string name="ai_generation_failed" formatted="false">Gagal membuat deck untuk \"%s\": %s</string>
+    <string name="title_generate_deck_from_existing">Buat Dek dari yang Ada dengan Gemini</string>
+    <string name="summary_selected_decks">%1$d dek, %2$d kartu total</string>
+    <string name="hint_prompt_instructions">Apa yang ingin dilakukan dengan kartu-kartu ini?</string>
+    <string name="hint_max_cards">Maks kartu untuk dibuat</string>
+    <string name="ai_prompt_is_required">Perintah wajib diisi</string>
+    <string name="ai_max_cards_range">Maks kartu minimal 1</string>
+    <string name="ai_generation_from_existing_started">Membuat dek dari dek yang ada\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Dek \"%s\" dibuat dengan %s kartu</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Gagal membuat dek: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Terjemahkan semua kartu ke bahasa Indonesia</item>
+        <item>Buat versi yang lebih sulit dari pertanyaan ini</item>
+        <item>Buat kartu serupa dengan contoh berbeda</item>
+        <item>Ubah pertanyaan ke format isi titik-titik</item>
+        <item>Buat kartu benar/salah dari pertanyaan ini</item>
+        <item>Ringkas jawaban menjadi versi lebih pendek</item>
+        <item>Perluas dengan pertanyaan yang lebih maju</item>
+        <item>Buat kartu gaya catatan belajar</item>
+    </string-array>
 </resources>

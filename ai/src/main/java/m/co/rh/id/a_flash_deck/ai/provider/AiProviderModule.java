@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.ai.provider;
 
 import java.util.concurrent.ExecutorService;
 
+import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromExistingCmd;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromTopicCmd;
 import m.co.rh.id.a_flash_deck.ai.provider.notifier.ApiKeyChangeNotifier;
 import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
@@ -37,8 +38,10 @@ public class AiProviderModule implements ProviderModule {
                         provider.get(ApiKeyManager.class),
                         provider.get(ExecutorService.class),
                         provider.getContext()));
-        providerRegistry.register(GenerateDeckFromTopicCmd.class, () ->
+        providerRegistry.registerLazy(GenerateDeckFromTopicCmd.class, () ->
                 new GenerateDeckFromTopicCmd(provider));
+        providerRegistry.registerLazy(GenerateDeckFromExistingCmd.class, () ->
+                new GenerateDeckFromExistingCmd(provider));
         providerRegistry.registerLazy(ApiKeyChangeNotifier.class, ApiKeyChangeNotifier::new);
     }
 }

@@ -114,6 +114,18 @@
                     android:text="@string/title_generate_deck"
                     app:icon="@drawable/ic_gemini"
                     app:iconTint="@null" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_generate_deck_from_existing_ai"
+                    style="@style/Theme.Aflashdeck.HomeMenuButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:gravity="center"
+                    android:text="@string/title_generate_deck_from_existing"
+                    app:icon="@drawable/ic_gemini"
+                    app:iconTint="@null" />
             </GridLayout>
 
             <androidx.cardview.widget.CardView

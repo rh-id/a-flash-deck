@@ -116,4 +116,5 @@
     <string name="title_import_deck">Import Deck</string>
     <string name="error_please_select_deck">Error, please select deck</string>
     <string name="reversible_when_questioned">Reversible when questioned</string>
+    <string name="title_generate_deck_from_existing">Generate Deck from Existing with Gemini</string>
 </resources>

@@ -44,6 +44,7 @@ import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DonationsPage;
+import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingSVDialog;
 import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromTopicSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.HomePage;
 import m.co.rh.id.a_flash_deck.app.ui.page.NotificationTimerListPage;
@@ -98,6 +99,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG, (args, activity) -> new NotificationTimerDetailSVDialog());
         navMap.put(Routes.AI_API_KEY_DIALOG, (args, activity) -> new ApiKeyEntrySVDialog());
         navMap.put(Routes.AI_GENERATE_DECK_DIALOG, (args, activity) -> new GenerateDeckFromTopicSVDialog());
+        navMap.put(Routes.AI_GENERATE_DECK_FROM_EXISTING_DIALOG, (args, activity) -> new GenerateDeckFromExistingSVDialog());
         navMap.putAll(mCommonNavConfig.getNavMap());
         setupMainActivityNavigator(navMap);
         setupCardShowActivityNavigator(navMap);

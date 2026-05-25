@@ -40,6 +40,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
+import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingSVDialog;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
@@ -137,6 +138,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         Button exportAnkiButton = rootLayout.findViewById(R.id.button_export_anki);
         Button importDeckButton = rootLayout.findViewById(R.id.button_import_deck);
         Button generateDeckAiButton = rootLayout.findViewById(R.id.button_generate_deck_ai);
+        Button generateDeckFromExistingAiButton = rootLayout.findViewById(R.id.button_generate_deck_from_existing_ai);
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
@@ -145,6 +147,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         exportAnkiButton.setOnClickListener(this);
         importDeckButton.setOnClickListener(this);
         generateDeckAiButton.setOnClickListener(this);
+        generateDeckFromExistingAiButton.setOnClickListener(this);
         ViewGroup cardOnGoingTest = rootLayout.findViewById(R.id.container_card_ongoing_test);
         cardOnGoingTest.setOnClickListener(this);
         View flashBotContainer = rootLayout.findViewById(R.id.container_card_flash_bot);
@@ -390,6 +393,27 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             GeminiService geminiService = mSvProvider.get(GeminiService.class);
             if (geminiService.isConfigured()) {
                 mNavigator.push(Routes.AI_GENERATE_DECK_DIALOG);
+            } else {
+                String title = mSvProvider.getContext().getString(R.string.title_error);
+                String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
+                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                        mCommonNavConfig.args_commonMessageDialog(title, content));
+            }
+        } else if (id == R.id.button_generate_deck_from_existing_ai) {
+            GeminiService geminiService = mSvProvider.get(GeminiService.class);
+            if (geminiService.isConfigured()) {
+                mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+                        (navigator, navRoute, activity, currentView) -> {
+                            DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                            if (result != null && !result.getSelectedDeck().isEmpty()) {
+                                ArrayList<Long> selectedDeckIds = new ArrayList<>();
+                                for (Deck deck : result.getSelectedDeck()) {
+                                    selectedDeckIds.add(deck.id);
+                                }
+                                navigator.push(Routes.AI_GENERATE_DECK_FROM_EXISTING_DIALOG,
+                                        GenerateDeckFromExistingSVDialog.Args.with(selectedDeckIds));
+                            }
+                        });
             } else {
                 String title = mSvProvider.getContext().getString(R.string.title_error);
                 String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
