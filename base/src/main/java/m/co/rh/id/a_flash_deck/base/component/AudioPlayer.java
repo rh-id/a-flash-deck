@@ -44,11 +44,11 @@ public class AudioPlayer implements ProviderDisposable {
     }
 
     public void play(Uri uri) {
-        if (mediaPlayer != null) {
-            stop();
-        }
         mLock.lock();
         try {
+            if (mediaPlayer != null) {
+                stopInternal();
+            }
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioAttributes(
                     new AudioAttributes.Builder()
@@ -61,7 +61,6 @@ public class AudioPlayer implements ProviderDisposable {
             mediaPlayer.start();
         } catch (Exception e) {
             mLogger.get().e(TAG, e.getMessage(), e);
-            // Clean up MediaPlayer if any step fails
             if (mediaPlayer != null) {
                 try {
                     mediaPlayer.release();
@@ -78,20 +77,24 @@ public class AudioPlayer implements ProviderDisposable {
     public void stop() {
         mLock.lock();
         try {
-            if (mediaPlayer != null) {
-                try {
-                    if (mediaPlayer.isPlaying()) {
-                        mediaPlayer.stop();
-                    }
-                } catch (RuntimeException e) {
-                    mLogger.get().e(TAG, "Error stopping player: " + e.getMessage(), e);
-                }
-                mediaPlayer.reset();
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
+            stopInternal();
         } finally {
-            mLock.unlock(); // Always release lock
+            mLock.unlock();
+        }
+    }
+
+    private void stopInternal() {
+        if (mediaPlayer != null) {
+            try {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
+            } catch (RuntimeException e) {
+                mLogger.get().e(TAG, "Error stopping player: " + e.getMessage(), e);
+            }
+            mediaPlayer.reset();
+            mediaPlayer.release();
+            mediaPlayer = null;
         }
     }
 

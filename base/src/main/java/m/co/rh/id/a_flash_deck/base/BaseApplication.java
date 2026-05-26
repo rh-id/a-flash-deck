@@ -30,7 +30,7 @@ public abstract class BaseApplication extends Application {
         if (context.getApplicationContext() instanceof BaseApplication) {
             return (BaseApplication) context.getApplicationContext();
         }
-        return null;
+        throw new IllegalStateException("Context is not from BaseApplication");
     }
 
     public abstract Provider getProvider();

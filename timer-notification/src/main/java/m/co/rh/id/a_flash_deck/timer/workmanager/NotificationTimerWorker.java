@@ -75,6 +75,10 @@ public class NotificationTimerWorker extends Worker {
 
         NotificationTimerDao notificationTimerDao = provider.get(NotificationTimerDao.class);
         NotificationTimer notificationTimer = notificationTimerDao.findById(notificationTimerId);
+        if (notificationTimer == null) {
+            iLogger.d(TAG, "Notification timer not found: " + notificationTimerId);
+            return Result.success();
+        }
         if (currentLocalTime.isBefore(startLocalTime) || currentLocalTime.isAfter(endLocalTime)) {
             iLogger
                     .d(TAG, "Notification timer " + notificationTimer.name + " is outside notification time config");

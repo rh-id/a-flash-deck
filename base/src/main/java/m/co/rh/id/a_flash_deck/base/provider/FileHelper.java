@@ -450,21 +450,17 @@ public class FileHelper {
     private void copyFile(Uri content, File tmpFile) throws IOException {
         if (content != null) {
             ContentResolver cr = mAppContext.getContentResolver();
-            InputStream inputStream = cr.openInputStream(content);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-
-            FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-            byte[] buff = new byte[2048];
-            int b = bufferedInputStream.read(buff);
-            while (b != -1) {
-                bufferedOutputStream.write(buff);
-                b = bufferedInputStream.read(buff);
+            try (InputStream inputStream = cr.openInputStream(content);
+                 BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+                 FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
+                 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)) {
+                byte[] buff = new byte[2048];
+                int b = bufferedInputStream.read(buff);
+                while (b != -1) {
+                    bufferedOutputStream.write(buff);
+                    b = bufferedInputStream.read(buff);
+                }
             }
-            bufferedOutputStream.close();
-            fileOutputStream.close();
-            bufferedInputStream.close();
-            inputStream.close();
         }
     }
 

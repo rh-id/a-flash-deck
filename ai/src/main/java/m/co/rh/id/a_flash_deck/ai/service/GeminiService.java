@@ -301,7 +301,7 @@ public class GeminiService {
             } else {
                 String errorResponse = readErrorStream(connection);
                 mLogger.e(TAG, "HTTP " + responseCode + ": " + errorResponse);
-                throw new RuntimeException("HTTP " + responseCode + ": " + errorResponse);
+                throw new RuntimeException("HTTP " + responseCode);
             }
         } finally {
             if (connection != null) {
@@ -341,7 +341,7 @@ public class GeminiService {
             } else {
                 String errorResponse = readErrorStream(connection);
                 mLogger.e(TAG, "HTTP " + responseCode + ": " + errorResponse);
-                throw new RuntimeException("HTTP " + responseCode + ": " + errorResponse);
+                throw new RuntimeException("HTTP " + responseCode);
             }
         } finally {
             if (connection != null) {
