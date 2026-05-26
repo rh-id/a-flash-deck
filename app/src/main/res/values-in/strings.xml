@@ -116,4 +116,5 @@
     <string name="title_import_deck">Impor Dek</string>
     <string name="error_please_select_deck">Error, silahkan pilih dek</string>
     <string name="reversible_when_questioned">Bisa dibalik saat ditanya</string>
+    <string name="title_generate_deck_from_existing">Buat Dek dari yang Ada dengan Gemini</string>
 </resources>
