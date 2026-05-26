@@ -1,5 +1,7 @@
 package m.co.rh.id.a_flash_deck.base.room;
 
+import android.database.Cursor;
+
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
@@ -103,7 +105,13 @@ public class DbMigration {
     public static final Migration MIGRATION_11_12 = new Migration(11, 12) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-            database.execSQL("ALTER TABLE card ADD COLUMN `isReversed` INTEGER NOT NULL DEFAULT 0");
+            Cursor cursor = database.query(
+                    "SELECT * FROM pragma_table_info('card') WHERE name='isReversed'");
+            boolean columnExists = cursor.getCount() > 0;
+            cursor.close();
+            if (!columnExists) {
+                database.execSQL("ALTER TABLE card ADD COLUMN `isReversed` INTEGER NOT NULL DEFAULT 0");
+            }
         }
     };
 }

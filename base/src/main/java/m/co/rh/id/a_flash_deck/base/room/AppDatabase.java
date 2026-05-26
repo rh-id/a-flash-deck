@@ -17,8 +17,11 @@
 
 package m.co.rh.id.a_flash_deck.base.room;
 
+import androidx.room.AutoMigration;
 import androidx.room.Database;
+import androidx.room.DeleteColumn;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.AutoMigrationSpec;
 
 import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
@@ -33,7 +36,11 @@ import m.co.rh.id.a_flash_deck.base.entity.Test;
 
 @Database(entities = {Deck.class, Card.class, Test.class,
         AndroidNotification.class, NotificationTimer.class},
-        version = 12)
+        version = 13,
+        autoMigrations = {
+                @AutoMigration(from = 12, to = 13,
+                        spec = AppDatabase.RemoveIsReversedSpec.class)
+        })
 public abstract class AppDatabase extends RoomDatabase {
     public abstract DeckDao deckDao();
 
@@ -42,4 +49,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract AndroidNotificationDao androidNotificationDao();
 
     public abstract NotificationTimerDao timerNotificationDao();
+
+    @DeleteColumn(tableName = "card", columnName = "isReversed")
+    static class RemoveIsReversedSpec implements AutoMigrationSpec {
+    }
 }

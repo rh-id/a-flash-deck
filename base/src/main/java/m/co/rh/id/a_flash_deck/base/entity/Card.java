@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import org.json.JSONException;
@@ -89,8 +90,9 @@ public class Card implements Serializable, Cloneable {
 
     /**
      * Whether this card is shown reversed, a.k.a question is answer and answer is question
+     * This is a runtime-only field, not persisted to database.
      */
-    @ColumnInfo(defaultValue = "0")
+    @Ignore
     public boolean isReversed;
 
     @Override
