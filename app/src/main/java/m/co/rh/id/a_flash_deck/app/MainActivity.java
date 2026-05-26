@@ -35,6 +35,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
@@ -73,12 +74,14 @@ public class MainActivity extends AppCompatActivity {
                 });
         super.onCreate(savedInstanceState);
         handleImportFile(getIntent());
+        processNotification(getIntent());
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleImportFile(intent);
+        processNotification(intent);
     }
 
     @Override
@@ -107,6 +110,10 @@ public class MainActivity extends AppCompatActivity {
         // using AppCompatDelegate.setDefaultNightMode trigger this method
         // but not triggering Application.onConfigurationChanged
         mRebuildUi.onNext(true);
+    }
+
+    private void processNotification(Intent intent) {
+        mActProvider.get(IAppNotificationHandler.class).processNotification(intent);
     }
 
     private void handleImportFile(Intent intent) {

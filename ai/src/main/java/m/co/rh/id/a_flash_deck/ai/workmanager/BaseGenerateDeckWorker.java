@@ -79,6 +79,12 @@ public abstract class BaseGenerateDeckWorker extends Worker {
         handler.postGeneralMessage(title, message);
     }
 
+    protected void postNotification(String title, String message, long deckId) {
+        Provider provider = getProvider();
+        IAppNotificationHandler handler = provider.get(IAppNotificationHandler.class);
+        handler.postDeckMessage(title, message, deckId);
+    }
+
     protected ILogger getLogger() {
         return getProvider().get(ILogger.class);
     }

@@ -52,7 +52,8 @@ public class GenerateDeckWorker extends BaseGenerateDeckWorker {
 
             String notificationTitle = getApplicationContext().getString(R.string.ai_notification_title);
             postNotification(notificationTitle,
-                    getApplicationContext().getString(R.string.ai_generation_success, deck.name, String.valueOf(cardCount)));
+                    getApplicationContext().getString(R.string.ai_generation_success, deck.name, String.valueOf(cardCount)),
+                    deck.id);
 
             return Result.success();
         } catch (Exception exception) {

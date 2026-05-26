@@ -24,6 +24,7 @@ import androidx.annotation.WorkerThread;
 
 import io.reactivex.rxjava3.core.Flowable;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
 
@@ -33,19 +34,23 @@ public interface IAppNotificationHandler {
     String GROUP_KEY_NOTIFICATION_TIMER = "GROUP_KEY_NOTIFICATION_TIMER";
     String CHANNEL_ID_GENERAL_MESSAGE = "CHANNEL_ID_GENERAL_MESSAGE";
     String GROUP_KEY_GENERAL_MESSAGE = "GROUP_KEY_GENERAL_MESSAGE";
+    String GROUP_KEY_DECK_MESSAGE = "GROUP_KEY_DECK_MESSAGE";
     int GROUP_SUMMARY_ID_NOTIFICATION_TIMER = 0;
-    int GROUP_SUMMARY_ID_GENERAL_MESSAGE = 1;
 
 
     void postNotificationTimer(NotificationTimer notificationTimer, Card selectedCard);
 
     void postGeneralMessage(String title, String content);
 
+    void postDeckMessage(String title, String content, long deckId);
+
     void removeNotification(Intent intent);
 
     void processNotification(@NonNull Intent intent);
 
     Flowable<NotificationTimerEvent> getTimerNotificationEventFlow();
+
+    Flowable<Deck> getDeckMessageEventFlow();
 
     @WorkerThread
     void cancelNotificationSync(NotificationTimer notificationTimer);

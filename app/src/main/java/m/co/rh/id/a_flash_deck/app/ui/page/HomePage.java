@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -44,6 +45,7 @@ import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingSVDialog;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
+import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
@@ -86,6 +88,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient NewCardCmd mNewCardCmd;
     private transient DeleteSuggestedCardCmd mDeleteSuggestedCardCmd;
     private transient ExportImportCmd mExportImportCmd;
+    private transient IAppNotificationHandler mAppNotificationHandler;
     private transient DrawerLayout mDrawerLayout;
     private transient BehaviorSubject<Optional<TestState>> mTestStateSubject;
 
@@ -105,6 +108,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mNewCardCmd = mSvProvider.get(NewCardCmd.class);
         mDeleteSuggestedCardCmd = mSvProvider.get(DeleteSuggestedCardCmd.class);
         mExportImportCmd = mSvProvider.get(ExportImportCmd.class);
+        mAppNotificationHandler = mSvProvider.get(IAppNotificationHandler.class);
         mTestStateSubject = BehaviorSubject.create();
     }
 
@@ -209,6 +213,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                         flashBotContainer.setVisibility(View.GONE);
                                     }
                                 }));
+        mRxDisposer.add("createView_deckNotification",
+                mAppNotificationHandler.getDeckMessageEventFlow()
+                        .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                        .subscribe(deck ->
+                                mNavigator.push(Routes.CARDS, CardListPage.Args.withDeck(deck))
+                        ));
         return rootLayout;
     }
 

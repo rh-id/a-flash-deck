@@ -69,7 +69,8 @@ public class GenerateDeckFromExistingWorker extends BaseGenerateDeckWorker {
 
             String notificationTitle = getApplicationContext().getString(R.string.ai_notification_title);
             postNotification(notificationTitle,
-                    getApplicationContext().getString(R.string.ai_generation_from_existing_success, deck.name, String.valueOf(aiDeck.cards.size())));
+                    getApplicationContext().getString(R.string.ai_generation_from_existing_success, deck.name, String.valueOf(aiDeck.cards.size())),
+                    deck.id);
 
             return Result.success();
         } catch (Exception exception) {
