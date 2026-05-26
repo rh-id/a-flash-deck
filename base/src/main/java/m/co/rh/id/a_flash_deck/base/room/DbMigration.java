@@ -105,9 +105,15 @@ public class DbMigration {
     public static final Migration MIGRATION_11_12 = new Migration(11, 12) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-            Cursor cursor = database.query(
-                    "SELECT * FROM pragma_table_info('card') WHERE name='isReversed'");
-            boolean columnExists = cursor.getCount() > 0;
+            Cursor cursor = database.query("PRAGMA table_info('card')");
+            boolean columnExists = false;
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(cursor.getColumnIndex("name"));
+                if ("isReversed".equals(name)) {
+                    columnExists = true;
+                    break;
+                }
+            }
             cursor.close();
             if (!columnExists) {
                 database.execSQL("ALTER TABLE card ADD COLUMN `isReversed` INTEGER NOT NULL DEFAULT 0");
