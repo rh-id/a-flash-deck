@@ -66,6 +66,9 @@ public class AudioRecorder implements ProviderDisposable {
                 }
                 mMediaRecorder = null;
             }
+            if (mAudioRecordFile != null) {
+                mAudioRecordFile.delete();
+            }
             mAudioRecordFile = null; // Clear invalid file reference
         } finally {
             mLock.unlock();
