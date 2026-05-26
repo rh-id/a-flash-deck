@@ -108,7 +108,7 @@ public class DbMigration {
             Cursor cursor = database.query("PRAGMA table_info('card')");
             boolean columnExists = false;
             while (cursor.moveToNext()) {
-                String name = cursor.getString(cursor.getColumnIndex("name"));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 if ("isReversed".equals(name)) {
                     columnExists = true;
                     break;
