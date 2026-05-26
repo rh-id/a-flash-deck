@@ -201,7 +201,7 @@ public class ExportImportCmd {
                                 deckModelList.addAll(deckModelsFromJson);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_QUESTION_DIR)) {
-                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_QUESTION_DIR.length() - 1);
+                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_QUESTION_DIR.length());
                                 File imageTempFile = mFileHelper.createImageTempFile();
                                 try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                                      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
@@ -211,7 +211,7 @@ public class ExportImportCmd {
                                 mFileHelper.createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_ANSWER_DIR)) {
-                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_ANSWER_DIR.length() - 1);
+                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_ANSWER_DIR.length());
                                 File imageTempFile = mFileHelper.createImageTempFile();
                                 try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                                      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
@@ -221,7 +221,7 @@ public class ExportImportCmd {
                                 mFileHelper.createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_QUESTION_DIR)) {
-                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length() - 1);
+                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length());
                                 File tempFile = mFileHelper.createTempFile(fileName);
                                 try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
                                      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
