@@ -27,6 +27,7 @@ import androidx.room.Update;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -104,22 +105,25 @@ public abstract class DeckDao {
     @Query("SELECT * FROM deck WHERE id=:deckId")
     public abstract Deck getDeckById(long deckId);
 
-    public List<Card> findCardByDeckIds(List<Long> deckIds) {
-        int size = deckIds.size();
+    private <T> List<T> queryInBatches(List<Long> ids, Function<List<Long>, List<T>> query) {
+        int size = ids.size();
         int maxQuerySize = 30;
-        if (size < maxQuerySize) {
-            return getCardByDeckIds(deckIds);
+        if (size <= maxQuerySize) {
+            return query.apply(ids);
         }
-        List<Card> result = new ArrayList<>();
-        for (int i = 0, i2 = maxQuerySize - 1;
-             size > maxQuerySize;
+        List<T> result = new ArrayList<>();
+        for (int i = 0, i2 = maxQuerySize;
+             size > 0;
              size -= maxQuerySize,
-                     i = i2
-                     , i2 += Math.min(size, maxQuerySize)) {
-            List<Long> queryIds = deckIds.subList(i, i2);
-            result.addAll(getCardByDeckIds(queryIds));
+                     i = i2,
+                     i2 += Math.min(size, maxQuerySize)) {
+            result.addAll(query.apply(ids.subList(i, i2)));
         }
         return result;
+    }
+
+    public List<Card> findCardByDeckIds(List<Long> deckIds) {
+        return queryInBatches(deckIds, this::getCardByDeckIds);
     }
 
     @Query("SELECT * FROM card WHERE deck_id IN (:deckIds)")
@@ -129,20 +133,7 @@ public abstract class DeckDao {
     public abstract Card getCardByCardId(long cardId);
 
     public List<Deck> findDeckByIds(List<Long> deckIds) {
-        int size = deckIds.size();
-        int maxQuerySize = 30;
-        if (size <= maxQuerySize) {
-            return getDeckByIds(deckIds);
-        }
-        List<Deck> result = new ArrayList<>();
-        for (int i = 0, i2 = maxQuerySize;
-             size > 0;
-             size -= maxQuerySize,
-                     i = i2
-                     , i2 += Math.min(size, maxQuerySize)) {
-            result.addAll(getDeckByIds(deckIds.subList(i, i2)));
-        }
-        return result;
+        return queryInBatches(deckIds, this::getDeckByIds);
     }
 
     @Query("SELECT * FROM deck WHERE id IN (:deckIds)")
@@ -161,20 +152,7 @@ public abstract class DeckDao {
     public abstract Card findCardByQuestionVoice(String questionVoice);
 
     public List<Long> findCardIdsByCardIds(List<Long> cardIds) {
-        int size = cardIds.size();
-        int maxQuerySize = 30;
-        if (size <= maxQuerySize) {
-            return getCardIdsByCardIds(cardIds);
-        }
-        List<Long> result = new ArrayList<>();
-        for (int i = 0, i2 = maxQuerySize;
-             size > 0;
-             size -= maxQuerySize,
-                     i = i2
-                     , i2 += Math.min(size, maxQuerySize)) {
-            result.addAll(getCardIdsByCardIds(cardIds.subList(i, i2)));
-        }
-        return result;
+        return queryInBatches(cardIds, this::getCardIdsByCardIds);
     }
 
     @Query("SELECT id FROM card WHERE id IN (:cardIds)")
@@ -184,20 +162,7 @@ public abstract class DeckDao {
     abstract List<Card> getCardsByCardIds(List<Long> cardIds);
 
     public List<Card> findCardsByCardIds(List<Long> cardIds) {
-        int size = cardIds.size();
-        int maxQuerySize = 30;
-        if (size <= maxQuerySize) {
-            return getCardsByCardIds(cardIds);
-        }
-        List<Card> result = new ArrayList<>();
-        for (int i = 0, i2 = maxQuerySize;
-             size > 0;
-             size -= maxQuerySize,
-                     i = i2
-                     , i2 += Math.min(size, maxQuerySize)) {
-            result.addAll(getCardsByCardIds(cardIds.subList(i, i2)));
-        }
-        return result;
+        return queryInBatches(cardIds, this::getCardsByCardIds);
     }
 
     @Transaction

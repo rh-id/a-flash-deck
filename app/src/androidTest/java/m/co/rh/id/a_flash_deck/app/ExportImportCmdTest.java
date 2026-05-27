@@ -187,23 +187,37 @@ public class ExportImportCmdTest {
         ExportImportCmd cmd = new ExportImportCmd(testProvider);
         FileHelper fileHelper = testProvider.get(FileHelper.class);
 
-        File tempImage = File.createTempFile("test_img_", ".jpg");
-        File tempVoice = null;
+        File tempQImage = File.createTempFile("test_q_img_", ".jpg");
+        File tempAImage = File.createTempFile("test_a_img_", ".jpg");
+        File tempQVoice = null;
+        File tempAVoice = null;
         try {
-            Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-            try (FileOutputStream fos = new FileOutputStream(tempImage)) {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            Bitmap bitmapQ = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            try (FileOutputStream fos = new FileOutputStream(tempQImage)) {
+                bitmapQ.compress(Bitmap.CompressFormat.JPEG, 90, fos);
             }
-            bitmap.recycle();
+            bitmapQ.recycle();
 
-            tempVoice = File.createTempFile("test_voice_", ".3gp");
-            try (FileOutputStream fos = new FileOutputStream(tempVoice)) {
-                fos.write("test audio content".getBytes());
+            Bitmap bitmapA = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+            try (FileOutputStream fos = new FileOutputStream(tempAImage)) {
+                bitmapA.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            }
+            bitmapA.recycle();
+
+            tempQVoice = File.createTempFile("test_q_voice_", ".3gp");
+            try (FileOutputStream fos = new FileOutputStream(tempQVoice)) {
+                fos.write("test question audio content".getBytes());
             }
 
-            fileHelper.createCardQuestionImage(tempImage, "test_q_img.jpg");
-            fileHelper.createCardAnswerImage(tempImage, "test_a_img.jpg");
-            fileHelper.createCardQuestionVoice(tempVoice, "test_q_voice.3gp");
+            tempAVoice = File.createTempFile("test_a_voice_", ".3gp");
+            try (FileOutputStream fos = new FileOutputStream(tempAVoice)) {
+                fos.write("test answer audio content".getBytes());
+            }
+
+            fileHelper.createCardQuestionImage(tempQImage, "test_q_img.jpg");
+            fileHelper.createCardAnswerImage(tempAImage, "test_a_img.jpg");
+            fileHelper.createCardQuestionVoice(tempQVoice, "test_q_voice.3gp");
+            fileHelper.createCardAnswerVoice(tempAVoice, "test_a_voice.3gp");
 
             DeckDao deckDao = testProvider.get(DeckDao.class);
             Date date = new Date();
@@ -222,6 +236,7 @@ public class ExportImportCmdTest {
             card.questionImage = "test_q_img.jpg";
             card.answerImage = "test_a_img.jpg";
             card.questionVoice = "test_q_voice.3gp";
+            card.answerVoice = "test_a_voice.3gp";
 
             deckDao.insertCard(card);
 
@@ -231,18 +246,22 @@ public class ExportImportCmdTest {
             long qImgSize = fileHelper.getCardQuestionImage("test_q_img.jpg").length();
             long aImgSize = fileHelper.getCardAnswerImage("test_a_img.jpg").length();
             long qVoiceSize = fileHelper.getCardQuestionVoice("test_q_voice.3gp").length();
+            long aVoiceSize = fileHelper.getCardAnswerVoice("test_a_voice.3gp").length();
             assertTrue(qImgSize > 0);
             assertTrue(aImgSize > 0);
             assertTrue(qVoiceSize > 0);
+            assertTrue(aVoiceSize > 0);
 
             fileHelper.deleteCardQuestionImage("test_q_img.jpg");
             fileHelper.deleteCardAnswerImage("test_a_img.jpg");
             fileHelper.deleteCardQuestionVoice("test_q_voice.3gp");
+            fileHelper.deleteCardAnswerVoice("test_a_voice.3gp");
             deckDao.deleteDeck(deck);
 
             assertFalse(fileHelper.getCardQuestionImage("test_q_img.jpg").exists());
             assertFalse(fileHelper.getCardAnswerImage("test_a_img.jpg").exists());
             assertFalse(fileHelper.getCardQuestionVoice("test_q_voice.3gp").exists());
+            assertFalse(fileHelper.getCardAnswerVoice("test_a_voice.3gp").exists());
 
             List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
 
@@ -262,15 +281,18 @@ public class ExportImportCmdTest {
             assertEquals(card.questionImage, resultCard.questionImage);
             assertEquals(card.answerImage, resultCard.answerImage);
             assertEquals(card.questionVoice, resultCard.questionVoice);
+            assertEquals(card.answerVoice, resultCard.answerVoice);
 
             assertTrue(fileHelper.getCardQuestionImage("test_q_img.jpg").exists());
             assertEquals(qImgSize, fileHelper.getCardQuestionImage("test_q_img.jpg").length());
             assertTrue(fileHelper.getCardAnswerImage("test_a_img.jpg").exists());
             assertEquals(aImgSize, fileHelper.getCardAnswerImage("test_a_img.jpg").length());
             assertTrue(fileHelper.getCardQuestionVoice("test_q_voice.3gp").exists());
-            assertArrayEquals(readFileBytes(tempVoice), readFileBytes(fileHelper.getCardQuestionVoice("test_q_voice.3gp")));
+            assertArrayEquals(readFileBytes(tempQVoice), readFileBytes(fileHelper.getCardQuestionVoice("test_q_voice.3gp")));
             assertTrue(fileHelper.getCardQuestionImageThumbnail("test_q_img.jpg").exists());
             assertTrue(fileHelper.getCardAnswerImageThumbnail("test_a_img.jpg").exists());
+            assertTrue(fileHelper.getCardAnswerVoice("test_a_voice.3gp").exists());
+            assertArrayEquals(readFileBytes(tempAVoice), readFileBytes(fileHelper.getCardAnswerVoice("test_a_voice.3gp")));
 
             List<Deck> dbDeckList = deckDao.getAllDecks();
             assertEquals(1, dbDeckList.size());
@@ -280,13 +302,19 @@ public class ExportImportCmdTest {
             assertEquals(card.questionImage, dbCardList.get(0).questionImage);
             assertEquals(card.answerImage, dbCardList.get(0).answerImage);
             assertEquals(card.questionVoice, dbCardList.get(0).questionVoice);
+            assertEquals(card.answerVoice, dbCardList.get(0).answerVoice);
         } finally {
             fileHelper.deleteCardQuestionImage("test_q_img.jpg");
             fileHelper.deleteCardAnswerImage("test_a_img.jpg");
             fileHelper.deleteCardQuestionVoice("test_q_voice.3gp");
-            tempImage.delete();
-            if (tempVoice != null) {
-                tempVoice.delete();
+            fileHelper.deleteCardAnswerVoice("test_a_voice.3gp");
+            tempQImage.delete();
+            tempAImage.delete();
+            if (tempQVoice != null) {
+                tempQVoice.delete();
+            }
+            if (tempAVoice != null) {
+                tempAVoice.delete();
             }
         }
     }

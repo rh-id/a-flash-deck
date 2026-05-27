@@ -68,6 +68,7 @@ public class ExportImportCmd {
     private static final String ZIP_CONTENT_IMAGE_QUESTION_DIR = "media/image/question/";
     private static final String ZIP_CONTENT_IMAGE_ANSWER_DIR = "media/image/answer/";
     private static final String ZIP_CONTENT_VOICE_QUESTION_DIR = "media/voice/question/";
+    private static final String ZIP_CONTENT_VOICE_ANSWER_DIR = "media/voice/answer/";
 
     protected Context mAppContext;
     protected AnkiImporter mAnkiImporter;
@@ -166,6 +167,17 @@ public class ExportImportCmd {
                                             zipOutputStream.closeEntry();
                                         }
                                     }
+                                    if (card.answerVoice != null) {
+                                        File file = mFileHelper.getCardAnswerVoice(card.answerVoice);
+                                        if (file != null && file.exists() && file.canRead()) {
+                                            ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_ANSWER_DIR + card.answerVoice);
+                                            zipOutputStream.putNextEntry(zipEntry);
+                                            try (FileInputStream fis = new FileInputStream(file)) {
+                                                mFileHelper.copyStream(fis, zipOutputStream);
+                                            }
+                                            zipOutputStream.closeEntry();
+                                        }
+                                    }
                                 }
                             }
                             return zipFile;
@@ -228,6 +240,15 @@ public class ExportImportCmd {
                                     mFileHelper.copyStream(bis, bos);
                                 }
                                 mFileHelper.createCardQuestionVoice(tempFile, fileName);
+                            }
+                            if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_ANSWER_DIR)) {
+                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_ANSWER_DIR.length());
+                                File tempFile = mFileHelper.createTempFile(fileName);
+                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                                    mFileHelper.copyStream(bis, bos);
+                                }
+                                mFileHelper.createCardAnswerVoice(tempFile, fileName);
                             }
                         }
 
