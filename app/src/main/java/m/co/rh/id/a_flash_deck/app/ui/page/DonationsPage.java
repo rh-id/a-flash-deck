@@ -1,7 +1,6 @@
 package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -45,13 +44,7 @@ public class DonationsPage extends StatefulView<Activity> implements View.OnClic
             Uri webpage = Uri.parse("https://teer.id/rh-id");
             Intent webIntent = new Intent(Intent.ACTION_VIEW, webpage);
             Context context = view.getContext();
-            try {
-                context.startActivity(webIntent);
-            } catch (ActivityNotFoundException activityNotFoundException) {
-                webpage = Uri.parse("https://teer.id/rh-id");
-                webIntent = new Intent(Intent.ACTION_VIEW, webpage);
-                context.startActivity(webIntent);
-            }
+            context.startActivity(webIntent);
             mProvider.get(ILogger.class)
                     .i(TAG, context.getString(R.string.donation_thank_you));
         }

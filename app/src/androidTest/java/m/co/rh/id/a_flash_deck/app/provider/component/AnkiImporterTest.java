@@ -367,6 +367,77 @@ public class AnkiImporterTest {
         assertNull(importedCard.answerImage);
     }
 
+    /**
+     * Tests importing an APKG with multiple decks.
+     *
+     * <p>This test verifies that:</p>
+     * <ul>
+     *   <li>APKG export works correctly with multiple decks in a single file</li>
+     *   <li>Import creates expected number of decks with their respective cards</li>
+     *   <li>All deck names are preserved</li>
+     *   <li>Each deck's cards are correctly imported</li>
+     * </ul>
+     */
+    @Test
+    public void importMultipleDecks_bothImported() throws IOException {
+        AnkiExporter exporter = new AnkiExporter(testProvider);
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        Deck deck1 = AnkiTestDataHelper.createTestDeck("First Deck");
+        deckDao.insertDeck(deck1);
+
+        Card card1 = AnkiTestDataHelper.createTestCard(deck1.id, 1, "Question 1", "Answer 1");
+        deckDao.insertCard(card1);
+
+        Deck deck2 = AnkiTestDataHelper.createTestDeck("Second Deck");
+        deckDao.insertDeck(deck2);
+
+        Card card2 = AnkiTestDataHelper.createTestCard(deck2.id, 1, "Question 2", "Answer 2");
+        deckDao.insertCard(card2);
+
+        File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck1, deck2)));
+        assertNotNull(apkgFile);
+        assertTrue(apkgFile.exists());
+
+        deckDao.deleteDeck(deck1);
+        deckDao.deleteDeck(deck2);
+
+        List<DeckModel> imported = importer.importApkg(apkgFile);
+        assertEquals(2, imported.size());
+
+        DeckModel deckModel1 = null;
+        DeckModel deckModel2 = null;
+        for (DeckModel dm : imported) {
+            if ("First Deck".equals(dm.getDeck().name)) {
+                deckModel1 = dm;
+            } else if ("Second Deck".equals(dm.getDeck().name)) {
+                deckModel2 = dm;
+            }
+        }
+        assertNotNull(deckModel1);
+        assertNotNull(deckModel2);
+
+        assertEquals(1, deckModel1.getCardList().size());
+
+        Card importedCard1 = deckModel1.getCardList().get(0);
+        assertEquals("Question 1", importedCard1.question);
+        assertEquals("Answer 1", importedCard1.answer);
+        assertNull(importedCard1.questionImage);
+        assertNull(importedCard1.answerImage);
+        assertNull(importedCard1.questionVoice);
+        assertNull(importedCard1.answerVoice);
+
+        assertEquals(1, deckModel2.getCardList().size());
+
+        Card importedCard2 = deckModel2.getCardList().get(0);
+        assertEquals("Question 2", importedCard2.question);
+        assertEquals("Answer 2", importedCard2.answer);
+        assertNull(importedCard2.questionImage);
+        assertNull(importedCard2.answerImage);
+        assertNull(importedCard2.questionVoice);
+        assertNull(importedCard2.answerVoice);
+    }
+
     private void deleteDirectory(File directory) {
         if (directory == null || !directory.exists()) {
             return;

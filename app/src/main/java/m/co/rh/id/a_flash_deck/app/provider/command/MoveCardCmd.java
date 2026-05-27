@@ -24,18 +24,15 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class MoveCardCmd {
     protected ExecutorService mExecutorService;
-    protected ILogger mLogger;
     protected DeckChangeNotifier mDeckChangeNotifier;
     protected DeckDao mDeckDao;
 
     public MoveCardCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
-        mLogger = provider.get(ILogger.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mDeckDao = provider.get(DeckDao.class);
     }

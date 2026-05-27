@@ -28,12 +28,10 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.CopyCardEvent;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class CopyCardCmd {
     protected ExecutorService mExecutorService;
-    protected ILogger mLogger;
     protected FileHelper mFileHelper;
     protected DeckChangeNotifier mDeckChangeNotifier;
     protected DeckDao mDeckDao;
@@ -41,7 +39,6 @@ public class CopyCardCmd {
 
     public CopyCardCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
-        mLogger = provider.get(ILogger.class);
         mFileHelper = provider.get(FileHelper.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mDeckDao = provider.get(DeckDao.class);

@@ -169,7 +169,7 @@ public class AnkiExporter {
             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_create_file));
         } finally {
             if (tempDir != null) {
-                deleteDirectory(tempDir);
+                mFileHelper.deleteDirectory(tempDir);
             }
         }
     }
@@ -231,22 +231,5 @@ public class AnkiExporter {
             }
         }
         return null;
-    }
-
-    private void deleteDirectory(File directory) {
-        if (directory == null || !directory.exists()) {
-            return;
-        }
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    deleteDirectory(file);
-                } else {
-                    file.delete();
-                }
-            }
-        }
-        directory.delete();
     }
 }

@@ -28,6 +28,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -326,69 +327,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_add_notification) {
             NotificationTimerListPage.addNewNotificationTimerWorkflow(mNavigator);
         } else if (id == R.id.button_export_deck) {
-            mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
-                    (navigator, navRoute, activity, currentView) -> {
-                        DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute);
-                        if (result != null) {
-                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                            Context context = provider.getContext();
-                            CompositeDisposable compositeDisposable = new CompositeDisposable();
-                            compositeDisposable.add(provider.get(ExportImportCmd.class)
-                                    .exportFile(result.getSelectedDeck())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((file, throwable) -> {
-                                        if (throwable != null) {
-                                            if (throwable.getCause() instanceof ValidationException) {
-                                                String title = context.getString(R.string.error);
-                                                navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                        provider.get(CommonNavConfig.class).args_commonMessageDialog(title,
-                                                                throwable.getCause().getMessage()));
-                                            } else {
-                                                provider.get(ILogger.class)
-                                                        .e(TAG, throwable.getMessage(), throwable);
-                                            }
-                                        } else {
-                                            provider.get(ILogger.class)
-                                                    .d(TAG, "File exported: " + file.getAbsolutePath());
-                                            UiUtils.shareFile(context, file, file.getName());
-                                        }
-                                        compositeDisposable.dispose();
-                                    })
-                            );
-                        }
-                    });
+            handleExportClick(false, "File exported: ");
         } else if (id == R.id.button_export_anki) {
-            mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
-                    (navigator, navRoute, activity, currentView) -> {
-                        DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute);
-                        if (result != null) {
-                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                            Context context = provider.getContext();
-                            CompositeDisposable compositeDisposable = new CompositeDisposable();
-                            compositeDisposable.add(provider.get(ExportImportCmd.class)
-                                    .exportFileAnki(result.getSelectedDeck())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((file, throwable) -> {
-                                        if (throwable != null) {
-                                            if (throwable.getCause() instanceof ValidationException) {
-                                                String title = context.getString(R.string.error);
-                                                navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                        provider.get(CommonNavConfig.class).args_commonMessageDialog(title,
-                                                                throwable.getCause().getMessage()));
-                                            } else {
-                                                provider.get(ILogger.class)
-                                                        .e(TAG, throwable.getMessage(), throwable);
-                                            }
-                                        } else {
-                                            provider.get(ILogger.class)
-                                                    .d(TAG, "Anki file exported: " + file.getAbsolutePath());
-                                            UiUtils.shareFile(context, file, file.getName());
-                                        }
-                                        compositeDisposable.dispose();
-                                    })
-                            );
-                        }
-                    });
+            handleExportClick(true, "Anki file exported: ");
         } else if (id == R.id.button_import_deck) {
             Activity activity = mNavigator.getActivity();
             String chooserMessage = activity.getString(R.string.title_import_deck);
@@ -536,6 +477,42 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 mDrawerLayout.open();
             }
         }
+    }
+
+    private void handleExportClick(boolean exportAnki, String logPrefix) {
+        mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+                (navigator, navRoute, activity, currentView) -> {
+                    DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute);
+                    if (result != null) {
+                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                        Context context = provider.getContext();
+                        CompositeDisposable compositeDisposable = new CompositeDisposable();
+                        io.reactivex.rxjava3.core.Single<File> exportSingle = exportAnki ?
+                                provider.get(ExportImportCmd.class).exportFileAnki(result.getSelectedDeck()) :
+                                provider.get(ExportImportCmd.class).exportFile(result.getSelectedDeck());
+                        compositeDisposable.add(exportSingle
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe((file, throwable) -> {
+                                    if (throwable != null) {
+                                        if (throwable.getCause() instanceof ValidationException) {
+                                            String title = context.getString(R.string.error);
+                                            navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                    provider.get(CommonNavConfig.class).args_commonMessageDialog(title,
+                                                            throwable.getCause().getMessage()));
+                                        } else {
+                                            provider.get(ILogger.class)
+                                                    .e(TAG, throwable.getMessage(), throwable);
+                                        }
+                                    } else {
+                                        provider.get(ILogger.class)
+                                                .d(TAG, logPrefix + file.getAbsolutePath());
+                                        UiUtils.shareFile(context, file, file.getName());
+                                    }
+                                    compositeDisposable.dispose();
+                                })
+                        );
+                    }
+                });
     }
 
     private void startTestWorkflow(INavigator navigatorInstance) {

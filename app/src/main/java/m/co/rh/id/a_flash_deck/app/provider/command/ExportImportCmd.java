@@ -197,7 +197,13 @@ public class ExportImportCmd {
 
     public Single<List<DeckModel>> importFile(File file) {
         if (file.getName().toLowerCase().endsWith(".apkg")) {
-            return Single.fromCallable(() -> mAnkiImporter.importApkg(file))
+            return Single.fromCallable(() -> {
+                        List<DeckModel> result = mAnkiImporter.importApkg(file);
+                        if (!result.isEmpty()) {
+                            mDeckDao.importDecks(result);
+                        }
+                        return result;
+                    })
                     .subscribeOn(Schedulers.from(mExecutorService));
         }
         return Single.fromCallable(() -> {

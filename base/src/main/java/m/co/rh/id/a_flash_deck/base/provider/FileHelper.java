@@ -482,4 +482,21 @@ public class FileHelper {
     public File getCardQuestionVoiceParent() {
         return mCardQuestionVoiceParent;
     }
+
+    public void deleteDirectory(File directory) {
+        if (directory == null || !directory.exists()) {
+            return;
+        }
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        directory.delete();
+    }
 }

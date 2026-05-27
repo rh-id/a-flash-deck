@@ -101,8 +101,8 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.AI_GENERATE_DECK_DIALOG, (args, activity) -> new GenerateDeckFromTopicSVDialog());
         navMap.put(Routes.AI_GENERATE_DECK_FROM_EXISTING_DIALOG, (args, activity) -> new GenerateDeckFromExistingSVDialog());
         navMap.putAll(mCommonNavConfig.getNavMap());
-        setupMainActivityNavigator(navMap);
-        setupCardShowActivityNavigator(navMap);
+        setupNavigator(navMap, Routes.SPLASH_PAGE, MainActivity.class);
+        setupNavigator(navMap, Routes.CARD_SHOW_HOME_PAGE, CardShowActivity.class);
     }
 
     public INavigator getNavigator(Activity activity) {
@@ -110,35 +110,19 @@ public class NavigatorProvider implements ProviderDisposable {
     }
 
     @SuppressWarnings("unchecked")
-    private Navigator setupMainActivityNavigator(Map<String, StatefulViewFactory<Activity, StatefulView>> navMap) {
+    private void setupNavigator(Map<String, StatefulViewFactory<Activity, StatefulView>> navMap,
+                                String initialRoute, Class<? extends Activity> activityClass) {
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
-                new NavConfiguration.Builder<>(Routes.SPLASH_PAGE, navMap);
+                new NavConfiguration.Builder<>(initialRoute, navMap);
         navBuilder.setRequiredComponent(mProvider);
         navBuilder.setMainHandler(mProvider.get(Handler.class));
         navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);
         navBuilder.setLoadingView(mLoadingView);
         NavConfiguration<Activity, StatefulView> navConfiguration = navBuilder.build();
-        Navigator navigator = new Navigator(MainActivity.class, navConfiguration);
-        mActivityNavigatorMap.put(MainActivity.class, navigator);
+        Navigator navigator = new Navigator(activityClass, navConfiguration);
+        mActivityNavigatorMap.put(activityClass, navigator);
         mApplication.registerActivityLifecycleCallbacks(navigator);
         mApplication.registerComponentCallbacks(navigator);
-        return navigator;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Navigator setupCardShowActivityNavigator(Map<String, StatefulViewFactory<Activity, StatefulView>> navMap) {
-        NavConfiguration.Builder<Activity, StatefulView> navBuilder =
-                new NavConfiguration.Builder<>(Routes.CARD_SHOW_HOME_PAGE, navMap);
-        navBuilder.setRequiredComponent(mProvider);
-        navBuilder.setMainHandler(mProvider.get(Handler.class));
-        navBuilder.setThreadPoolExecutor(mThreadPoolExecutor);
-        navBuilder.setLoadingView(mLoadingView);
-        NavConfiguration<Activity, StatefulView> navConfiguration = navBuilder.build();
-        Navigator navigator = new Navigator(CardShowActivity.class, navConfiguration);
-        mActivityNavigatorMap.put(CardShowActivity.class, navigator);
-        mApplication.registerActivityLifecycleCallbacks(navigator);
-        mApplication.registerComponentCallbacks(navigator);
-        return navigator;
     }
 
     @Override

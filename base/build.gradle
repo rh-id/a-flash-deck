@@ -31,6 +31,8 @@ android {
         }
     }
     compileOptions {
+        coreLibraryDesugaringEnabled true
+
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -58,6 +60,8 @@ dependencies {
 
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'com.github.rh-id:concurrent-utils:v0.0.3'
+
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'junit:junit:4.13.2'

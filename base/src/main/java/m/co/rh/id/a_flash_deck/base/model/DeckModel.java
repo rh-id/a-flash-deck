@@ -83,8 +83,8 @@ public class DeckModel implements Serializable {
         JSONObject deckJsonObject = jsonObject.getJSONObject("deck");
         mDeck = new Deck();
         mDeck.fromJson(deckJsonObject);
-        JSONArray cardListJson = jsonObject.getJSONArray("cardList");
-        if (cardListJson.length() > 0) {
+        JSONArray cardListJson = jsonObject.optJSONArray("cardList");
+        if (cardListJson != null && cardListJson.length() > 0) {
             int size = cardListJson.length();
             for (int i = 0; i < size; i++) {
                 JSONObject cardJsonObj = cardListJson.getJSONObject(i);

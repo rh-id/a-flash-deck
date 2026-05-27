@@ -183,10 +183,10 @@ public class AnkiImporter {
                     Card card = new Card();
                     card.question = questionText;
                     card.answer = answerText;
-                    card.questionImage = questionImage != null ? questionImage : null;
-                    card.answerImage = answerImage != null ? answerImage : null;
-                    card.questionVoice = questionVoice != null ? questionVoice : null;
-                    card.answerVoice = answerVoice != null ? answerVoice : null;
+                    card.questionImage = questionImage;
+                    card.answerImage = answerImage;
+                    card.questionVoice = questionVoice;
+                    card.answerVoice = answerVoice;
                     card.ordinal = ankiCard.ord;
                     card.isReversibleQA = false;
                     card.isReversed = false;
@@ -209,7 +209,7 @@ public class AnkiImporter {
             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
         } finally {
             if (tempDir != null) {
-                deleteDirectory(tempDir);
+                mFileHelper.deleteDirectory(tempDir);
             }
         }
     }
@@ -385,22 +385,5 @@ public class AnkiImporter {
                 }
             }
         }
-    }
-
-    private void deleteDirectory(File directory) {
-        if (directory == null || !directory.exists()) {
-            return;
-        }
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    deleteDirectory(file);
-                } else {
-                    file.delete();
-                }
-            }
-        }
-        directory.delete();
     }
 }
