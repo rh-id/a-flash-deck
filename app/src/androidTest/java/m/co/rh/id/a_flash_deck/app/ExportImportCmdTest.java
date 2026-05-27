@@ -17,6 +17,7 @@
 
 package m.co.rh.id.a_flash_deck.app;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -34,7 +35,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -265,7 +268,7 @@ public class ExportImportCmdTest {
             assertTrue(fileHelper.getCardAnswerImage("test_a_img.jpg").exists());
             assertEquals(aImgSize, fileHelper.getCardAnswerImage("test_a_img.jpg").length());
             assertTrue(fileHelper.getCardQuestionVoice("test_q_voice.3gp").exists());
-            assertEquals(qVoiceSize, fileHelper.getCardQuestionVoice("test_q_voice.3gp").length());
+            assertArrayEquals(readFileBytes(tempVoice), readFileBytes(fileHelper.getCardQuestionVoice("test_q_voice.3gp")));
             assertTrue(fileHelper.getCardQuestionImageThumbnail("test_q_img.jpg").exists());
             assertTrue(fileHelper.getCardAnswerImageThumbnail("test_a_img.jpg").exists());
 
@@ -285,6 +288,18 @@ public class ExportImportCmdTest {
             if (tempVoice != null) {
                 tempVoice.delete();
             }
+        }
+    }
+
+    private byte[] readFileBytes(File file) throws Exception {
+        try (FileInputStream fis = new FileInputStream(file);
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = fis.read(buf)) != -1) {
+                baos.write(buf, 0, len);
+            }
+            return baos.toByteArray();
         }
     }
 }

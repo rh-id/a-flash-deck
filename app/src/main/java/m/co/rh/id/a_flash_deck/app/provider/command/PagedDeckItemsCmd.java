@@ -30,12 +30,15 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class PagedDeckItemsCmd {
-    private Context mAppContext;
+    private static final String TAG = PagedDeckItemsCmd.class.getName();
+
     private ExecutorService mExecutorService;
     private DeckDao mDeckDao;
+    private ILogger mLogger;
     private int mLimit;
     private String mSearch;
     private final BehaviorSubject<ArrayList<Deck>> mDeckItemsSubject;
@@ -43,9 +46,9 @@ public class PagedDeckItemsCmd {
     private final BehaviorSubject<Set<Long>> mSelectedDeckIdsSubject;
 
     public PagedDeckItemsCmd(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mDeckDao = provider.get(DeckDao.class);
+        mLogger = provider.get(ILogger.class);
         mDeckItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         mSelectedDeckIdsSubject = BehaviorSubject.createDefault(new LinkedHashSet<>());
@@ -94,7 +97,7 @@ public class PagedDeckItemsCmd {
                     }
                     mDeckItemsSubject.onNext(deckArrayList);
                 } catch (Throwable throwable) {
-                    mDeckItemsSubject.onError(throwable);
+                    mLogger.e(TAG, throwable.getMessage(), throwable);
                 } finally {
                     mIsLoadingSubject.onNext(false);
                 }
@@ -131,7 +134,7 @@ public class PagedDeckItemsCmd {
                 mDeckItemsSubject.onNext(
                         loadDeckItems());
             } catch (Throwable throwable) {
-                mDeckItemsSubject.onError(throwable);
+                mLogger.e(TAG, throwable.getMessage(), throwable);
             } finally {
                 mIsLoadingSubject.onNext(false);
             }

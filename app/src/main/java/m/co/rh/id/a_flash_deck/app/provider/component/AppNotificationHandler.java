@@ -94,72 +94,82 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         if (ActivityCompat.checkSelfPermission(mAppContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        Bitmap questionImage = null;
+        Bitmap questionImageThumbnail = null;
         mLock.lock();
-        createNotificationTimerNotificationChannel();
-        AndroidNotification androidNotification = new AndroidNotification();
-        androidNotification.groupKey = GROUP_KEY_NOTIFICATION_TIMER;
-        androidNotification.refId = notificationTimer.id;
-        mAndroidNotificationRepo.get().insertNotification(androidNotification);
-        Intent receiverIntent = new Intent(mAppContext, CardShowActivity.class);
-        receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        try {
+            createNotificationTimerNotificationChannel();
+            AndroidNotification androidNotification = new AndroidNotification();
+            androidNotification.groupKey = GROUP_KEY_NOTIFICATION_TIMER;
+            androidNotification.refId = notificationTimer.id;
+            mAndroidNotificationRepo.get().insertNotification(androidNotification);
+            Intent receiverIntent = new Intent(mAppContext, CardShowActivity.class);
+            receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
 
-        int intentFlag = PendingIntent.FLAG_IMMUTABLE;
-        PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
-                intentFlag);
-        Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
-        deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
-                intentFlag);
-        String title = mAppContext.getString(R.string.notification_title_flash_question);
-        String content = selectedCard.question;
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
-                .setSmallIcon(R.drawable.ic_notification_launcher)
-                .setColorized(true)
-                .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
-                .setContentTitle(title)
-                .setContentText(content)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(content))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setDeleteIntent(deletePendingIntent)
-                .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
-                .setAutoCancel(true);
-        if (selectedCard.questionImage != null) {
-            File questionImageFile = mFileHelper.get().getCardQuestionImage(selectedCard.questionImage);
-            File questionImageThumbnailFile = mFileHelper.get().getCardQuestionImageThumbnail(selectedCard.questionImage);
-            Bitmap questionImage = BitmapFactory.decodeFile(questionImageFile.getAbsolutePath());
-            Bitmap questionImageThumbnail = BitmapFactory.decodeFile(questionImageThumbnailFile.getAbsolutePath());
-            builder.setLargeIcon(questionImageThumbnail);
-            builder.setStyle(new NotificationCompat.BigPictureStyle()
-                    .setSummaryText(content)
-                    .bigPicture(questionImage));
-        }
-        if (selectedCard.questionVoice != null) {
-            Intent questionVoiceIntent = new Intent(mAppContext, NotificationPlayVoiceReceiver.class);
-            questionVoiceIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-            PendingIntent questionVoicePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, questionVoiceIntent,
+            int intentFlag = PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
                     intentFlag);
-            builder.addAction(R.drawable.ic_keyboard_voice_black, mAppContext.getString(R.string.play_voice), questionVoicePendingIntent);
-        }
+            Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
+            deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+            PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
+                    intentFlag);
+            String title = mAppContext.getString(R.string.notification_title_flash_question);
+            String content = selectedCard.question;
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
+                    .setSmallIcon(R.drawable.ic_notification_launcher)
+                    .setColorized(true)
+                    .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
+                    .setContentTitle(title)
+                    .setContentText(content)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(content))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentIntent(pendingIntent)
+                    .setDeleteIntent(deletePendingIntent)
+                    .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
+                    .setAutoCancel(true);
+            if (selectedCard.questionImage != null) {
+                File questionImageFile = mFileHelper.get().getCardQuestionImage(selectedCard.questionImage);
+                File questionImageThumbnailFile = mFileHelper.get().getCardQuestionImageThumbnail(selectedCard.questionImage);
+                questionImage = BitmapFactory.decodeFile(questionImageFile.getAbsolutePath());
+                questionImageThumbnail = BitmapFactory.decodeFile(questionImageThumbnailFile.getAbsolutePath());
+                builder.setLargeIcon(questionImageThumbnail);
+                builder.setStyle(new NotificationCompat.BigPictureStyle()
+                        .setSummaryText(content)
+                        .bigPicture(questionImage));
+            }
+            if (selectedCard.questionVoice != null) {
+                Intent questionVoiceIntent = new Intent(mAppContext, NotificationPlayVoiceReceiver.class);
+                questionVoiceIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+                PendingIntent questionVoicePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, questionVoiceIntent,
+                        intentFlag);
+                builder.addAction(R.drawable.ic_keyboard_voice_black, mAppContext.getString(R.string.play_voice), questionVoicePendingIntent);
+            }
 
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
             notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER,
                     androidNotification.requestId,
                     builder.build());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            NotificationCompat.Builder summaryBuilder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
-                    .setSmallIcon(R.drawable.ic_notification_launcher)
-                    .setColorized(true)
-                    .setColor(mAppContext.getColor(R.color.teal_custom))
-                    .setContentTitle(mAppContext.getString(R.string.notification_title_flash_question))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
-                    .setGroupSummary(true);
-            notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER, GROUP_SUMMARY_ID_NOTIFICATION_TIMER, summaryBuilder.build());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                NotificationCompat.Builder summaryBuilder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
+                        .setSmallIcon(R.drawable.ic_notification_launcher)
+                        .setColorized(true)
+                        .setColor(mAppContext.getColor(R.color.teal_custom))
+                        .setContentTitle(mAppContext.getString(R.string.notification_title_flash_question))
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
+                        .setGroupSummary(true);
+                notificationManagerCompat.notify(GROUP_KEY_NOTIFICATION_TIMER, GROUP_SUMMARY_ID_NOTIFICATION_TIMER, summaryBuilder.build());
+            }
+        } finally {
+            if (questionImage != null) {
+                questionImage.recycle();
+            }
+            if (questionImageThumbnail != null) {
+                questionImageThumbnail.recycle();
+            }
+            mLock.unlock();
         }
-
-        mLock.unlock();
     }
 
     private void createNotificationTimerNotificationChannel() {
@@ -182,38 +192,41 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             return;
         }
         mLock.lock();
-        createGeneralMessageNotificationChannel();
-        AndroidNotification androidNotification = new AndroidNotification();
-        androidNotification.groupKey = GROUP_KEY_GENERAL_MESSAGE;
-        mAndroidNotificationRepo.get().insertNotification(androidNotification);
-        Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
-        receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        try {
+            createGeneralMessageNotificationChannel();
+            AndroidNotification androidNotification = new AndroidNotification();
+            androidNotification.groupKey = GROUP_KEY_GENERAL_MESSAGE;
+            mAndroidNotificationRepo.get().insertNotification(androidNotification);
+            Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
+            receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
 
-        int intentFlag = PendingIntent.FLAG_IMMUTABLE;
-        PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
-                intentFlag);
-        Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
-        deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
-                intentFlag);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_GENERAL_MESSAGE)
-                .setSmallIcon(R.drawable.ic_notification_launcher)
-                .setColorized(true)
-                .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
-                .setContentTitle(title)
-                .setContentText(content)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(content))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setDeleteIntent(deletePendingIntent)
-                .setGroup(GROUP_KEY_GENERAL_MESSAGE)
-                .setAutoCancel(true);
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-        notificationManagerCompat.notify(GROUP_KEY_GENERAL_MESSAGE,
-                androidNotification.requestId,
-                builder.build());
-        mLock.unlock();
+            int intentFlag = PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
+                    intentFlag);
+            Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
+            deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+            PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
+                    intentFlag);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_GENERAL_MESSAGE)
+                    .setSmallIcon(R.drawable.ic_notification_launcher)
+                    .setColorized(true)
+                    .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
+                    .setContentTitle(title)
+                    .setContentText(content)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(content))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentIntent(pendingIntent)
+                    .setDeleteIntent(deletePendingIntent)
+                    .setGroup(GROUP_KEY_GENERAL_MESSAGE)
+                    .setAutoCancel(true);
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+            notificationManagerCompat.notify(GROUP_KEY_GENERAL_MESSAGE,
+                    androidNotification.requestId,
+                    builder.build());
+        } finally {
+            mLock.unlock();
+        }
     }
 
     @Override
@@ -222,39 +235,42 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             return;
         }
         mLock.lock();
-        createGeneralMessageNotificationChannel();
-        AndroidNotification androidNotification = new AndroidNotification();
-        androidNotification.groupKey = GROUP_KEY_DECK_MESSAGE;
-        androidNotification.refId = deckId;
-        mAndroidNotificationRepo.get().insertNotification(androidNotification);
-        Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
-        receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        try {
+            createGeneralMessageNotificationChannel();
+            AndroidNotification androidNotification = new AndroidNotification();
+            androidNotification.groupKey = GROUP_KEY_DECK_MESSAGE;
+            androidNotification.refId = deckId;
+            mAndroidNotificationRepo.get().insertNotification(androidNotification);
+            Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
+            receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
 
-        int intentFlag = PendingIntent.FLAG_IMMUTABLE;
-        PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
-                intentFlag);
-        Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
-        deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
-                intentFlag);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_GENERAL_MESSAGE)
-                .setSmallIcon(R.drawable.ic_notification_launcher)
-                .setColorized(true)
-                .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
-                .setContentTitle(title)
-                .setContentText(content)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(content))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setDeleteIntent(deletePendingIntent)
-                .setGroup(GROUP_KEY_DECK_MESSAGE)
-                .setAutoCancel(true);
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-        notificationManagerCompat.notify(GROUP_KEY_DECK_MESSAGE,
-                androidNotification.requestId,
-                builder.build());
-        mLock.unlock();
+            int intentFlag = PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
+                    intentFlag);
+            Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
+            deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+            PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
+                    intentFlag);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_GENERAL_MESSAGE)
+                    .setSmallIcon(R.drawable.ic_notification_launcher)
+                    .setColorized(true)
+                    .setColor(mAppContext.getResources().getColor(R.color.teal_custom, mAppContext.getTheme()))
+                    .setContentTitle(title)
+                    .setContentText(content)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(content))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentIntent(pendingIntent)
+                    .setDeleteIntent(deletePendingIntent)
+                    .setGroup(GROUP_KEY_DECK_MESSAGE)
+                    .setAutoCancel(true);
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+            notificationManagerCompat.notify(GROUP_KEY_DECK_MESSAGE,
+                    androidNotification.requestId,
+                    builder.build());
+        } finally {
+            mLock.unlock();
+        }
     }
 
     private void createGeneralMessageNotificationChannel() {
@@ -278,16 +294,19 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             mExecutorService.get().execute(() ->
             {
                 mLock.lock();
-                AndroidNotification androidNotification =
-                        mAndroidNotificationRepo.get().findByRequestId((int) serializable);
-                if (androidNotification != null) {
-                    if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
-                        NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
-                        mBotAnalytics.get().trackDeleteNotification(notificationTimer.currentCardId);
+                try {
+                    AndroidNotification androidNotification =
+                            mAndroidNotificationRepo.get().findByRequestId((int) serializable);
+                    if (androidNotification != null) {
+                        if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
+                            NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
+                            mBotAnalytics.get().trackDeleteNotification(notificationTimer.currentCardId);
+                        }
                     }
+                    mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
+                } finally {
+                    mLock.unlock();
                 }
-                mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
-                mLock.unlock();
             });
         }
     }
@@ -298,24 +317,27 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() -> {
                 mLock.lock();
-                AndroidNotification androidNotification =
-                        mAndroidNotificationRepo.get().findByRequestId((int) serializable);
-                if (androidNotification != null) {
-                    if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
-                        NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
-                        mBotAnalytics.get().trackOpenNotification(notificationTimer.currentCardId);
-                        Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                        mNotificationTimerSubject.onNext(new NotificationTimerEvent(notificationTimer, card));
-                    } else if (androidNotification.groupKey.equals(GROUP_KEY_DECK_MESSAGE)) {
-                        Deck deck = mDeckDao.get().getDeckById(androidNotification.refId);
-                        if (deck != null) {
-                            mDeckMessageSubject.onNext(deck);
+                try {
+                    AndroidNotification androidNotification =
+                            mAndroidNotificationRepo.get().findByRequestId((int) serializable);
+                    if (androidNotification != null) {
+                        if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
+                            NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
+                            mBotAnalytics.get().trackOpenNotification(notificationTimer.currentCardId);
+                            Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                            mNotificationTimerSubject.onNext(new NotificationTimerEvent(notificationTimer, card));
+                        } else if (androidNotification.groupKey.equals(GROUP_KEY_DECK_MESSAGE)) {
+                            Deck deck = mDeckDao.get().getDeckById(androidNotification.refId);
+                            if (deck != null) {
+                                mDeckMessageSubject.onNext(deck);
+                            }
                         }
+                        // delete after process notification
+                        mAndroidNotificationRepo.get().deleteNotification(androidNotification);
                     }
-                    // delete after process notification
-                    mAndroidNotificationRepo.get().deleteNotification(androidNotification);
+                } finally {
+                    mLock.unlock();
                 }
-                mLock.unlock();
             });
         }
     }
@@ -333,14 +355,17 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     @Override
     public void cancelNotificationSync(NotificationTimer notificationTimer) {
         mLock.lock();
-        AndroidNotification androidNotification = mAndroidNotificationRepo.get().findByGroupTagAndRefId(GROUP_KEY_NOTIFICATION_TIMER, notificationTimer.id);
-        if (androidNotification != null) {
-            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-            notificationManagerCompat.cancel(GROUP_KEY_NOTIFICATION_TIMER,
-                    androidNotification.requestId);
-            mAndroidNotificationRepo.get().deleteNotification(androidNotification);
+        try {
+            AndroidNotification androidNotification = mAndroidNotificationRepo.get().findByGroupTagAndRefId(GROUP_KEY_NOTIFICATION_TIMER, notificationTimer.id);
+            if (androidNotification != null) {
+                NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+                notificationManagerCompat.cancel(GROUP_KEY_NOTIFICATION_TIMER,
+                        androidNotification.requestId);
+                mAndroidNotificationRepo.get().deleteNotification(androidNotification);
+            }
+        } finally {
+            mLock.unlock();
         }
-        mLock.unlock();
     }
 
     @Override
@@ -349,16 +374,19 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() -> {
                 mLock.lock();
-                AndroidNotification androidNotification =
-                        mAndroidNotificationRepo.get().findByRequestId((int) serializable);
-                if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
-                    NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
-                    Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                    if (card.questionVoice != null) {
-                        mAudioPlayer.get().play(Uri.fromFile(mFileHelper.get().getCardQuestionVoice(card.questionVoice)));
+                try {
+                    AndroidNotification androidNotification =
+                            mAndroidNotificationRepo.get().findByRequestId((int) serializable);
+                    if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
+                        NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
+                        Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                        if (card.questionVoice != null) {
+                            mAudioPlayer.get().play(Uri.fromFile(mFileHelper.get().getCardQuestionVoice(card.questionVoice)));
+                        }
                     }
+                } finally {
+                    mLock.unlock();
                 }
-                mLock.unlock();
             });
         }
     }

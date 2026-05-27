@@ -455,10 +455,9 @@ public class FileHelper {
                  FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
                  BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)) {
                 byte[] buff = new byte[2048];
-                int b = bufferedInputStream.read(buff);
-                while (b != -1) {
-                    bufferedOutputStream.write(buff);
-                    b = bufferedInputStream.read(buff);
+                int b;
+                while ((b = bufferedInputStream.read(buff)) != -1) {
+                    bufferedOutputStream.write(buff, 0, b);
                 }
             }
         }

@@ -27,7 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,7 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -236,7 +239,7 @@ public class AnkiRoundTripTest {
      * </ul>
      */
     @Test
-    public void roundTrip_deckWithVoice_preservesAudio() throws IOException {
+    public void roundTrip_deckWithVoice_preservesAudio() throws Exception {
         AnkiExporter exporter = new AnkiExporter(testProvider);
         AnkiImporter importer = new AnkiImporter(testProvider);
 
@@ -269,6 +272,15 @@ public class AnkiRoundTripTest {
         assertEquals(originalCard.answer, importedCard.answer);
         assertNotNull(importedCard.questionVoice);
         assertNotNull(importedCard.answerVoice);
+
+        assertArrayEquals(
+                readFileBytes(testVoice1),
+                readFileBytes(fileHelper.getCardQuestionVoice(importedCard.questionVoice))
+        );
+        assertArrayEquals(
+                readFileBytes(testVoice2),
+                readFileBytes(fileHelper.getCardAnswerVoice(importedCard.answerVoice))
+        );
     }
 
     /**
@@ -284,7 +296,7 @@ public class AnkiRoundTripTest {
      * </ul>
      */
     @Test
-    public void roundTrip_completeDeck_preservesAllDataTypes() throws IOException {
+    public void roundTrip_completeDeck_preservesAllDataTypes() throws Exception {
         AnkiExporter exporter = new AnkiExporter(testProvider);
         AnkiImporter importer = new AnkiImporter(testProvider);
 
@@ -325,8 +337,24 @@ public class AnkiRoundTripTest {
         assertEquals(originalCard.ordinal, importedCard.ordinal);
         assertNotNull(importedCard.questionImage);
         assertNotNull(importedCard.questionVoice);
+        assertArrayEquals(
+                readFileBytes(testVoice),
+                readFileBytes(fileHelper.getCardQuestionVoice(importedCard.questionVoice))
+        );
         assertNull(importedCard.answerImage);
         assertNull(importedCard.answerVoice);
+    }
+
+    private byte[] readFileBytes(File file) throws Exception {
+        try (FileInputStream fis = new FileInputStream(file);
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = fis.read(buf)) != -1) {
+                baos.write(buf, 0, len);
+            }
+            return baos.toByteArray();
+        }
     }
 
     private void deleteDirectory(File directory) {

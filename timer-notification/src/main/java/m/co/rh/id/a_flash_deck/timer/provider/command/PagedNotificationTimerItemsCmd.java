@@ -28,21 +28,24 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class PagedNotificationTimerItemsCmd {
-    private Context mAppContext;
+    private static final String TAG = PagedNotificationTimerItemsCmd.class.getName();
+
     private ExecutorService mExecutorService;
     private NotificationTimerDao mNotificationTimerDao;
+    private ILogger mLogger;
     private int mLimit;
     private String mSearch;
     private final BehaviorSubject<ArrayList<NotificationTimer>> mNotificationTimerItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
     public PagedNotificationTimerItemsCmd(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mNotificationTimerDao = provider.get(NotificationTimerDao.class);
+        mLogger = provider.get(ILogger.class);
         mNotificationTimerItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
@@ -63,7 +66,7 @@ public class PagedNotificationTimerItemsCmd {
                     }
                     mNotificationTimerItemsSubject.onNext(timerArrayList);
                 } catch (Throwable throwable) {
-                    mNotificationTimerItemsSubject.onError(throwable);
+                    mLogger.e(TAG, throwable.getMessage(), throwable);
                 } finally {
                     mIsLoadingSubject.onNext(false);
                 }
@@ -96,7 +99,7 @@ public class PagedNotificationTimerItemsCmd {
                 mNotificationTimerItemsSubject.onNext(
                         loadNotificationTimerItems());
             } catch (Throwable throwable) {
-                mNotificationTimerItemsSubject.onError(throwable);
+                mLogger.e(TAG, throwable.getMessage(), throwable);
             } finally {
                 mIsLoadingSubject.onNext(false);
             }

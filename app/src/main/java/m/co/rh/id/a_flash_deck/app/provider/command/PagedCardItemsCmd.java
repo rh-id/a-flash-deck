@@ -34,12 +34,16 @@ import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 
 public class PagedCardItemsCmd implements ProviderDisposable {
+    private static final String TAG = PagedCardItemsCmd.class.getName();
+
     private final ExecutorService mExecutorService;
     private final DeckDao mDeckDao;
+    private final ILogger mLogger;
     private int mLimit;
     private Long mDeckId;
     private String mSearch;
@@ -50,6 +54,7 @@ public class PagedCardItemsCmd implements ProviderDisposable {
     public PagedCardItemsCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mDeckDao = provider.get(DeckDao.class);
+        mLogger = provider.get(ILogger.class);
         DeckChangeNotifier deckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mCardItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
@@ -98,7 +103,7 @@ public class PagedCardItemsCmd implements ProviderDisposable {
                     }
                     mCardItemsSubject.onNext(cardArrayList);
                 } catch (Throwable throwable) {
-                    mCardItemsSubject.onError(throwable);
+                    mLogger.e(TAG, throwable.getMessage(), throwable);
                 } finally {
                     mIsLoadingSubject.onNext(false);
                 }
@@ -135,7 +140,7 @@ public class PagedCardItemsCmd implements ProviderDisposable {
                 mCardItemsSubject.onNext(
                         loadCardItems());
             } catch (Throwable throwable) {
-                mCardItemsSubject.onError(throwable);
+                mLogger.e(TAG, throwable.getMessage(), throwable);
             } finally {
                 mIsLoadingSubject.onNext(false);
             }
