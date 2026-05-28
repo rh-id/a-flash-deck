@@ -72,13 +72,9 @@ import m.co.rh.id.aprovider.Provider;
 public class CardDetailPage extends StatefulView<Activity> implements RequireNavRoute, RequireComponent<Provider>, NavOnActivityResult, Toolbar.OnMenuItemClickListener, View.OnClickListener, PopupMenu.OnMenuItemClickListener {
     private static final String TAG = CardDetailPage.class.getName();
 
-    // browse and select image for question image
     private static final int BROWSE_FOR_QUESTION_IMAGE = 1;
-    // browse and select image for answer image
     private static final int BROWSE_FOR_ANSWER_IMAGE = 2;
-    // camera result for question image
     private static final int CAMERA_FOR_QUESTION_IMAGE = 3;
-    // camera result for answer image
     private static final int CAMERA_FOR_ANSWER_IMAGE = 4;
 
     @NavInject
@@ -100,6 +96,13 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
     private transient BehaviorSubject<Optional<File>> mAnswerImageFileSubject;
     private File mTempCameraFile;
     private transient BehaviorSubject<Optional<File>> mQuestionVoiceSubject;
+    private transient EditText mEditTextQuestion;
+    private transient EditText mEditTextAnswer;
+    private transient MaterialCheckBox mReversibleCheckBox;
+    private transient ViewGroup mContainerImageQuestion;
+    private transient ViewGroup mContainerImageAnswer;
+    private transient ViewGroup mVoiceQuestionContainer;
+    private transient Button mButtonSaveAndAdd;
 
     public CardDetailPage() {
         mAppBarSV = new AppBarSV(R.menu.page_card_detail);
@@ -171,8 +174,8 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             mAppBarSV.setTitle(activity.getString(R.string.title_new_card));
         }
         mAppBarSV.setMenuItemClick(this);
-        ViewGroup containerImageQuestion = rootLayout.findViewById(R.id.container_image_question);
-        ViewGroup containerImageAnswer = rootLayout.findViewById(R.id.container_image_answer);
+        mContainerImageQuestion = rootLayout.findViewById(R.id.container_image_question);
+        mContainerImageAnswer = rootLayout.findViewById(R.id.container_image_answer);
         ImageView questionImageView = rootLayout.findViewById(R.id.image_question);
         questionImageView.setOnClickListener(this);
         ImageView answerImageView = rootLayout.findViewById(R.id.image_answer);
@@ -183,6 +186,11 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         answerDeleteImageButton.setOnClickListener(this);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, rootLayout));
+        mButtonSaveAndAdd = rootLayout.findViewById(R.id.button_save_and_add);
+        mButtonSaveAndAdd.setOnClickListener(this);
+        if (isUpdate()) {
+            mButtonSaveAndAdd.setVisibility(View.GONE);
+        }
         Button questionMoreActionButton = rootLayout.findViewById(R.id.button_question_more_action);
         questionMoreActionButton.setOnClickListener(this);
         Button answerMoreActionButton = rootLayout.findViewById(R.id.button_answer_more_action);
@@ -191,18 +199,18 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         questionVoiceButton.setOnClickListener(this);
         Button questionDeleteVoiceButton = rootLayout.findViewById(R.id.button_question_delete_voice);
         questionDeleteVoiceButton.setOnClickListener(this);
-        ViewGroup voiceQuestionContainer = rootLayout.findViewById(R.id.container_voice_question);
-        EditText editTextQuestion = rootLayout.findViewById(R.id.text_input_edit_question);
-        EditText editTextAnswer = rootLayout.findViewById(R.id.text_input_edit_answer);
-        MaterialCheckBox reversibleCheckBox = rootLayout.findViewById(R.id.checkbox_reversible);
+        mVoiceQuestionContainer = rootLayout.findViewById(R.id.container_voice_question);
+        mEditTextQuestion = rootLayout.findViewById(R.id.text_input_edit_question);
+        mEditTextAnswer = rootLayout.findViewById(R.id.text_input_edit_answer);
+        mReversibleCheckBox = rootLayout.findViewById(R.id.checkbox_reversible);
         if (mCard != null) {
-            editTextQuestion.setText(mCard.question);
-            editTextAnswer.setText(mCard.answer);
-            reversibleCheckBox.setChecked(mCard.isReversibleQA);
+            mEditTextQuestion.setText(mCard.question);
+            mEditTextAnswer.setText(mCard.answer);
+            mReversibleCheckBox.setChecked(mCard.isReversibleQA);
         }
-        editTextQuestion.addTextChangedListener(mQuestionTextWatcher);
-        editTextAnswer.addTextChangedListener(mAnswerTextWatcher);
-        reversibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCard.isReversibleQA = isChecked);
+        mEditTextQuestion.addTextChangedListener(mQuestionTextWatcher);
+        mEditTextAnswer.addTextChangedListener(mAnswerTextWatcher);
+        mReversibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCard.isReversibleQA = isChecked);
         mRxDisposer
                 .add("createView_questionValid",
                         mNewCardCmd
@@ -210,9 +218,9 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(s -> {
                             if (!s.isEmpty()) {
-                                editTextQuestion.setError(s);
+                                mEditTextQuestion.setError(s);
                             } else {
-                                editTextQuestion.setError(null);
+                                mEditTextQuestion.setError(null);
                             }
                         }));
         mRxDisposer
@@ -222,9 +230,9 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(s -> {
                             if (!s.isEmpty()) {
-                                editTextAnswer.setError(s);
+                                mEditTextAnswer.setError(s);
                             } else {
-                                editTextAnswer.setError(null);
+                                mEditTextAnswer.setError(null);
                             }
                         }));
         mRxDisposer
@@ -234,10 +242,10 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                     if (fileOpt.isPresent()) {
                                         File file = fileOpt.get();
                                         questionImageView.setImageURI(Uri.fromFile(file));
-                                        containerImageQuestion.setVisibility(View.VISIBLE);
+                                        mContainerImageQuestion.setVisibility(View.VISIBLE);
                                     } else {
                                         questionImageView.setImageURI(null);
-                                        containerImageQuestion.setVisibility(View.GONE);
+                                        mContainerImageQuestion.setVisibility(View.GONE);
                                     }
                                 }));
         mRxDisposer
@@ -247,10 +255,10 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                     if (fileOpt.isPresent()) {
                                         File file = fileOpt.get();
                                         answerImageView.setImageURI(Uri.fromFile(file));
-                                        containerImageAnswer.setVisibility(View.VISIBLE);
+                                        mContainerImageAnswer.setVisibility(View.VISIBLE);
                                     } else {
                                         answerImageView.setImageURI(null);
-                                        containerImageAnswer.setVisibility(View.GONE);
+                                        mContainerImageAnswer.setVisibility(View.GONE);
                                     }
                                 }));
         mRxDisposer
@@ -258,9 +266,9 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                         mQuestionVoiceSubject.observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(fileOpt -> {
                                     if (fileOpt.isPresent()) {
-                                        voiceQuestionContainer.setVisibility(View.VISIBLE);
+                                        mVoiceQuestionContainer.setVisibility(View.VISIBLE);
                                     } else {
-                                        voiceQuestionContainer.setVisibility(View.GONE);
+                                        mVoiceQuestionContainer.setVisibility(View.GONE);
                                     }
                                 }));
         return rootLayout;
@@ -282,6 +290,13 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mNewCardCmd = null;
         mQuestionTextWatcher = null;
         mAnswerTextWatcher = null;
+        mEditTextQuestion = null;
+        mEditTextAnswer = null;
+        mReversibleCheckBox = null;
+        mContainerImageQuestion = null;
+        mContainerImageAnswer = null;
+        mVoiceQuestionContainer = null;
+        mButtonSaveAndAdd = null;
         if (mQuestionImageFileSubject != null) {
             mQuestionImageFileSubject.onComplete();
             mQuestionImageFileSubject = null;
@@ -331,12 +346,10 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             mQuestionTextWatcher = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
                 }
 
                 @Override
                 public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
                 }
 
                 @Override
@@ -351,12 +364,10 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             mAnswerTextWatcher = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
                 }
 
                 @Override
                 public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
                 }
 
                 @Override
@@ -369,64 +380,37 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         }
     }
 
+    private void resetForm() {
+        Long deckId = mCard.deckId;
+        mCard = new Card();
+        mCard.deckId = deckId;
+        mCard.question = "";
+        mCard.answer = "";
+        setQuestionImageFileSubject(null);
+        setAnswerImageFileSubject(null);
+        setQuestionVoiceSubject(null);
+        mEditTextQuestion.removeTextChangedListener(mQuestionTextWatcher);
+        mEditTextAnswer.removeTextChangedListener(mAnswerTextWatcher);
+        mEditTextQuestion.setText("");
+        mEditTextAnswer.setText("");
+        mEditTextQuestion.addTextChangedListener(mQuestionTextWatcher);
+        mEditTextAnswer.addTextChangedListener(mAnswerTextWatcher);
+        mReversibleCheckBox.setChecked(false);
+        mEditTextQuestion.post(() -> {
+            if (mEditTextQuestion != null) {
+                mEditTextQuestion.setError(null);
+            }
+            if (mEditTextAnswer != null) {
+                mEditTextAnswer.setError(null);
+            }
+        });
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         int id = menuItem.getItemId();
         if (id == R.id.menu_save) {
-            if (mNewCardCmd.valid(mCard)) {
-                Context context = mSvProvider.getContext();
-                String errorMessage;
-                String successMessage;
-                Args args = getArgs();
-                if (args != null && args.isUpdate()) {
-                    errorMessage = context.getString(R.string.error_failed_to_update_card);
-                    successMessage = context.getString(R.string.success_updating_card);
-                } else {
-                    errorMessage = context.getString(R.string.error_failed_to_add_card);
-                    successMessage = context.getString(R.string.success_adding_new_card);
-                }
-                File questionImageFile = mQuestionImageFileSubject.getValue().orElse(null);
-                File answerImageFile = mAnswerImageFileSubject.getValue().orElse(null);
-                File questionVoiceFile = mQuestionVoiceSubject.getValue().orElse(null);
-                Uri questionImageUri = questionImageFile != null ? Uri.fromFile(questionImageFile) : null;
-                Uri answerImageUri = answerImageFile != null ? Uri.fromFile(answerImageFile) : null;
-                Uri questionVoiceUri = questionVoiceFile != null ? Uri.fromFile(questionVoiceFile) : null;
-                mRxDisposer.add("onClick_newCardCmd_execute",
-                        mNewCardCmd.execute(mCard)
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((card, throwable) -> {
-                                    if (throwable != null) {
-                                        mLogger.e(TAG,
-                                                errorMessage);
-                                    } else {
-                                        mLogger.i(TAG,
-                                                successMessage);
-                                        CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                        compositeDisposable.add(
-                                                mNewCardCmd.saveFiles(card, questionImageUri,
-                                                        answerImageUri, questionVoiceUri)
-                                                        .observeOn(AndroidSchedulers.mainThread())
-                                                        .subscribe((card1, throwable1) -> {
-                                                            if (throwable1 != null) {
-                                                                String message = throwable1.getMessage();
-                                                                if (throwable1.getCause() instanceof ValidationException) {
-                                                                    message = throwable1.getCause().getMessage();
-                                                                }
-                                                                mLogger
-                                                                        .e(TAG, message, throwable1);
-                                                            } else {
-                                                                mLogger.d(TAG, "Image added/updated success for " + card1.question);
-                                                            }
-                                                            compositeDisposable.dispose();
-                                                        })
-                                        );
-                                        mNavigator.pop(Result.withCard(card));
-                                    }
-                                }));
-            } else {
-                String validationError = mNewCardCmd.getValidationError();
-                mLogger.i(TAG, validationError);
-            }
+            saveAndPop();
             return true;
         } else if (id == R.id.menu_question_add_image) {
             UiUtils.browseImage(mNavigator.getActivity(), BROWSE_FOR_QUESTION_IMAGE);
@@ -463,10 +447,115 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         return false;
     }
 
+    private void saveAndPop() {
+        if (mNewCardCmd.valid(mCard)) {
+            Context context = mSvProvider.getContext();
+            String errorMessage;
+            String successMessage;
+            Args args = getArgs();
+            if (args != null && args.isUpdate()) {
+                errorMessage = context.getString(R.string.error_failed_to_update_card);
+                successMessage = context.getString(R.string.success_updating_card);
+            } else {
+                errorMessage = context.getString(R.string.error_failed_to_add_card);
+                successMessage = context.getString(R.string.success_adding_new_card);
+            }
+            File questionImageFile = mQuestionImageFileSubject.getValue().orElse(null);
+            File answerImageFile = mAnswerImageFileSubject.getValue().orElse(null);
+            File questionVoiceFile = mQuestionVoiceSubject.getValue().orElse(null);
+            Uri questionImageUri = questionImageFile != null ? Uri.fromFile(questionImageFile) : null;
+            Uri answerImageUri = answerImageFile != null ? Uri.fromFile(answerImageFile) : null;
+            Uri questionVoiceUri = questionVoiceFile != null ? Uri.fromFile(questionVoiceFile) : null;
+            mRxDisposer.add("onClick_newCardCmd_execute",
+                    mNewCardCmd.execute(mCard)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((card, throwable) -> {
+                                if (throwable != null) {
+                                    mLogger.e(TAG,
+                                            errorMessage);
+                                } else {
+                                    mLogger.i(TAG,
+                                            successMessage);
+                                    CompositeDisposable compositeDisposable = new CompositeDisposable();
+                                    compositeDisposable.add(
+                                            mNewCardCmd.saveFiles(card, questionImageUri,
+                                                    answerImageUri, questionVoiceUri)
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe((card1, throwable1) -> {
+                                                        if (throwable1 != null) {
+                                                            String message = throwable1.getMessage();
+                                                            if (throwable1.getCause() instanceof ValidationException) {
+                                                                message = throwable1.getCause().getMessage();
+                                                            }
+                                                            mLogger
+                                                                    .e(TAG, message, throwable1);
+                                                        } else {
+                                                            mLogger.d(TAG, "Image added/updated success for " + card1.question);
+                                                        }
+                                                        compositeDisposable.dispose();
+                                                    })
+                                    );
+                                    mNavigator.pop(Result.withCard(card));
+                                }
+                            }));
+        } else {
+            String validationError = mNewCardCmd.getValidationError();
+            mLogger.i(TAG, validationError);
+        }
+    }
+
+    private void saveAndReset() {
+        if (mNewCardCmd.valid(mCard)) {
+            Context context = mSvProvider.getContext();
+            String errorMessage = context.getString(R.string.error_failed_to_add_card);
+            String successMessage = context.getString(R.string.success_adding_new_card);
+            File questionImageFile = mQuestionImageFileSubject.getValue().orElse(null);
+            File answerImageFile = mAnswerImageFileSubject.getValue().orElse(null);
+            File questionVoiceFile = mQuestionVoiceSubject.getValue().orElse(null);
+            Uri questionImageUri = questionImageFile != null ? Uri.fromFile(questionImageFile) : null;
+            Uri answerImageUri = answerImageFile != null ? Uri.fromFile(answerImageFile) : null;
+            Uri questionVoiceUri = questionVoiceFile != null ? Uri.fromFile(questionVoiceFile) : null;
+            mRxDisposer.add("onClick_newCardCmd_executeAndReset",
+                    mNewCardCmd.execute(mCard)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((card, throwable) -> {
+                                if (throwable != null) {
+                                    mLogger.e(TAG, errorMessage, throwable);
+                                } else {
+                                    mLogger.i(TAG, successMessage);
+                                    CompositeDisposable compositeDisposable = new CompositeDisposable();
+                                    compositeDisposable.add(
+                                            mNewCardCmd.saveFiles(card, questionImageUri,
+                                                    answerImageUri, questionVoiceUri)
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe((card1, throwable1) -> {
+                                                        if (throwable1 != null) {
+                                                            String message = throwable1.getMessage();
+                                                            if (throwable1.getCause() instanceof ValidationException) {
+                                                                message = throwable1.getCause().getMessage();
+                                                            }
+                                                            mLogger.e(TAG, message, throwable1);
+                                                        } else {
+                                                            mLogger.d(TAG, "Image added/updated success for " + card1.question);
+                                                        }
+                                                        compositeDisposable.dispose();
+                                                    })
+                                    );
+                                    resetForm();
+                                }
+                            }));
+        } else {
+            String validationError = mNewCardCmd.getValidationError();
+            mLogger.i(TAG, validationError);
+        }
+    }
+
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.button_question_more_action) {
+        if (id == R.id.button_save_and_add) {
+            saveAndReset();
+        } else if (id == R.id.button_question_more_action) {
             PopupMenu popup = new PopupMenu(view.getContext(), view);
             popup.getMenuInflater().inflate(R.menu.page_card_detail_question, popup.getMenu());
             popup.setOnMenuItemClickListener(this);
