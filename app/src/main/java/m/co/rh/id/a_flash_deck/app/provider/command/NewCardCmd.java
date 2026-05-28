@@ -99,7 +99,7 @@ public class NewCardCmd {
                 .subscribeOn(Schedulers.from(mExecutorService));
     }
 
-    public Single<Card> saveFiles(Card card, Uri questionImage, Uri answerImage, Uri questionVoice) {
+    public Single<Card> saveFiles(Card card, Uri questionImage, Uri answerImage, Uri questionVoice, Uri answerVoice) {
         return Single.fromCallable(() -> {
                     if (questionImage != null) {
                         try {
@@ -137,6 +137,17 @@ public class NewCardCmd {
                         }
                     } else {
                         card.questionVoice = null;
+                    }
+                    if (answerVoice != null) {
+                        try {
+                            File file = mFileHelper.createCardAnswerVoice(answerVoice);
+                            card.answerVoice = file.getName();
+                        } catch (Exception e) {
+                            mLogger.d(TAG, e.getMessage(), e);
+                            throw new ValidationException(mAppContext.getString(R.string.error_failed_to_save_answer_voice));
+                        }
+                    } else {
+                        card.answerVoice = null;
                     }
                     mDeckDao.updateCard(card);
                     mDeckChangeNotifier.cardUpdated(card);

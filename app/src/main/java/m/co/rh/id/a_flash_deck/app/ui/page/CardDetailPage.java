@@ -96,12 +96,14 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
     private transient BehaviorSubject<Optional<File>> mAnswerImageFileSubject;
     private File mTempCameraFile;
     private transient BehaviorSubject<Optional<File>> mQuestionVoiceSubject;
+    private transient BehaviorSubject<Optional<File>> mAnswerVoiceSubject;
     private transient EditText mEditTextQuestion;
     private transient EditText mEditTextAnswer;
     private transient MaterialCheckBox mReversibleCheckBox;
     private transient ViewGroup mContainerImageQuestion;
     private transient ViewGroup mContainerImageAnswer;
     private transient ViewGroup mVoiceQuestionContainer;
+    private transient ViewGroup mVoiceAnswerContainer;
     private transient Button mButtonSaveAndAdd;
 
     public CardDetailPage() {
@@ -160,6 +162,13 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                 setQuestionVoiceSubject(null);
             }
         }
+        if (mCard.answerVoice != null && !mCard.answerVoice.isEmpty()) {
+            setAnswerVoiceSubject(mFileHelper.getCardAnswerVoice(mCard.answerVoice));
+        } else {
+            if (mAnswerVoiceSubject == null) {
+                setAnswerVoiceSubject(null);
+            }
+        }
         initTextWatcher();
     }
 
@@ -200,6 +209,11 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         Button questionDeleteVoiceButton = rootLayout.findViewById(R.id.button_question_delete_voice);
         questionDeleteVoiceButton.setOnClickListener(this);
         mVoiceQuestionContainer = rootLayout.findViewById(R.id.container_voice_question);
+        Button answerVoiceButton = rootLayout.findViewById(R.id.button_answer_voice);
+        answerVoiceButton.setOnClickListener(this);
+        Button answerDeleteVoiceButton = rootLayout.findViewById(R.id.button_answer_delete_voice);
+        answerDeleteVoiceButton.setOnClickListener(this);
+        mVoiceAnswerContainer = rootLayout.findViewById(R.id.container_voice_answer);
         mEditTextQuestion = rootLayout.findViewById(R.id.text_input_edit_question);
         mEditTextAnswer = rootLayout.findViewById(R.id.text_input_edit_answer);
         mReversibleCheckBox = rootLayout.findViewById(R.id.checkbox_reversible);
@@ -271,6 +285,16 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                         mVoiceQuestionContainer.setVisibility(View.GONE);
                                     }
                                 }));
+        mRxDisposer
+                .add("createView_answerVoiceChanged",
+                        mAnswerVoiceSubject.observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(fileOpt -> {
+                                    if (fileOpt.isPresent()) {
+                                        mVoiceAnswerContainer.setVisibility(View.VISIBLE);
+                                    } else {
+                                        mVoiceAnswerContainer.setVisibility(View.GONE);
+                                    }
+                                }));
         return rootLayout;
     }
 
@@ -296,6 +320,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mContainerImageQuestion = null;
         mContainerImageAnswer = null;
         mVoiceQuestionContainer = null;
+        mVoiceAnswerContainer = null;
         mButtonSaveAndAdd = null;
         if (mQuestionImageFileSubject != null) {
             mQuestionImageFileSubject.onComplete();
@@ -304,6 +329,14 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         if (mAnswerImageFileSubject != null) {
             mAnswerImageFileSubject.onComplete();
             mAnswerImageFileSubject = null;
+        }
+        if (mQuestionVoiceSubject != null) {
+            mQuestionVoiceSubject.onComplete();
+            mQuestionVoiceSubject = null;
+        }
+        if (mAnswerVoiceSubject != null) {
+            mAnswerVoiceSubject.onComplete();
+            mAnswerVoiceSubject = null;
         }
         mNavigator = null;
     }
@@ -329,6 +362,14 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             mQuestionVoiceSubject = BehaviorSubject.createDefault(Optional.ofNullable(file));
         } else {
             mQuestionVoiceSubject.onNext(Optional.ofNullable(file));
+        }
+    }
+
+    private void setAnswerVoiceSubject(File file) {
+        if (mAnswerVoiceSubject == null) {
+            mAnswerVoiceSubject = BehaviorSubject.createDefault(Optional.ofNullable(file));
+        } else {
+            mAnswerVoiceSubject.onNext(Optional.ofNullable(file));
         }
     }
 
@@ -389,6 +430,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         setQuestionImageFileSubject(null);
         setAnswerImageFileSubject(null);
         setQuestionVoiceSubject(null);
+        setAnswerVoiceSubject(null);
         mEditTextQuestion.removeTextChangedListener(mQuestionTextWatcher);
         mEditTextAnswer.removeTextChangedListener(mAnswerTextWatcher);
         mEditTextQuestion.setText("");
@@ -443,6 +485,17 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             } catch (Exception e) {
                 mLogger.e(TAG, e.getMessage(), e);
             }
+        } else if (id == R.id.menu_answer_add_voice) {
+            mNavigator.push(Routes.COMMON_VOICERECORD, (navigator, navRoute, activity, currentView) -> {
+                Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                File resultFile = provider.get(CommonNavConfig.class).result_commonVoiceRecord_file(navRoute.getRouteResult());
+                if (resultFile != null) {
+                    StatefulView sv = navigator.getCurrentRoute().getStatefulView();
+                    if (sv instanceof CardDetailPage) {
+                        ((CardDetailPage) sv).setAnswerVoiceSubject(resultFile);
+                    }
+                }
+            });
         }
         return false;
     }
@@ -463,9 +516,11 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             File questionImageFile = mQuestionImageFileSubject.getValue().orElse(null);
             File answerImageFile = mAnswerImageFileSubject.getValue().orElse(null);
             File questionVoiceFile = mQuestionVoiceSubject.getValue().orElse(null);
+            File answerVoiceFile = mAnswerVoiceSubject.getValue().orElse(null);
             Uri questionImageUri = questionImageFile != null ? Uri.fromFile(questionImageFile) : null;
             Uri answerImageUri = answerImageFile != null ? Uri.fromFile(answerImageFile) : null;
             Uri questionVoiceUri = questionVoiceFile != null ? Uri.fromFile(questionVoiceFile) : null;
+            Uri answerVoiceUri = answerVoiceFile != null ? Uri.fromFile(answerVoiceFile) : null;
             mRxDisposer.add("onClick_newCardCmd_execute",
                     mNewCardCmd.execute(mCard)
                             .observeOn(AndroidSchedulers.mainThread())
@@ -479,7 +534,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                     CompositeDisposable compositeDisposable = new CompositeDisposable();
                                     compositeDisposable.add(
                                             mNewCardCmd.saveFiles(card, questionImageUri,
-                                                    answerImageUri, questionVoiceUri)
+                                                    answerImageUri, questionVoiceUri, answerVoiceUri)
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe((card1, throwable1) -> {
                                                         if (throwable1 != null) {
@@ -512,9 +567,11 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             File questionImageFile = mQuestionImageFileSubject.getValue().orElse(null);
             File answerImageFile = mAnswerImageFileSubject.getValue().orElse(null);
             File questionVoiceFile = mQuestionVoiceSubject.getValue().orElse(null);
+            File answerVoiceFile = mAnswerVoiceSubject.getValue().orElse(null);
             Uri questionImageUri = questionImageFile != null ? Uri.fromFile(questionImageFile) : null;
             Uri answerImageUri = answerImageFile != null ? Uri.fromFile(answerImageFile) : null;
             Uri questionVoiceUri = questionVoiceFile != null ? Uri.fromFile(questionVoiceFile) : null;
+            Uri answerVoiceUri = answerVoiceFile != null ? Uri.fromFile(answerVoiceFile) : null;
             mRxDisposer.add("onClick_newCardCmd_executeAndReset",
                     mNewCardCmd.execute(mCard)
                             .observeOn(AndroidSchedulers.mainThread())
@@ -526,7 +583,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                     CompositeDisposable compositeDisposable = new CompositeDisposable();
                                     compositeDisposable.add(
                                             mNewCardCmd.saveFiles(card, questionImageUri,
-                                                    answerImageUri, questionVoiceUri)
+                                                    answerImageUri, questionVoiceUri, answerVoiceUri)
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe((card1, throwable1) -> {
                                                         if (throwable1 != null) {
@@ -587,6 +644,10 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             mAudioPlayer.play(Uri.fromFile(mQuestionVoiceSubject.getValue().get()));
         } else if (id == R.id.button_question_delete_voice) {
             setQuestionVoiceSubject(null);
+        } else if (id == R.id.button_answer_voice) {
+            mAudioPlayer.play(Uri.fromFile(mAnswerVoiceSubject.getValue().get()));
+        } else if (id == R.id.button_answer_delete_voice) {
+            setAnswerVoiceSubject(null);
         }
     }
 

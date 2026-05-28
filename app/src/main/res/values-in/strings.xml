@@ -103,6 +103,7 @@
     <string name="title_add_voice">Tambah Suara</string>
     <string name="play_voice">Mainkan suara</string>
     <string name="error_failed_to_save_question_voice">Gagal menyimpan suara untuk pertanyaan</string>
+    <string name="error_failed_to_save_answer_voice">Gagal menyimpan suara jawaban</string>
     <string name="create_shuffle_shortcut">Buat pintasan untuk kocokan</string>
     <string name="deck_was_deleted">Dek %s sudah dihapus</string>
     <string name="buy_developer_a_coffee">Traktir developer secangkir kopi</string>

@@ -66,11 +66,17 @@ public class CopyCardCmd {
                     } else {
                         questionVoiceUri = null;
                     }
+                    Uri answerVoiceUri;
+                    if (card.answerVoice != null) {
+                        answerVoiceUri = Uri.fromFile(mFileHelper.getCardAnswerVoice(card.answerVoice));
+                    } else {
+                        answerVoiceUri = null;
+                    }
                     mDeckDao.copyCardToDeck(card, copyCardEvent.getDestinationDeck());
-                    return new CopyCardData(copyCardEvent, card, questionImageUri, answerImageUri, questionVoiceUri);
+                    return new CopyCardData(copyCardEvent, card, questionImageUri, answerImageUri, questionVoiceUri, answerVoiceUri);
                 })
                 .subscribeOn(Schedulers.from(mExecutorService))
-                .flatMap(data -> mNewCardCmd.saveFiles(data.card, data.questionImageUri, data.answerImageUri, data.questionVoiceUri)
+                .flatMap(data -> mNewCardCmd.saveFiles(data.card, data.questionImageUri, data.answerImageUri, data.questionVoiceUri, data.answerVoiceUri)
                         .map(card -> {
                             mDeckChangeNotifier.cardAdded(card);
                             return data.copyCardEvent;
@@ -83,13 +89,15 @@ public class CopyCardCmd {
         final Uri questionImageUri;
         final Uri answerImageUri;
         final Uri questionVoiceUri;
+        final Uri answerVoiceUri;
 
-        CopyCardData(CopyCardEvent copyCardEvent, Card card, Uri questionImageUri, Uri answerImageUri, Uri questionVoiceUri) {
+        CopyCardData(CopyCardEvent copyCardEvent, Card card, Uri questionImageUri, Uri answerImageUri, Uri questionVoiceUri, Uri answerVoiceUri) {
             this.copyCardEvent = copyCardEvent;
             this.card = card;
             this.questionImageUri = questionImageUri;
             this.answerImageUri = answerImageUri;
             this.questionVoiceUri = questionVoiceUri;
+            this.answerVoiceUri = answerVoiceUri;
         }
     }
 }
