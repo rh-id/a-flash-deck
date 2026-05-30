@@ -281,6 +281,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                                                             deleteContext.getString(
                                                                     R.string.success_deleting_deck, deck.name));
                                         }
+                                        compositeDisposable.dispose();
                                     })
                             );
                         }

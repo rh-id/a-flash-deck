@@ -20,12 +20,13 @@ package m.co.rh.id.a_flash_deck.ai.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 public class ApiKeyChangeNotifier {
-    private PublishSubject<Boolean> mApiKeyChangeSubject;
+    private Subject<Boolean> mApiKeyChangeSubject;
 
     public ApiKeyChangeNotifier() {
-        mApiKeyChangeSubject = PublishSubject.create();
+        mApiKeyChangeSubject = PublishSubject.<Boolean>create().toSerialized();
     }
 
     public void onApiKeyChanged(boolean hasApiKey) {

@@ -29,9 +29,9 @@ import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
@@ -69,8 +69,11 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     private transient RxDisposer mRxDisposer;
     private transient DeckQueryCmd mDeckQueryCmd;
 
-    private Card mCard;
-    private transient BehaviorSubject<Card> mCardSubject;
+    private SerialBehaviorSubject<Card> mCardSubject;
+
+    public CardItemSV() {
+        mCardSubject = new SerialBehaviorSubject<>();
+    }
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -86,7 +89,6 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mDeckQueryCmd = mSvProvider.get(DeckQueryCmd.class);
-        initSubject();
     }
 
     @Override
@@ -106,7 +108,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
         mRxDisposer.add("createView_onChangeCard",
-                mCardSubject.observeOn(AndroidSchedulers.mainThread())
+                mCardSubject.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
                             Context context = mSvProvider.getContext();
                             textQuestion.setText(context.getString(R.string.question_desc_value, card.question));
@@ -118,55 +120,36 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                                 imageQuestion.setImageURI(null);
                                 imageQuestion.setVisibility(View.GONE);
                             }
-                            mRxDisposer.add("createView_onChangeCard_getDeckById",
-                                    mDeckQueryCmd.getDeckById(card.deckId)
-                                            .observeOn(AndroidSchedulers.mainThread())
-                                            .subscribe((deck, throwable) -> {
-                                                if (throwable != null) {
-                                                    mLogger.e(TAG, context.getString(R.string.error_loading_deck), throwable);
-                                                } else {
-                                                    textDeckName.setText(deck.name);
-                                                }
-                                            })
-                            );
                         }));
+        mRxDisposer.add("createView_onChangeCard_getDeckById",
+                mCardSubject.getSubject().switchMapSingle(card ->
+                        mDeckQueryCmd.getDeckById(card.deckId)
+                                .observeOn(AndroidSchedulers.mainThread())
+                ).subscribe(deck -> {
+                    textDeckName.setText(deck.name);
+                }, throwable -> {
+                    mLogger.e(TAG, mSvProvider.getContext().getString(R.string.error_loading_deck), throwable);
+                }));
         mRxDisposer.add("createView_onMoveCard",
                 mDeckChangeNotifier
                         .getMovedCardFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(moveCardEvent -> {
+                        .filter(moveCardEvent -> moveCardEvent.getMovedCard().id.equals(getCard().id))
+                        .switchMapSingle(moveCardEvent ->
+                                mDeckQueryCmd
+                                        .getDeckById(moveCardEvent.getDestinationDeck().id)
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .map(deck -> new Object[]{moveCardEvent, deck})
+                        ).subscribe(objects -> {
+                            MoveCardEvent moveCardEvent = (MoveCardEvent) objects[0];
+                            Deck deck = (Deck) objects[1];
                             Context context = mSvProvider.getContext();
-                            Card card = moveCardEvent.getMovedCard();
-                            if (card.id.equals(mCard.id)) {
-                                textQuestion.setText(context.getString(R.string.question_desc_value, card.question));
-                                textAnswer.setText(context.getString(R.string.answer_desc_value, card.answer));
-                                mRxDisposer.add("createView_onMoveCard_getDeckById",
-                                        mDeckQueryCmd
-                                                .getDeckById(moveCardEvent.getDestinationDeck().id)
-                                                .observeOn(AndroidSchedulers.mainThread())
-                                                .subscribe((deck, throwable) -> {
-                                                    if (throwable != null) {
-                                                        mLogger.e(TAG, context.getString(R.string.error_loading_deck), throwable);
-                                                    } else {
-                                                        textDeckName.setText(deck.name);
-                                                    }
-                                                })
-                                );
-                            }
+                            textQuestion.setText(context.getString(R.string.question_desc_value, moveCardEvent.getMovedCard().question));
+                            textAnswer.setText(context.getString(R.string.answer_desc_value, moveCardEvent.getMovedCard().answer));
+                            textDeckName.setText(deck.name);
+                        }, throwable -> {
+                            mLogger.e(TAG, mSvProvider.getContext().getString(R.string.error_loading_deck), throwable);
                         }));
         return rootLayout;
-    }
-
-    private void initSubject() {
-        if (mCardSubject == null) {
-            if (mCard != null) {
-                mCardSubject = BehaviorSubject.createDefault(mCard);
-            } else {
-                mCardSubject = BehaviorSubject.create();
-            }
-        } else {
-            mCardSubject.onNext(mCard);
-        }
     }
 
     @Override
@@ -175,28 +158,25 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         if (mSvProvider != null) {
             mSvProvider.dispose();
         }
-        if (mCardSubject != null) {
-            mCardSubject.onComplete();
-            mCardSubject = null;
-        }
-        mCard = null;
         mNavigator = null;
     }
 
     public void setCard(Card card) {
-        mCard = card;
-        initSubject();
+        if (card != null) {
+            mCardSubject.onNext(card);
+        }
     }
 
     public Card getCard() {
-        return mCard;
+        return mCardSubject.getValue();
     }
 
     @Override
     public void onClick(View view) {
+        Card card = getCard();
         int id = view.getId();
         if (id == R.id.button_edit) {
-            mNavigator.push(Routes.CARD_DETAIL_PAGE, CardDetailPage.Args.forUpdate(mCard.clone()),
+            mNavigator.push(Routes.CARD_DETAIL_PAGE, CardDetailPage.Args.forUpdate(card.clone()),
                     (navigator, navRoute, activity, currentView) -> {
                         CardDetailPage.Result result = CardDetailPage.Result.of(navRoute.getRouteResult());
                         if (result != null) {
@@ -206,7 +186,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         } else if (id == R.id.button_delete) {
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_card, mCard.question);
+            String content = context.getString(R.string.confirm_delete_card, card.question);
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
                     mCommonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
@@ -214,9 +194,9 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                         if (provider.get(CommonNavConfig.class).result_commonBooleanDialog(navRoute)) {
                             CompositeDisposable compositeDisposable = new CompositeDisposable();
                             compositeDisposable.add(provider.get(DeleteCardCmd.class)
-                                    .execute(mCard)
+                                    .execute(card)
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((card, throwable) -> {
+                                    .subscribe((deletedCard, throwable) -> {
                                         Context deleteContext = provider.getContext();
                                         if (throwable != null) {
                                             provider.get(ILogger.class)
@@ -228,7 +208,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                                             provider.get(ILogger.class)
                                                     .i(TAG,
                                                             deleteContext.getString(
-                                                                    R.string.success_deleting_card, card.question));
+                                                                    R.string.success_deleting_card, deletedCard.question));
                                         }
                                         compositeDisposable.dispose();
                                     })
@@ -239,12 +219,12 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
             PopupMenu popup = new PopupMenu(view.getContext(), view);
             popup.getMenuInflater().inflate(R.menu.item_card, popup.getMenu());
             popup.setOnMenuItemClickListener(this);
-            popup.show();//showing popup menu
+            popup.show();
         } else if (id == R.id.image_question) {
-            if (mCard != null && mCard.questionImage != null) {
+            if (card != null && card.questionImage != null) {
                 mNavigator.push(Routes.COMMON_IMAGEVIEW,
                         mCommonNavConfig.args_commonImageView(
-                                mFileHelper.getCardQuestionImage(mCard.questionImage)
+                                mFileHelper.getCardQuestionImage(card.questionImage)
                         ));
             }
         }
@@ -254,10 +234,10 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     public boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_move_card) {
-            moveCardAction(mNavigator, mCard.clone());
+            moveCardAction(mNavigator, getCard().clone());
             return true;
         } else if (id == R.id.menu_copy_card) {
-            copyCardAction(mNavigator, mCard.clone());
+            copyCardAction(mNavigator, getCard().clone());
             return true;
         }
         return false;

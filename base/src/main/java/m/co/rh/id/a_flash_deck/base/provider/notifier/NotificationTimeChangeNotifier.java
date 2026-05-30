@@ -24,12 +24,13 @@ import java.util.Map;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 public class NotificationTimeChangeNotifier {
-    private PublishSubject<Map.Entry<Date, Date>> mStartEndDateSubject;
+    private Subject<Map.Entry<Date, Date>> mStartEndDateSubject;
 
     public NotificationTimeChangeNotifier() {
-        mStartEndDateSubject = PublishSubject.create();
+        mStartEndDateSubject = PublishSubject.<Map.Entry<Date, Date>>create().toSerialized();
     }
 
     public void onDateChanged(Date startDate, Date endDate) {

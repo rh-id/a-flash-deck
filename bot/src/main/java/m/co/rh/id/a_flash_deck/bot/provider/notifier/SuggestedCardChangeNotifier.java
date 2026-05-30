@@ -30,6 +30,7 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 public class SuggestedCardChangeNotifier {
+    private final Object mLock = new Object();
     private ExecutorService mExecutorService;
     private ProviderValue<SuggestedCardDao> mSuggestedCardDao;
     private BehaviorSubject<List<SuggestedCard>> mSuggestedCardSubject;
@@ -48,7 +49,9 @@ public class SuggestedCardChangeNotifier {
     public void reloadSuggestedCard() {
         mExecutorService.execute(() -> {
             List<SuggestedCard> suggestedCardList = mSuggestedCardDao.get().findAllSuggestedCards();
-            mSuggestedCardSubject.onNext(suggestedCardList);
+            synchronized (mLock) {
+                mSuggestedCardSubject.onNext(suggestedCardList);
+            }
         });
     }
 
@@ -57,6 +60,8 @@ public class SuggestedCardChangeNotifier {
     }
 
     public List<SuggestedCard> getSuggestedCard() {
-        return mSuggestedCardSubject.getValue();
+        synchronized (mLock) {
+            return mSuggestedCardSubject.getValue();
+        }
     }
 }

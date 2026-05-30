@@ -25,11 +25,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.Serializable;
+import java.util.List;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
+import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
@@ -84,33 +86,35 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements R
                 .add("clickView_onTimerNotificationChanged",
                         mNotificationTimerSubject
                                 .getSubject()
+                                .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(timerNotification -> {
                                     Context svContext = mSvProvider.getContext();
                                     textPeriodMin.setText(svContext.getString(R.string.notification_period_every_x_minutes, timerNotification.periodInMinutes));
                                     textName.setText(timerNotification.name);
-                                    mRxDisposer.add("clickView_onTimerNotificationChanged_getSelectedDecks"
-                                            , mNotificationTimerQueryCmd.getSelectedDecks(timerNotification)
-                                                    .observeOn(AndroidSchedulers.mainThread())
-                                                    .subscribe((decks, throwable) -> {
-                                                        if (throwable != null) {
-                                                            mLogger
-                                                                    .e(TAG, svContext.getString(R.string.error_loading_decks)
-                                                                            , throwable);
-                                                        } else {
-                                                            StringBuilder stringBuilder = new StringBuilder();
-                                                            stringBuilder.append("[");
-                                                            int size = decks.size();
-                                                            for (int i = 0; i < size; i++) {
-                                                                stringBuilder.append(decks.get(i).name);
-                                                                if (i < size - 1) {
-                                                                    stringBuilder.append(", ");
-                                                                }
-                                                            }
-                                                            stringBuilder.append("]");
-                                                            textSelectedDecks.setText(stringBuilder.toString());
-                                                        }
-                                                    }));
                                 }));
+        mRxDisposer.add("clickView_onTimerNotificationChanged_getSelectedDecks",
+                mNotificationTimerSubject.getSubject()
+                        .switchMapSingle(timerNotification ->
+                                mNotificationTimerQueryCmd.getSelectedDecks(timerNotification)
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .map(decks -> new Object[]{timerNotification, decks})
+                        ).subscribe(objects -> {
+                            @SuppressWarnings("unchecked")
+                            List<Deck> decks = (List<Deck>) objects[1];
+                            StringBuilder stringBuilder = new StringBuilder();
+                            stringBuilder.append("[");
+                            int size = decks.size();
+                            for (int i = 0; i < size; i++) {
+                                stringBuilder.append(decks.get(i).name);
+                                if (i < size - 1) {
+                                    stringBuilder.append(", ");
+                                }
+                            }
+                            stringBuilder.append("]");
+                            textSelectedDecks.setText(stringBuilder.toString());
+                        }, throwable -> {
+                            mLogger.e(TAG, mSvProvider.getContext().getString(R.string.error_loading_decks), throwable);
+                        }));
         return rootLayout;
     }
 
@@ -154,6 +158,7 @@ public class NotificationTimerItemSV extends StatefulView<Activity> implements R
                                                                     deleteContext.getString(
                                                                             R.string.success_deleting_notification_timer, timerNotification.name));
                                                 }
+                                                compositeDisposable.dispose();
                                             })
                                     );
                                 }

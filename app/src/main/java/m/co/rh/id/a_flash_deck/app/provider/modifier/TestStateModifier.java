@@ -53,6 +53,7 @@ import m.co.rh.id.aprovider.ProviderValue;
 
 public class TestStateModifier {
     private static final String TAG = TestStateModifier.class.getName();
+    private final Object mLock = new Object();
 
     protected Context mAppContext;
     private ProviderValue<ExecutorService> mExecutorService;
@@ -72,34 +73,43 @@ public class TestStateModifier {
 
     public Single<TestState> previousCard(TestState testState) {
         return Single.fromCallable(() -> {
-            Test test = mTestDao.get().getTestById(testState.getTestId());
-            testState.previousCard();
-            serializeTest(testState, test);
-            mTestChangeNotifier.get().testStateChange(testState);
-            return testState;
+            synchronized (mLock) {
+                Test test = mTestDao.get().getTestById(testState.getTestId());
+                testState.previousCard();
+                serializeTest(testState, test);
+                mTestChangeNotifier.get().testStateChange(testState);
+                return testState;
+            }
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public Single<TestState> nextCard(TestState testState) {
         return Single.fromCallable(() -> {
-            Test test = mTestDao.get().getTestById(testState.getTestId());
-            testState.nextCard();
-            serializeTest(testState, test);
-            mTestChangeNotifier.get().testStateChange(testState);
-            return testState;
+            synchronized (mLock) {
+                Test test = mTestDao.get().getTestById(testState.getTestId());
+                testState.nextCard();
+                serializeTest(testState, test);
+                mTestChangeNotifier.get().testStateChange(testState);
+                return testState;
+            }
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public Single<TestState> stopActiveTest() {
         return Single.fromCallable(() -> {
-            TestState testState = getActiveTestSync();
-            return stopTestSync(testState);
+            synchronized (mLock) {
+                TestState testState = getActiveTestSync();
+                return stopTestSync(testState);
+            }
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public Single<TestState> stopTest(TestState testState) {
-        return Single.fromCallable(() ->
-                stopTestSync(testState)).subscribeOn(Schedulers.from(mExecutorService.get()));
+        return Single.fromCallable(() -> {
+            synchronized (mLock) {
+                return stopTestSync(testState);
+            }
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     private TestState stopTestSync(TestState testState) {
@@ -139,10 +149,12 @@ public class TestStateModifier {
 
     public Single<TestState> startTest(List<Deck> deckList) {
         return Single.fromCallable(() -> {
-                    if (deckList != null && !deckList.isEmpty()) {
-                        return prepareTest(mDeckDao.get().getCardsByDecks(deckList));
-                    } else {
-                        throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
+                    synchronized (mLock) {
+                        if (deckList != null && !deckList.isEmpty()) {
+                            return prepareTest(mDeckDao.get().getCardsByDecks(deckList));
+                        } else {
+                            throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
+                        }
                     }
                 })
                 .subscribeOn(Schedulers.from(mExecutorService.get()));
@@ -150,10 +162,12 @@ public class TestStateModifier {
 
     public Single<TestState> startTestWithCardIds(List<Long> cardIds) {
         return Single.fromCallable(() -> {
-                    if (cardIds != null && !cardIds.isEmpty()) {
-                        return prepareTest(mDeckDao.get().findCardsByCardIds(cardIds));
-                    } else {
-                        throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
+                    synchronized (mLock) {
+                        if (cardIds != null && !cardIds.isEmpty()) {
+                            return prepareTest(mDeckDao.get().findCardsByCardIds(cardIds));
+                        } else {
+                            throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
+                        }
                     }
                 })
                 .subscribeOn(Schedulers.from(mExecutorService.get()));

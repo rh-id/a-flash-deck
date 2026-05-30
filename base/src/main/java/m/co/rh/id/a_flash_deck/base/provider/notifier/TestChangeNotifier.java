@@ -20,18 +20,19 @@ package m.co.rh.id.a_flash_deck.base.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_flash_deck.base.model.TestEvent;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 
 public class TestChangeNotifier {
-    private PublishSubject<TestEvent> mStartTestSubject;
-    private PublishSubject<TestEvent> mStopTestSubject;
-    private PublishSubject<TestState> mTestStateChangeSubject;
+    private Subject<TestEvent> mStartTestSubject;
+    private Subject<TestEvent> mStopTestSubject;
+    private Subject<TestState> mTestStateChangeSubject;
 
     public TestChangeNotifier() {
-        mStartTestSubject = PublishSubject.create();
-        mStopTestSubject = PublishSubject.create();
-        mTestStateChangeSubject = PublishSubject.create();
+        mStartTestSubject = PublishSubject.<TestEvent>create().toSerialized();
+        mStopTestSubject = PublishSubject.<TestEvent>create().toSerialized();
+        mTestStateChangeSubject = PublishSubject.<TestState>create().toSerialized();
     }
 
     public void startTest(TestEvent testEvent) {

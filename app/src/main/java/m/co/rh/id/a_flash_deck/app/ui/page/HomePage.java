@@ -543,6 +543,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                     } else {
                                         navigator.push(Routes.TEST);
                                     }
+                                    compositeDisposable.dispose();
                                 })
                         );
                     }

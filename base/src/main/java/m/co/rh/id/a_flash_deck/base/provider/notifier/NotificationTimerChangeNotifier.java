@@ -20,17 +20,18 @@ package m.co.rh.id.a_flash_deck.base.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 
 public class NotificationTimerChangeNotifier {
-    private PublishSubject<NotificationTimer> mAddedNotificationTimerSubject;
-    private PublishSubject<NotificationTimer> mUpdatedNotificationTimerSubject;
-    private PublishSubject<NotificationTimer> mDeletedNotificationTimerSubject;
+    private Subject<NotificationTimer> mAddedNotificationTimerSubject;
+    private Subject<NotificationTimer> mUpdatedNotificationTimerSubject;
+    private Subject<NotificationTimer> mDeletedNotificationTimerSubject;
 
     public NotificationTimerChangeNotifier() {
-        mAddedNotificationTimerSubject = PublishSubject.create();
-        mUpdatedNotificationTimerSubject = PublishSubject.create();
-        mDeletedNotificationTimerSubject = PublishSubject.create();
+        mAddedNotificationTimerSubject = PublishSubject.<NotificationTimer>create().toSerialized();
+        mUpdatedNotificationTimerSubject = PublishSubject.<NotificationTimer>create().toSerialized();
+        mDeletedNotificationTimerSubject = PublishSubject.<NotificationTimer>create().toSerialized();
     }
 
     public void timerAdded(NotificationTimer notificationTimer) {

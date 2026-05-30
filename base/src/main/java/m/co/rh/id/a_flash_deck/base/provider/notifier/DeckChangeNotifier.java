@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.base.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
@@ -28,22 +29,22 @@ import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
  * A hub to notify changes in deck records
  */
 public class DeckChangeNotifier {
-    private PublishSubject<Deck> mAddedDeckSubject;
-    private PublishSubject<Deck> mUpdatedDeckSubject;
-    private PublishSubject<Deck> mDeletedDeckSubject;
-    private PublishSubject<Card> mAddedCardSubject;
-    private PublishSubject<Card> mUpdatedCardSubject;
-    private PublishSubject<Card> mDeletedCardSubject;
-    private PublishSubject<MoveCardEvent> mMovedCardSubject;
+    private Subject<Deck> mAddedDeckSubject;
+    private Subject<Deck> mUpdatedDeckSubject;
+    private Subject<Deck> mDeletedDeckSubject;
+    private Subject<Card> mAddedCardSubject;
+    private Subject<Card> mUpdatedCardSubject;
+    private Subject<Card> mDeletedCardSubject;
+    private Subject<MoveCardEvent> mMovedCardSubject;
 
     public DeckChangeNotifier() {
-        mAddedDeckSubject = PublishSubject.create();
-        mUpdatedDeckSubject = PublishSubject.create();
-        mDeletedDeckSubject = PublishSubject.create();
-        mAddedCardSubject = PublishSubject.create();
-        mUpdatedCardSubject = PublishSubject.create();
-        mDeletedCardSubject = PublishSubject.create();
-        mMovedCardSubject = PublishSubject.create();
+        mAddedDeckSubject = PublishSubject.<Deck>create().toSerialized();
+        mUpdatedDeckSubject = PublishSubject.<Deck>create().toSerialized();
+        mDeletedDeckSubject = PublishSubject.<Deck>create().toSerialized();
+        mAddedCardSubject = PublishSubject.<Card>create().toSerialized();
+        mUpdatedCardSubject = PublishSubject.<Card>create().toSerialized();
+        mDeletedCardSubject = PublishSubject.<Card>create().toSerialized();
+        mMovedCardSubject = PublishSubject.<MoveCardEvent>create().toSerialized();
     }
 
     public void deckAdded(Deck deck) {

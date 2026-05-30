@@ -134,10 +134,12 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
         }
 
         mRxDisposer.add("createView_onNameChanged", mNameSubject.getSubject()
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         editTextName::setText));
         mRxDisposer.add("createView_onValidName",
                 mNewNotificationTimerCmd.getNameValid()
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
                             if (s.isEmpty()) {
                                 editTextName.setError(null);
