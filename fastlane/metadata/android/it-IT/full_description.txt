@@ -1,0 +1,43 @@
+Un'app di flash card semplice e facile da usare per aiutarti a studiare in modo intelligente e imparare più velocemente!
+
+<b>Crea &amp; Gestisci</b>
+<ul>
+  <li>Aggiungi facilmente mazzi e schede</li>
+  <li>Schede reversibili — scambia domanda e risposta durante i test</li>
+  <li>Copia e sposta schede tra i mazzi</li>
+  <li>Pulsante Salva &amp; Aggiungi un altro per una creazione rapida di schede consecutive</li>
+  <li>Registra voci e allega immagini per le tue schede</li>
+</ul>
+
+<b>Studia &amp; Test</b>
+<ul>
+  <li>Modalità test con mescolamento e monitoraggio dei progressi</li>
+  <li>Persistenza dello stato del test — riprendi il test dopo il riavvio dell'app</li>
+  <li>Flash bot per suggerirti intelligentemente le schede da testare in base al tuo comportamento</li>
+</ul>
+
+<b>Promemoria</b>
+<ul>
+  <li>Timer di notifica per interrogarti periodicamente</li>
+  <li>Finestra temporale delle notifiche — imposta orari di inizio e fine per i promemoria</li>
+  <li>Riproduzione vocale direttamente dalle notifiche</li>
+  <li>Crea scorciatoia per mostrare una scheda casuale dal mazzo per studio casuale (Android 8+)</li>
+</ul>
+
+<b>Importa &amp; Esporta</b>
+<ul>
+  <li>Esporta e condividi facilmente i tuoi mazzi con i tuoi amici</li>
+  <li>Importa ed esporta mazzi in formato Anki .apkg (supporta schede Basic con immagini e audio)</li>
+</ul>
+
+<b>Alimentato dall'IA</b>
+<ul>
+  <li>Genera mazzi di flash card da qualsiasi argomento utilizzando Google Gemini AI</li>
+  <li>Trasforma i mazzi esistenti con l'IA — traduci, espandi, crea domande più difficili e altro ancora</li>
+  <li>Selezione del modello IA — scegli tra i modelli Gemini disponibili</li>
+</ul>
+
+<b>Aspetto</b>
+<ul>
+  <li>Supporta modalità scura e modalità chiara</li>
+</ul>

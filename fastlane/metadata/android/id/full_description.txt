@@ -1,0 +1,43 @@
+Aplikasi kartu flash yang sederhana dan mudah digunakan untuk membantu Anda belajar lebih cerdas dan lebih cepat!
+
+<b>Buat &amp; Kelola</b>
+<ul>
+  <li>Tambahkan dek dan kartu flash dengan mudah</li>
+  <li>Kartu yang bisa dibalik — tukar pertanyaan dan jawaban saat tes</li>
+  <li>Salin dan pindahkan kartu antar dek</li>
+  <li>Tombol Simpan &amp; Tambah Lainnya untuk pembuatan kartu berurutan dengan cepat</li>
+  <li>Rekam suara dan lampirkan gambar untuk kartu Anda</li>
+</ul>
+
+<b>Belajar &amp; Tes</b>
+<ul>
+  <li>Mode tes dengan pengacakan dan pelacakan kemajuan</li>
+  <li>Persistensi status tes — lanjutkan tes Anda setelah restart aplikasi</li>
+  <li>Flash bot untuk dengan cerdas menyarankan kartu untuk menguji Anda berdasarkan perilaku Anda</li>
+</ul>
+
+<b>Pengingat</b>
+<ul>
+  <li>Timer notifikasi untuk secara berkala menguji Anda</li>
+  <li>Jendela waktu notifikasi — atur waktu mulai dan akhir untuk pengingat</li>
+  <li>Pemutaran suara langsung dari notifikasi</li>
+  <li>Buat pintasan untuk menampilkan kartu acak dari dek untuk belajar santai (Android 8+)</li>
+</ul>
+
+<b>Impor &amp; Ekspor</b>
+<ul>
+  <li>Ekspor &amp; bagikan dek Anda dengan mudah ke teman-teman Anda</li>
+  <li>Impor dan ekspor dek dalam format Anki .apkg (mendukung kartu Dasar dengan gambar dan audio)</li>
+</ul>
+
+<b>Bertenaga AI</b>
+<ul>
+  <li>Buat dek kartu flash dari topik apa pun menggunakan Google Gemini AI</li>
+  <li>Ubah dek yang ada dengan AI — terjemahkan, perluas, buat pertanyaan yang lebih sulit, dan lainnya</li>
+  <li>Pilihan model AI — pilih dari model Gemini yang tersedia</li>
+</ul>
+
+<b>Tampilan</b>
+<ul>
+  <li>Mendukung mode gelap dan mode terang</li>
+</ul>

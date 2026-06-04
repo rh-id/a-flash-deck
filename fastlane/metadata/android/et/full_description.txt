@@ -1,0 +1,43 @@
+Lihtne ja hõlpsasti kasutatav flashcardi äpp õppimiseks!
+
+<b>Loo &amp; Halda</b>
+<ul>
+  <li>Lisa hõlpsasti kaardipakid ja flashcardid</li>
+  <li>Pööratavad kaardid — vaheta küsimus ja vastus testi ajal</li>
+  <li>Kopeeri ja liiguta kaarte kaardipakkide vahel</li>
+  <li>Salvesta &amp; Lisa teine nupp kiireks järjestikuseks kaardi loomiseks</li>
+  <li>Salvesta hääli ja lisa pilte oma kaartidele</li>
+</ul>
+
+<b>Õpi &amp; Testi</b>
+<ul>
+  <li>Testirežiim segamise ja edenemise jälgimisega</li>
+  <li>Testi oleku püsivus — jätka testi pärast rakenduse taaskäivitust</li>
+  <li>Flash bot soovitab tarkalt kaarte sinu käitumise põhjal</li>
+</ul>
+
+<b>Meeleavad</b>
+<ul>
+  <li>Teavituste taimer, et testida teid perioodiliselt</li>
+  <li>Teavituste ajavahemik — seadke meeletoitude algus- ja lõpuaeg</li>
+  <li>Hääle taasesitus otse teavitustest</li>
+  <li>Loo otsetee, et näidata juhuslikku kaarti pakist juhuslikuks õppimiseks (Android 8+)</li>
+</ul>
+
+<b>Impordi &amp; Ekspordi</b>
+<ul>
+  <li>Ekspordi &amp; jaga oma kaardipakke hõlpsasti sõpradega</li>
+  <li>Impordi ja ekspordi kaardipakid Anki .apkg vormingus (toetab Basic kaarte piltide ja heliga)</li>
+</ul>
+
+<b>AI-toetatud</b>
+<ul>
+  <li>Loo flashcardide kaardipakke mistahes teemast Google Gemini AI abil</li>
+  <li>Muuda olemasolevaid pakke AI abil — tõlgi, laienda, loo raskemaid küsimusi ja muud</li>
+  <li>AI mudeli valik — valige saadaolevatest Gemini mudelitest</li>
+</ul>
+
+<b>Välimus</b>
+<ul>
+  <li>Toetab tume režiim ja hele režiim</li>
+</ul>

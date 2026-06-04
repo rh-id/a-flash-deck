@@ -34,6 +34,23 @@ Initialize/download existing metadata:
 fastlane supply init
 ```
 
+## Supported Locales
+
+| Locale | Language |
+|--------|----------|
+| en-US  | English |
+| id     | Indonesian |
+| de-DE  | German |
+| fr-FR  | French |
+| it-IT  | Italian |
+| nb-NO  | Norwegian Bokmål |
+| nn-NO  | Norwegian Nynorsk |
+| is-IS  | Icelandic |
+| et     | Estonian |
+| rm     | Romansh |
+
+Each locale contains `title.txt`, `short_description.txt`, and `full_description.txt`. Screenshots and changelogs are only in `en-US`.
+
 ## Changelogs
 
 Changelogs are named by `versionCode` from `app/build.gradle`. The build script at `app/build.gradle` copies the changelog for the current versionCode into `app/build/changelog.txt` for use in GitHub Releases.

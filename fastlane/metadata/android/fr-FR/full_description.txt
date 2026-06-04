@@ -1,0 +1,43 @@
+Une application de flash cards simple et facile à utiliser pour vous aider à étudier plus intelligemment et apprendre plus rapidement!
+
+<b>Créer &amp; Gérer</b>
+<ul>
+  <li>Ajouter facilement des paquets et des flash cards</li>
+  <li>Cartes réversibles — permuter question et réponse pendant les tests</li>
+  <li>Copier et déplacer des cartes entre les paquets</li>
+  <li>Bouton Enregistrer &amp; Ajouter un autre pour une création rapide de cartes consécutives</li>
+  <li>Enregistrer des voix et joindre des images à vos cartes</li>
+</ul>
+
+<b>Étudier &amp; Tester</b>
+<ul>
+  <li>Mode test avec mélange et suivi des progrès</li>
+  <li>Persistance de l'état du test — reprenez votre test après redémarrage de l'application</li>
+  <li>Flash bot pour suggérer intelligemment des cartes à tester en fonction de votre comportement</li>
+</ul>
+
+<b>Rappels</b>
+<ul>
+  <li>Minuteur de notification pour vous interroger périodiquement</li>
+  <li>Fenêtre horaire de notification — définir les heures de début et de fin pour les rappels</li>
+  <li>Lecture vocale directement depuis les notifications</li>
+  <li>Créer un raccourci pour afficher une carte aléatoire du paquet pour une étude décontractée (Android 8+)</li>
+</ul>
+
+<b>Importer &amp; Exporter</b>
+<ul>
+  <li>Exporter &amp; partager facilement vos paquets avec vos amis</li>
+  <li>Importer et exporter des paquets au format Anki .apkg (prend en charge les cartes de base avec images et audio)</li>
+</ul>
+
+<b>Propulsé par l'IA</b>
+<ul>
+  <li>Générer des paquets de flash cards sur n'importe quel sujet avec Google Gemini IA</li>
+  <li>Transformer des paquets existants avec l'IA — traduire, développer, créer des questions plus difficiles, et plus</li>
+  <li>Sélection de modèle IA — choisir parmi les modèles Gemini disponibles</li>
+</ul>
+
+<b>Apparence</b>
+<ul>
+  <li>Prend en charge le mode sombre et le mode clair</li>
+</ul>

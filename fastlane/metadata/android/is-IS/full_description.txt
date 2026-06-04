@@ -1,0 +1,43 @@
+Einföld og auðveld flash korta app til að hjálpa þér að nema betur og læra hraðar!
+
+<b>Búa til &amp; Stjórna</b>
+<ul>
+  <li>Bættu auðveldlega við spjöldum og flash körtum</li>
+  <li>Vendanleg kort — skiptu um spurning og svar á meðan á prófi stendur</li>
+  <li>Afritaðu og færðu kort á milli spjalda</li>
+  <li>Vista &amp; Bæta við öðrum hnapp fyrir hraðvirka stöðugu kortagerð</li>
+  <li>Teikna upp raddir og bættu við myndum fyrir körtin þín</li>
+</ul>
+
+<b>Nema &amp; Prófa</b>
+<ul>
+  <li>Prófhamur með stokkun og framvindusporun</li>
+  <li>Prófstöðu varðveita — haltu áfram prófinu eftir endurræsingu á forriti</li>
+  <li>Flash bot til að stinga uppá körtum skynsamlega miðað við hegðun þína</li>
+</ul>
+
+<b>Áminningar</b>
+<ul>
+  <li>Tilkynningatímamælir til að spyrja þig reglulega</li>
+  <li>Tilkynningatímabil — stilltu upphafs- og endingartíma fyrir áminningar</li>
+  <li>Raddspilun beint frá tilkynningum</li>
+  <li>Búðu til stutttengi til að sýna handahófskennt kort úr spjaldi fyrir áhugamennsku nám (Android 8+)</li>
+</ul>
+
+<b>Flytja inn &amp; Flytja út</b>
+<ul>
+  <li>Flyttu auðveldlega út &amp; deildu spjöldum þínum með vinum</li>
+  <li>Flyttu inn og út spjöld í Anki .apkg sniði (styður Basic kört með myndum og hljóði)</li>
+</ul>
+
+<b>AI-Mögnuð</b>
+<ul>
+  <li>Búðu til flash kortaspjöld úr hvaða viðfangsefni sem er með Google Gemini AI</li>
+  <li>Umbreyta núverandi spjöldum með AI — þýða, stækka, búa til erfiðari spurningar, og fleira</li>
+  <li>AI líkönarúmmál — veldu úr fáanlegum Gemini líkönum</li>
+</ul>
+
+<b>Útlit</b>
+<ul>
+  <li>Styður dökkuhamur og ljóshamur</li>
+</ul>

@@ -1,0 +1,43 @@
+Eine einfache und leicht zu bedienende Karteikarten-App, die Ihnen hilft, intelligenter zu lernen und schneller voranzukommen!
+
+<b>Erstellen &amp; Verwalten</b>
+<ul>
+  <li>Kartensätze und Karteikarten einfach hinzufügen</li>
+  <li>Umkehrbare Karten — Frage und Antwort während des Tests vertauschen</li>
+  <li>Karten zwischen Kartensätzen kopieren und verschieben</li>
+  <li>Speichern &amp; Weiter hinzufügen-Schaltfläche für schnelle aufeinanderfolgende Kartenerstellung</li>
+  <li>Sprachen aufnehmen und Bilder für Ihre Karten anhängen</li>
+</ul>
+
+<b>Lernen &amp; Test</b>
+<ul>
+  <li>Testmodus mit Mischen und Fortschrittsverfolgung</li>
+  <li>Teststatus-Persistenz — Ihren Test nach dem App-Neustart fortsetzen</li>
+  <li>Flash bot schlägt intelligent Karten vor, um Sie basierend auf Ihrem Verhalten zu testen</li>
+</ul>
+
+<b>Erinnerungen</b>
+<ul>
+  <li>Benachrichtigungs-Timer, um Sie regelmäßig abzufragen</li>
+  <li>Benachrichtigungszeitfenster — Start- und Endzeiten für Erinnerungen festlegen</li>
+  <li>Sprachwiedergabe direkt aus Benachrichtigungen</li>
+  <li>Verknüpfung erstellen, um zufällige Karte aus Kartensatz für lockeres Lernen anzuzeigen (Android 8+)</li>
+</ul>
+
+<b>Importieren &amp; Exportieren</b>
+<ul>
+  <li>Kartensätze einfach exportieren &amp; mit Freunden teilen</li>
+  <li>Kartensätze im Anki .apkg-Format importieren und exportieren (unterstützt Grundkarten mit Bildern und Audio)</li>
+</ul>
+
+<b>KI-gestützt</b>
+<ul>
+  <li>Karteikarten-Sets zu jedem Thema mit Google Gemini KI erstellen</li>
+  <li>Vorhandene Sets mit KI umwandeln — übersetzen, erweitern, schwierigere Fragen erstellen und mehr</li>
+  <li>KI-Modellauswahl — aus verfügbaren Gemini-Modellen wählen</li>
+</ul>
+
+<b>Darstellung</b>
+<ul>
+  <li>Unterstützt dunklen und hellen Modus</li>
+</ul>

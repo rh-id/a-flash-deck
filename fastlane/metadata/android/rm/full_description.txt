@@ -1,0 +1,43 @@
+In'app da flash cards simpla e facila d'utilisar per gidar a studi meglier e pli svelt!
+
+<b>Crear &amp; Administrar</b>
+<ul>
+  <li>Agiunta pachets e cartas simplamain</li>
+  <li>Cartas reversibels — scambia dumonda e resposta durant tests</li>
+  <li>Copia e sposta cartas tranter pachets</li>
+  <li>Memorisar &amp; Agiunta in auter buttun per creaziun rapida da cartas successivas</li>
+  <li>Registra vuschs e agiunta maletgs per tes cartas</li>
+</ul>
+
+<b>Studiar &amp; Testar</b>
+<ul>
+  <li>Modus test cun maschlar e suziar da progress</li>
+  <li>Persistenza dal stat dal test — cuntinuescha tes suenter reaviar l'app</li>
+  <li>Flash bot per proponer cartas smart tenor tes cumportament</li>
+</ul>
+
+<b>Reminders</b>
+<ul>
+  <li>Timer da notificaziun per interogar ti periodicamain</li>
+  <li>Finestra da temp da notificaziuns — fixa temp da cumenzament e finiziun per reminders</li>
+  <li>Reproducziun da vusch directamain da notificaziuns</li>
+  <li>Crea scursan per mussar ina carta casuala dal pachet per studi casual (Android 8+)</li>
+</ul>
+
+<b>Importar &amp; Exportar</b>
+<ul>
+  <li>Exportar &amp; cundir tes pachets cun tes amis a moda simpla</li>
+  <li>Importar ed exportar pachets en il format Anki .apkg (supporta cartas Basic cun maletgs e audio)</li>
+</ul>
+
+<b>AI-Powered</b>
+<ul>
+  <li>Genera pachets da flash carts da mintga tema cun Google Gemini AI</li>
+  <li>Transfurmesc pachets existents cun AI — translaziunar, extender, crear dumondas pli difficult, e dapli</li>
+  <li>Selecziun dal model AI — tscherna tranter ils models Gemini disponibels</li>
+</ul>
+
+<b>Apparenza</b>
+<ul>
+  <li>Supporta modus stgir e modus cler</li>
+</ul>

@@ -1,0 +1,43 @@
+Ein enkel og brukarvenleg flashcard-app for å hjelpe deg med å studere smartare og lære raskare!
+
+<b>Opprett &amp; Handsam</b>
+<ul>
+  <li>Legg enkelt til kortstokkar og kort</li>
+  <li>Kort som kan snurrast — byt spørsmål og svar under tester</li>
+  <li>Kopier og flytt kort mellom kortstokkar</li>
+  <li>Knapp Lagre &amp; Legg til ein annan for rask oppretting av påfølgjande kort</li>
+  <li>Ta opp tale og legg ved bilete for korta dine</li>
+</ul>
+
+<b>Studer &amp; Test</b>
+<ul>
+  <li>Testmodus med stokking og sporing av framgang</li>
+  <li>Testtilstandspersistens — gjenoppta testen etter omstart av appen</li>
+  <li>Flash bot for å smart foreslå kort å teste deg basert på oppførselen din</li>
+</ul>
+
+<b>Påminningar</b>
+<ul>
+  <li>Varseltidsur for å periodisk teste deg</li>
+  <li>Varseltidsvindauge — sett start- og sluttider for påminningar</li>
+  <li>Taleavspeling direkte frå varsel</li>
+  <li>Opprett snarveg for å vise tilfeldig kort frå kortstokken for avslappa studie (Android 8+)</li>
+</ul>
+
+<b>Importer &amp; Eksporter</b>
+<ul>
+  <li>Eksporter og del enkelt kortstokkane dine med venene dine</li>
+  <li>Importer og eksporter kortstokkar i Anki .apkg-format (støttar Basic-kort med bilete og lyd)</li>
+</ul>
+
+<b>Drevet av KI</b>
+<ul>
+  <li>Generer flashcard-kortstokkar frå eit kvart emne ved hjelp av Google Gemini AI</li>
+  <li>Transformer eksisterande kortstokkar med KI — oversett, utvid, lag vanskelegare spørsmål og meir</li>
+  <li>KI-modellval — velj frå tilgjengelege Gemini-modellar</li>
+</ul>
+
+<b>Utsjånad</b>
+<ul>
+  <li>Støttar mørk modus og lys modus</li>
+</ul>
