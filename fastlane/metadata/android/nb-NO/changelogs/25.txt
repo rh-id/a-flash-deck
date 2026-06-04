@@ -1,0 +1,4 @@
+Release 1.4.4+25
+
+Fixes:
+* UI update & app optimization

@@ -1,0 +1,4 @@
+Release 1.7.2+42
+
+Fixes:
+* App crash when viewing answer for test

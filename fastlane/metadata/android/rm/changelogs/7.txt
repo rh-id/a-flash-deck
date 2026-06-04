@@ -1,0 +1,5 @@
+Release 1.0.6+7
+
+Fix:
+* Search & pagination on the listing
+* Notification open other flash card and not showing

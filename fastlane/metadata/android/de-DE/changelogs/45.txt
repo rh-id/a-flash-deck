@@ -1,0 +1,4 @@
+Release 1.7.5+45
+
+Fixes:
+* Card list occasionally crash when opening from deck list

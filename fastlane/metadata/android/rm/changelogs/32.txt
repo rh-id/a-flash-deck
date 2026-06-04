@@ -1,0 +1,6 @@
+Release 1.6.1+32
+
+Fixes:
+* Notification can now be expanded
+* Flash bot suggested card not deleted after clicking try
+* Remove unnecessary permission ACCESS_NETWORK_STATE

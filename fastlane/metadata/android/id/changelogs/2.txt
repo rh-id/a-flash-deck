@@ -1,0 +1,4 @@
+Release 1.0.1+2
+
+Fix:
+* Notification cause app to keep reopening card

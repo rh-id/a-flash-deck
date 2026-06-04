@@ -1,0 +1,8 @@
+Release 1.4.1+22
+
+Feature:
+* New language indonesia
+* Add smooth animation to the card detail and test page
+
+Fixes:
+* Update internal libraries

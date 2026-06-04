@@ -1,0 +1,7 @@
+Release 1.7.7+47
+
+Fixes:
+* Supporting latest android Android 16 (API level 36)
+* Update dependencies to latest
+* Update minimum supported android to Android 6.0 (API level 23)
+* Fix critical issue #25 #26 #27 #28 (Github)

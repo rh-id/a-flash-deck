@@ -1,0 +1,8 @@
+Release 1.6.2+33
+
+Features:
+* Add "Import Deck" button at home page to allow user to select file from app
+
+Fixes:
+* Minor memory leaks
+* Update uI

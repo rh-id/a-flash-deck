@@ -1,0 +1,10 @@
+Release 1.5.4+30
+
+Features:
+* Add donation menu
+
+
+Release 1.5.3+29
+
+Fixes:
+* Incorrect file type when sharing image which cause unsupported app included in app selection

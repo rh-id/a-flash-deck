@@ -1,0 +1,4 @@
+Release 1.7.3+43
+
+Fixes:
+* App crash when viewing answer for test that contains image

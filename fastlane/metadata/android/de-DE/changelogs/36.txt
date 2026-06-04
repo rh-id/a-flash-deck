@@ -1,0 +1,6 @@
+Release 1.6.5+36
+
+Fixes:
+* Radio and check box not selecting deck on select deck dialog
+* Update UI flow when not selecting any deck
+* Optimize app

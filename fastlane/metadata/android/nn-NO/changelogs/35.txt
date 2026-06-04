@@ -1,0 +1,7 @@
+Release 1.6.4+35
+
+Fixes:
+* Optimize deck listing performance
+* Sometimes allow radio button selecting more than one
+* ok & cancel string display
+* Add new deck dialog button display incorrectly on some devices?

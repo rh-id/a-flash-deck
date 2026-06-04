@@ -1,0 +1,7 @@
+Release 1.9.0+50
+
+Fixes:
+* Various optimization
+
+Feature:
+* Add Google Gemini API deck generation, get API key from Google AI Studio

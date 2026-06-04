@@ -1,0 +1,7 @@
+Release 1.6.3+34
+
+Fixes:
+* App crash when Adding notification timer with empty name
+* Incorrect card list when clicking from deck list
+* App crashing due to Sqlite hitting maximum function arguments
+* add new record on listing

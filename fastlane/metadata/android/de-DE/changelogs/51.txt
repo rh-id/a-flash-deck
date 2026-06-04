@@ -1,0 +1,7 @@
+Release 1.9.1+51
+
+Fixes:
+* Threading issues cause app to crash in some places due to previous thread fix
+
+Feature:
+* Add Google Gemini API deck generation, get API key from Google AI Studio

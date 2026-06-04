@@ -1,0 +1,4 @@
+Release 1.7.0+40
+
+Features:
+* Upgrade dependencies and target SDK

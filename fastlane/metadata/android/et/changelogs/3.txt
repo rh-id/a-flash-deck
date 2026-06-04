@@ -1,0 +1,5 @@
+Release 1.0.2+3
+
+Feature:
+* Add card show page for better user experience in handling notification
+* Test page able to show HTML link on question and answer if provided

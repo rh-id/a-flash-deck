@@ -1,0 +1,6 @@
+Release 1.5.0+26
+
+Features:
+* For Android 8 and above, create a shortcut to show random card from deck
+* Add menu to copy and move card when showing a card
+* Update card list UI

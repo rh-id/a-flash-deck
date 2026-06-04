@@ -1,0 +1,5 @@
+Release 1.4.2+23
+
+Fixes:
+* UI update
+* Source code maintenance & performance optimization
