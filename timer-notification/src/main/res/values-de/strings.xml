@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="name_is_required">Name ist erforderlich</string>
+    <string name="error_no_deck_selected">Kein Kartensatz ausgewählt</string>
+    <string name="title_add_notification_timer">Benachrichtigungstimer hinzufügen</string>
+    <string name="save">Speichern</string>
+    <string name="form_name">Name</string>
+    <string name="notification_period_in_minutes">Benachrichtigungszeitraum in Minuten</string>
+    <string name="title_error">Fehler</string>
+    <string name="success_adding_new_notification_timer">Benachrichtigungstimer %s erfolgreich hinzugefügt</string>
+    <string name="error_no_card_from_deck">Keine Karte im ausgewählten Kartensatz</string>
+    <string name="error_loading_decks">Fehler beim Laden der Kartensätze</string>
+    <string name="title_confirm">Bestätigen</string>
+    <string name="confirm_delete_notification_timer">Benachrichtigungstimer %s löschen?</string>
+    <string name="error_deleting_notification_timer">Fehler beim Löschen des Benachrichtigungstimers</string>
+    <string name="success_deleting_notification_timer">Benachrichtigungstimer %s erfolgreich gelöscht</string>
+    <string name="search_desc">Suche: </string>
+    <string name="hint_type_to_search">Hier eingeben zum Suchen</string>
+    <string name="title_notification_timer_list">Benachrichtigungstimer-Liste</string>
+    <string name="notification_period_every_x_minutes">Alle %d Minuten</string>
+    <string name="success_updating_new_notification_timer">Benachrichtigungstimer %s erfolgreich aktualisiert</string>
+</resources>

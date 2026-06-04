@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Tema er påkravd</string>
+    <string name="ai_card_count_range">Korttal må vere minst 1</string>
+    <string name="title_ai_api_key">API-nøkkel</string>
+    <string name="hint_api_key">Skriv inn Gemini API-nøkkel</string>
+    <string name="ai_settings">Gemini API-innstillingar</string>
+    <string name="ai_not_configured">AI ikkje konfigurert. Trykk for å setje opp.</string>
+    <string name="ai_configured">AI konfigurert</string>
+    <string name="title_generate_deck">Lag kortstokk med Gemini</string>
+    <string name="hint_topic">Skriv inn tema (f.eks. Andre verdskrig)</string>
+    <string name="hint_card_count">Tal på kort</string>
+    <string name="generate">Lag</string>
+    <string name="generating_deck">Lagar kortstokk.</string>
+    <string name="error_generating_deck">Feil ved laging av kortstokk</string>
+    <string name="success_generating_deck">Kortstokk laga: %1$s (%2$d kort)</string>
+    <string name="topic_is_required">Tema er påkravd</string>
+    <string name="remove">Fjern</string>
+    <string name="select_model">Vel modell</string>
+    <string name="title_select_model">Vel AI-modell</string>
+    <string name="model_selected">Modell: %s</string>
+    <string name="api_key_saved">API-nøkkel lagra</string>
+    <string name="api_key_removed">API-nøkkel fjerna</string>
+    <string name="error_saving_api_key">Feil ved lagring av API-nøkkel</string>
+    <string name="error_api_key_not_configured">Konfigurer API-nøkkelen i innstillingar først</string>
+    <string name="error_fetching_models">Feil ved henting av modellar</string>
+    <string name="error_no_models_available">Ingen modellar tilgjengelege</string>
+    <string name="current_model">Gjeldande modell: %s</string>
+    <string name="api_key_set">API-nøkkel er sett. Fjern den for å skrive inn ein ny.</string>
+    <string name="validating_api_key">Validerer API-nøkkel\u2026</string>
+    <string name="error_invalid_api_key">Ugyldig API-nøkkel. Sjekk og prøv igjen.</string>
+    <string name="ai_notification_title">AI kortstokk-generator</string>
+    <string name="ai_generation_started">Lagar kortstokk for \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Kortstokk \"%s\" laga med %s kort</string>
+    <string name="ai_generation_failed" formatted="false">Klarte ikkje lage kortstokk for \"%s\": %s</string>
+    <string name="title_generate_deck_from_existing">Lag kortstokk frå eksisterande med Gemini</string>
+    <string name="summary_selected_decks">%1$d kortstokk(ar), %2$d kort totalt</string>
+    <string name="hint_prompt_instructions">Kva skal gjerast med desse korta?</string>
+    <string name="hint_max_cards">Maks kort å lage</string>
+    <string name="ai_prompt_is_required">Prompt er påkravd</string>
+    <string name="ai_max_cards_range">Maks kort må vere minst 1</string>
+    <string name="ai_generation_from_existing_started">Lagar kortstokk frå eksisterande kortstokkar\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Kortstokk \"%s\" laga med %s kort</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Klarte ikkje lage kortstokk: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Omset alle korta til norsk</item>
+        <item>Lag vanskelegare versjonar av desse spørsmåla</item>
+        <item>Lag liknande kort med ulike døme</item>
+        <item>Konverter spørsmåla til fyll-inn-manglar-format</item>
+        <item>Lag sann/usann-kort frå desse spørsmåla</item>
+        <item>Oppsummer svaren i kortare versjonar</item>
+        <item>Utvid med meir avanserte spørsmål</item>
+        <item>Lag kort i studie-notat-stil</item>
+    </string-array>
+</resources>

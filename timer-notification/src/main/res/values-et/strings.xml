@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="name_is_required">Nimi on kohustuslik</string>
+    <string name="error_no_deck_selected">Kaardipakk ei ole valitud</string>
+    <string name="title_add_notification_timer">Lisa teavitustaimer</string>
+    <string name="save">Salvesta</string>
+    <string name="form_name">Nimi</string>
+    <string name="notification_period_in_minutes">Teavituste periood minutites</string>
+    <string name="title_error">Viga</string>
+    <string name="success_adding_new_notification_timer">Teavitustaimer %s lisatud edukalt</string>
+    <string name="error_no_card_from_deck">Valitud kaardipakis ei ole kaarte</string>
+    <string name="error_loading_decks">Viga kaardipakkide laadimisel</string>
+    <string name="title_confirm">Kinnita</string>
+    <string name="confirm_delete_notification_timer">Kustutada teavitustaimer %s ?</string>
+    <string name="error_deleting_notification_timer">Viga teavitustaimeri kustutamisel</string>
+    <string name="success_deleting_notification_timer">Teavitustaimer %s kustutatud edukalt</string>
+    <string name="search_desc">Otsi: </string>
+    <string name="hint_type_to_search">Tippige siia otsimiseks</string>
+    <string name="title_notification_timer_list">Teavitustaimerite nimekiri</string>
+    <string name="notification_period_every_x_minutes">Iga %d minuti tagant</string>
+    <string name="success_updating_new_notification_timer">Teavitustaimer %s uuendatud edukalt</string>
+</resources>

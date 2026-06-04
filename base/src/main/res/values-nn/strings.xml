@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_record">Ingen opptak</string>
+    <string name="press_and_hold_to_record">Hald inne for å ta opp</string>
+    <string name="speak_now">Snakk no !</string>
+    <string name="permission_denied_record_audio">Løyve for lydopptak avslått</string>
+    <string name="error">Feil</string>
+    <string name="cancel">Avbryt</string>
+    <string name="share_image">Del bilete</string>
+    <string name="ok">OK</string>
+    <string name="save">Lagre</string>
+</resources>

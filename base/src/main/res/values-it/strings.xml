@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_record">Nessuna registrazione</string>
+    <string name="press_and_hold_to_record">Premi e tieni premuto per registrare</string>
+    <string name="speak_now">Parla ora !</string>
+    <string name="permission_denied_record_audio">Permesso di registrazione audio negato</string>
+    <string name="error">Errore</string>
+    <string name="cancel">Annulla</string>
+    <string name="share_image">Condividi immagine</string>
+    <string name="ok">OK</string>
+    <string name="save">Salva</string>
+</resources>

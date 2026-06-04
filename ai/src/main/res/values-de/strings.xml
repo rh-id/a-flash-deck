@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Thema ist erforderlich</string>
+    <string name="ai_card_count_range">Kartenanzahl muss mindestens 1 betragen</string>
+    <string name="title_ai_api_key">API-Schlüssel</string>
+    <string name="hint_api_key">Geben Sie Ihren Gemini-API-Schlüssel ein</string>
+    <string name="ai_settings">Gemini-API-Einstellungen</string>
+    <string name="ai_not_configured">KI nicht konfiguriert. Tippen Sie zum Einrichten.</string>
+    <string name="ai_configured">KI konfiguriert</string>
+    <string name="title_generate_deck">Kartensatz mit Gemini generieren</string>
+    <string name="hint_topic">Thema eingeben (z.B. Zweiter Weltkrieg)</string>
+    <string name="hint_card_count">Anzahl der Karten</string>
+    <string name="generate">Generieren</string>
+    <string name="generating_deck">Kartensatz wird generiert.</string>
+    <string name="error_generating_deck">Fehler beim Generieren des Kartensatzes</string>
+    <string name="success_generating_deck">Kartensatz generiert: %1$s (%2$d Karten)</string>
+    <string name="topic_is_required">Thema ist erforderlich</string>
+    <string name="remove">Entfernen</string>
+    <string name="select_model">Modell auswählen</string>
+    <string name="title_select_model">KI-Modell auswählen</string>
+    <string name="model_selected">Modell: %s</string>
+    <string name="api_key_saved">API-Schlüssel gespeichert</string>
+    <string name="api_key_removed">API-Schlüssel entfernt</string>
+    <string name="error_saving_api_key">Fehler beim Speichern des API-Schlüssels</string>
+    <string name="error_api_key_not_configured">Bitte konfigurieren Sie zuerst Ihren API-Schlüssel in den Einstellungen</string>
+    <string name="error_fetching_models">Fehler beim Abrufen der Modelle</string>
+    <string name="error_no_models_available">Keine Modelle verfügbar</string>
+    <string name="current_model">Aktuelles Modell: %s</string>
+    <string name="api_key_set">API-Schlüssel ist derzeit festgelegt. Entfernen Sie ihn, um einen neuen einzugeben.</string>
+    <string name="validating_api_key">API-Schlüssel wird überprüft\u2026</string>
+    <string name="error_invalid_api_key">Ungültiger API-Schlüssel. Bitte überprüfen und erneut versuchen.</string>
+    <string name="ai_notification_title">KI-Kartensatz-Generator</string>
+    <string name="ai_generation_started">Kartensatz wird für \"%s\" generiert\u2026</string>
+    <string name="ai_generation_success" formatted="false">Kartensatz \"%s\" mit %s Karten erstellt</string>
+    <string name="ai_generation_failed" formatted="false">Fehler beim Generieren des Kartensatzes für \"%s\": %s</string>
+    <string name="title_generate_deck_from_existing">Kartensatz aus vorhandenem mit Gemini generieren</string>
+    <string name="summary_selected_decks">%1$d Kartensatz/Kartensätze, %2$d Karten insgesamt</string>
+    <string name="hint_prompt_instructions">Was soll mit diesen Karten gemacht werden?</string>
+    <string name="hint_max_cards">Maximale Anzahl zu generierender Karten</string>
+    <string name="ai_prompt_is_required">Eingabeaufforderung ist erforderlich</string>
+    <string name="ai_max_cards_range">Maximale Karten muss mindestens 1 betragen</string>
+    <string name="ai_generation_from_existing_started">Kartensatz wird aus vorhandenen Kartensätzen generiert\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Kartensatz \"%s\" mit %s Karten erstellt</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Fehler beim Generieren des Kartensatzes: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Alle Karten ins Deutsche übersetzen</item>
+        <item>Schwerere Versionen dieser Fragen erstellen</item>
+        <item>Ähnliche Karten mit anderen Beispielen generieren</item>
+        <item>Fragen in Lückentext-Format umwandeln</item>
+        <item>Richtig/Falsch-Karten aus diesen Fragen erstellen</item>
+        <item>Antworten zu kürzeren Versionen zusammenfassen</item>
+        <item>Mit fortgeschrittenere Fragen erweitern</item>
+        <item>Lernzettel-Stil-Karten erstellen</item>
+    </string-array>
+</resources>

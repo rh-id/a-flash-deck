@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_record">Engin skráning</string>
+    <string name="press_and_hold_to_record">Halda inni til að taka upp</string>
+    <string name="speak_now">Tala núna !</string>
+    <string name="permission_denied_record_audio">Heimild til að taka upp hljóð hafnað</string>
+    <string name="error">Villa</string>
+    <string name="cancel">Hætta við</string>
+    <string name="share_image">Deila mynd</string>
+    <string name="ok">Í lagi</string>
+    <string name="save">Vista</string>
+</resources>

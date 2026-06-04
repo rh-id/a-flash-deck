@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="name_is_required">Le nom est requis</string>
+    <string name="error_no_deck_selected">Aucun paquet sélectionné</string>
+    <string name="title_add_notification_timer">Ajouter une minuterie de notification</string>
+    <string name="save">Enregistrer</string>
+    <string name="form_name">Nom</string>
+    <string name="notification_period_in_minutes">Période de notification en minutes</string>
+    <string name="title_error">Erreur</string>
+    <string name="success_adding_new_notification_timer">Minuterie de notification %s ajoutée avec succès</string>
+    <string name="error_no_card_from_deck">Aucune carte dans le paquet sélectionné</string>
+    <string name="error_loading_decks">Erreur lors du chargement des paquets</string>
+    <string name="title_confirm">Confirmer</string>
+    <string name="confirm_delete_notification_timer">Supprimer la minuterie de notification %s ?</string>
+    <string name="error_deleting_notification_timer">Erreur lors de la suppression de la minuterie de notification</string>
+    <string name="success_deleting_notification_timer">Minuterie de notification %s supprimée avec succès</string>
+    <string name="search_desc">Recherche : </string>
+    <string name="hint_type_to_search">Tapez ici pour rechercher</string>
+    <string name="title_notification_timer_list">Liste des minuteries de notification</string>
+    <string name="notification_period_every_x_minutes">Toutes les %d minutes</string>
+    <string name="success_updating_new_notification_timer">Minuterie de notification %s mise à jour avec succès</string>
+</resources>

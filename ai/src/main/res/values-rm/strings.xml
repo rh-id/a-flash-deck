@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Il tema è necessari</string>
+    <string name="ai_card_count_range">Il dumber da cartas sto esser almain 1</string>
+    <string name="title_ai_api_key">Clav API</string>
+    <string name="hint_api_key">Endatescha tia clav API Gemini</string>
+    <string name="ai_settings">Parameters da l\'API Gemini</string>
+    <string name="ai_not_configured">AI betg configurà. Tocca per configurar.</string>
+    <string name="ai_configured">AI configurà</string>
+    <string name="title_generate_deck">Generar pachet cun Gemini</string>
+    <string name="hint_topic">Endatescha tema (p.ex. Segunda Guerra mundiala)</string>
+    <string name="hint_card_count">Dumber da cartas</string>
+    <string name="generate">Generar</string>
+    <string name="generating_deck">Generond pachet.</string>
+    <string name="error_generating_deck">Errur generond il pachet</string>
+    <string name="success_generating_deck">Pachet generà: %1$s (%2$d cartas)</string>
+    <string name="topic_is_required">Il tema è necessari</string>
+    <string name="remove">Allontanar</string>
+    <string name="select_model">Tscherner model</string>
+    <string name="title_select_model">Tscherner model AI</string>
+    <string name="model_selected">Model: %s</string>
+    <string name="api_key_saved">Clav API memorisada</string>
+    <string name="api_key_removed">Clav API allontanada</string>
+    <string name="error_saving_api_key">Errur memorisond la clav API</string>
+    <string name="error_api_key_not_configured">Configurescha per plaschair tia clav API en ils Parameters l\'emprim</string>
+    <string name="error_fetching_models">Errur recuperond ils models</string>
+    <string name="error_no_models_available">Nagins models disponibels</string>
+    <string name="current_model">Model actual: %s</string>
+    <string name="api_key_set">La clav API è actualmain configurada. Allontanala per endatar ina nova.</string>
+    <string name="validating_api_key">Validond la clav API\u2026</string>
+    <string name="error_invalid_api_key">Clav API nunvalida. Controllescha e empruva anc ina giada.</string>
+    <string name="ai_notification_title">Generatur da pachets AI</string>
+    <string name="ai_generation_started">Generond pachet per \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Pachet \"%s\" creà cun %s cartas</string>
+    <string name="ai_generation_failed" formatted="false">Betg reussì da generar pachet per \"%s\": %s</string>
+    <string name="title_generate_deck_from_existing">Generar pachet d\'existents cun Gemini</string>
+    <string name="summary_selected_decks">%1$d pachet(s), %2$d cartas en total</string>
+    <string name="hint_prompt_instructions">Co far cun questas cartas?</string>
+    <string name="hint_max_cards">Max cartas da generar</string>
+    <string name="ai_prompt_is_required">Il prompt è necessari</string>
+    <string name="ai_max_cards_range">Max cartas sto esser almain 1</string>
+    <string name="ai_generation_from_existing_started">Generond pachet dals pachets existents\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Pachet \"%s\" creà cun %s cartas</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Betg reussì da generar pachet: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Translatar tut las cartas en rumantsch</item>
+        <item>Crear versiuns pli grevas da questas dumondas</item>
+        <item>Generar cartas sumegliantas cun differents exempels</item>
+        <item>Convertir dumondas en format cumpletta-vuids</item>
+        <item>Crear cartas ver/fals da questas dumondas</item>
+        <item>Resumar respostas en versiuns pli curtas</item>
+        <item>Extender cun dumondas pli avanzadas</item>
+        <item>Crear cartas en stil notas da studegi</item>
+    </string-array>
+</resources>

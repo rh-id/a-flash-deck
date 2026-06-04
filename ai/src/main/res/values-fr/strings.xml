@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Le sujet est requis</string>
+    <string name="ai_card_count_range">Le nombre de cartes doit être au moins 1</string>
+    <string name="title_ai_api_key">Clé API</string>
+    <string name="hint_api_key">Entrez votre clé API Gemini</string>
+    <string name="ai_settings">Paramètres API Gemini</string>
+    <string name="ai_not_configured">IA non configurée. Appuyez pour configurer.</string>
+    <string name="ai_configured">IA configurée</string>
+    <string name="title_generate_deck">Générer un paquet avec Gemini</string>
+    <string name="hint_topic">Entrez le sujet (ex. Seconde Guerre mondiale)</string>
+    <string name="hint_card_count">Nombre de cartes</string>
+    <string name="generate">Générer</string>
+    <string name="generating_deck">Génération du paquet.</string>
+    <string name="error_generating_deck">Erreur lors de la génération du paquet</string>
+    <string name="success_generating_deck">Paquet généré : %1$s (%2$d cartes)</string>
+    <string name="topic_is_required">Le sujet est requis</string>
+    <string name="remove">Supprimer</string>
+    <string name="select_model">Sélectionner un modèle</string>
+    <string name="title_select_model">Sélectionner un modèle d\'IA</string>
+    <string name="model_selected">Modèle : %s</string>
+    <string name="api_key_saved">Clé API enregistrée</string>
+    <string name="api_key_removed">Clé API supprimée</string>
+    <string name="error_saving_api_key">Erreur lors de l\'enregistrement de la clé API</string>
+    <string name="error_api_key_not_configured">Veuillez configurer votre clé API dans les paramètres d\'abord</string>
+    <string name="error_fetching_models">Erreur lors de la récupération des modèles</string>
+    <string name="error_no_models_available">Aucun modèle disponible</string>
+    <string name="current_model">Modèle actuel : %s</string>
+    <string name="api_key_set">La clé API est actuellement définie. Supprimez-la pour en entrer une nouvelle.</string>
+    <string name="validating_api_key">Validation de la clé API\u2026</string>
+    <string name="error_invalid_api_key">Clé API invalide. Veuillez vérifier et réessayer.</string>
+    <string name="ai_notification_title">Générateur de paquets IA</string>
+    <string name="ai_generation_started">Génération du paquet pour \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Paquet \"%s\" créé avec %s cartes</string>
+    <string name="ai_generation_failed" formatted="false">Échec de la génération du paquet pour \"%s\" : %s</string>
+    <string name="title_generate_deck_from_existing">Générer un paquet à partir de l\'existant avec Gemini</string>
+    <string name="summary_selected_decks">%1$d paquet(s), %2$d cartes au total</string>
+    <string name="hint_prompt_instructions">Que faire avec ces cartes ?</string>
+    <string name="hint_max_cards">Nombre max de cartes à générer</string>
+    <string name="ai_prompt_is_required">L\'invite est requise</string>
+    <string name="ai_max_cards_range">Le nombre max de cartes doit être au moins 1</string>
+    <string name="ai_generation_from_existing_started">Génération du paquet à partir des paquets existants\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Paquet \"%s\" créé avec %s cartes</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Échec de la génération du paquet : %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Traduire toutes les cartes en français</item>
+        <item>Créer des versions plus difficiles de ces questions</item>
+        <item>Générer des cartes similaires avec différents exemples</item>
+        <item>Convertir les questions au format à trous</item>
+        <item>Créer des cartes vrai/faux à partir de ces questions</item>
+        <item>Résumer les réponses en versions plus courtes</item>
+        <item>Étendre avec des questions plus avancées</item>
+        <item>Créer des cartes style notes de cours</item>
+    </string-array>
+</resources>

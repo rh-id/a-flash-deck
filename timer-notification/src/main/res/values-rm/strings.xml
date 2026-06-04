@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="name_is_required">Il num è necessari</string>
+    <string name="error_no_deck_selected">Nagin pachet tschernì</string>
+    <string name="title_add_notification_timer">Agiuntar timer da notificaziun</string>
+    <string name="save">Memorisar</string>
+    <string name="form_name">Num</string>
+    <string name="notification_period_in_minutes">Perioda da notificaziun en minutas</string>
+    <string name="title_error">Errur</string>
+    <string name="success_adding_new_notification_timer">Success agiuntond timer da notificaziun %s</string>
+    <string name="error_no_card_from_deck">Nagina carta en il pachet tschernì</string>
+    <string name="error_loading_decks">Errur chargiond ils pachets</string>
+    <string name="title_confirm">Confirmar</string>
+    <string name="confirm_delete_notification_timer">Stizzar timer da notificaziun %s ?</string>
+    <string name="error_deleting_notification_timer">Errur stizzond il timer da notificaziun</string>
+    <string name="success_deleting_notification_timer">Success stizzar timer da notificaziun %s</string>
+    <string name="search_desc">Tschertgar: </string>
+    <string name="hint_type_to_search">Scrive qua per tschertgar</string>
+    <string name="title_notification_timer_list">Glista da timers da notificaziun</string>
+    <string name="notification_period_every_x_minutes">Ogni %d minutas</string>
+    <string name="success_updating_new_notification_timer">Success actualisond timer da notificaziun %s</string>
+</resources>

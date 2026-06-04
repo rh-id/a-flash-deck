@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_record">Salvestist ei ole</string>
+    <string name="press_and_hold_to_record">Vajutage ja hoidke salvestamiseks</string>
+    <string name="speak_now">Rääkige nüüd !</string>
+    <string name="permission_denied_record_audio">Heli salvestamise luba keeldatud</string>
+    <string name="error">Viga</string>
+    <string name="cancel">Tühista</string>
+    <string name="share_image">Jaga pilti</string>
+    <string name="ok">OK</string>
+    <string name="save">Salvesta</string>
+</resources>

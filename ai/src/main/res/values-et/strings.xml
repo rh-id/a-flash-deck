@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Teema on kohustuslik</string>
+    <string name="ai_card_count_range">Kaartide arv peab olema vähemalt 1</string>
+    <string name="title_ai_api_key">API võti</string>
+    <string name="hint_api_key">Sisestage oma Gemini API võti</string>
+    <string name="ai_settings">Gemini API seaded</string>
+    <string name="ai_not_configured">AI ei ole seadistatud. Puudutage seadistamiseks.</string>
+    <string name="ai_configured">AI on seadistatud</string>
+    <string name="title_generate_deck">Loo kaardipakk Gemini abil</string>
+    <string name="hint_topic">Sisestage teema (nt Teine maailmasõda)</string>
+    <string name="hint_card_count">Kaartide arv</string>
+    <string name="generate">Loo</string>
+    <string name="generating_deck">Kaardipaki loomine.</string>
+    <string name="error_generating_deck">Viga kaardipaki loomisel</string>
+    <string name="success_generating_deck">Kaardipakk loodud: %1$s (%2$d kaarti)</string>
+    <string name="topic_is_required">Teema on kohustuslik</string>
+    <string name="remove">Eemalda</string>
+    <string name="select_model">Valige mudel</string>
+    <string name="title_select_model">Valige AI mudel</string>
+    <string name="model_selected">Mudel: %s</string>
+    <string name="api_key_saved">API võti salvestatud</string>
+    <string name="api_key_removed">API võti eemaldatud</string>
+    <string name="error_saving_api_key">Viga API võtme salvestamisel</string>
+    <string name="error_api_key_not_configured">Palun seadistage oma API võti seadetes kõigepealt</string>
+    <string name="error_fetching_models">Viga mudelite hankimisel</string>
+    <string name="error_no_models_available">Mudeleid ei ole saadaval</string>
+    <string name="current_model">Praegune mudel: %s</string>
+    <string name="api_key_set">API võti on praegu seatud. Eemaldage see uue sisestamiseks.</string>
+    <string name="validating_api_key">API võtme valideerimine\u2026</string>
+    <string name="error_invalid_api_key">Vigane API võti. Palun kontrollige ja proovige uuesti.</string>
+    <string name="ai_notification_title">AI kaardipaki generaator</string>
+    <string name="ai_generation_started">Kaardipaki loomine teemale \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Kaardipakk \"%s\" loodud %s kaardiga</string>
+    <string name="ai_generation_failed" formatted="false">Kaardipaki loomine teemale \"%s\" ebaõnnestus: %s</string>
+    <string name="title_generate_deck_from_existing">Loo kaardipakk olemasolevast Gemini abil</string>
+    <string name="summary_selected_decks">%1$d kaardipakk(id), kokku %2$d kaarti</string>
+    <string name="hint_prompt_instructions">Mida teha nende kaartidega?</string>
+    <string name="hint_max_cards">Maksimaalselt loodavaid kaarte</string>
+    <string name="ai_prompt_is_required">Käsklus on kohustuslik</string>
+    <string name="ai_max_cards_range">Maksimaalne kaartide arv peab olema vähemalt 1</string>
+    <string name="ai_generation_from_existing_started">Kaardipaki loomine olemasolevatest kaardipakkidest\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Kaardipakk \"%s\" loodud %s kaardiga</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Kaardipaki loomine ebaõnnestus: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Tõlgi kõik kaardid eesti keelde</item>
+        <item>Loo nendest küsimustest raskemad versioonid</item>
+        <item>Loo sarnaseid kaarte erinevate näidetega</item>
+        <item>Muuda küsimused täitmisvormingusse</item>
+        <item>Loo tõene/vale kaardid nendest küsimustest</item>
+        <item>Koonda vastused lühematesse versioonidesse</item>
+        <item>Laienda arenenumate küsimustega</item>
+        <item>Loo õppemärkmete stiilis kaardid</item>
+    </string-array>
+</resources>

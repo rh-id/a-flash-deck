@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">Efni er nauðsynlegt</string>
+    <string name="ai_card_count_range">Fjöldi spjalda verður að vera að minnsta kosti 1</string>
+    <string name="title_ai_api_key">API lykill</string>
+    <string name="hint_api_key">Sláðu inn Gemini API lykillinn þinn</string>
+    <string name="ai_settings">Gemini API stillingar</string>
+    <string name="ai_not_configured">AI ekki stillt. Ýttu til að setja upp.</string>
+    <string name="ai_configured">AI stillt</string>
+    <string name="title_generate_deck">Búa til spjöld með Gemini</string>
+    <string name="hint_topic">Sláðu inn efni (t.d. Síðari heimsstyrjöldin)</string>
+    <string name="hint_card_count">Fjöldi spjalda</string>
+    <string name="generate">Búa til</string>
+    <string name="generating_deck">Bý til spjöld.</string>
+    <string name="error_generating_deck">Villa við að búa til spjöld</string>
+    <string name="success_generating_deck">Spjöld búið til: %1$s (%2$d spjöld)</string>
+    <string name="topic_is_required">Efni er nauðsynlegt</string>
+    <string name="remove">Fjarlægja</string>
+    <string name="select_model">Velja líkan</string>
+    <string name="title_select_model">Velja AI líkan</string>
+    <string name="model_selected">Líkan: %s</string>
+    <string name="api_key_saved">API lykill vistaður</string>
+    <string name="api_key_removed">API lykill fjarlægður</string>
+    <string name="error_saving_api_key">Villa við að vista API lykil</string>
+    <string name="error_api_key_not_configured">Vinsamlega stilltu API lykilinn þinn í Stillingum fyrst</string>
+    <string name="error_fetching_models">Villa við að sækja líkön</string>
+    <string name="error_no_models_available">Engin líkön tiltæk</string>
+    <string name="current_model">Núverandi líkan: %s</string>
+    <string name="api_key_set">API lykill er núna stilltur. Fjarlægja hann til að slá inn nýjan.</string>
+    <string name="validating_api_key">Athuga API lykil\u2026</string>
+    <string name="error_invalid_api_key">Ógildur API lykill. Vinsamlega athugaðu og reyndu aftur.</string>
+    <string name="ai_notification_title">AI spjöldagerð</string>
+    <string name="ai_generation_started">Bý til spjöld fyrir \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Spjöld \"%s\" búið til með %s spjöldum</string>
+    <string name="ai_generation_failed" formatted="false">Mistókst að búa til spjöld fyrir \"%s\": %s</string>
+    <string name="title_generate_deck_from_existing">Búa til spjöld úr tilvist með Gemini</string>
+    <string name="summary_selected_decks">%1$d spjöld, %2$d spjöld alls</string>
+    <string name="hint_prompt_instructions">Hvað á að gera með þessi spjöld?</string>
+    <string name="hint_max_cards">Hámarksfjöldi spjalda sem á að búa til</string>
+    <string name="ai_prompt_is_required">Boðskyn er nauðsynlegt</string>
+    <string name="ai_max_cards_range">Hámarksfjöldi spjalda verður að vera að minnsta kosti 1</string>
+    <string name="ai_generation_from_existing_started">Bý til spjöld úr tilvistarspjöldum\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Spjöld \"%s\" búið til með %s spjöldum</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Mistókst að búa til spjöld: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Þýða öll spjöld á íslensku</item>
+        <item>Búa til erfiðari útgáfur af þessum spurningum</item>
+        <item>Búa til svipuð spjöld með öðrum dæmum</item>
+        <item>Umbreyta spurningum í fylla-í-gat-format</item>
+        <item>Búa til satt/ósatt spjöld úr þessum spurningum</item>
+        <item>Summa svörin í styttri útgáfur</item>
+        <item>Stækka með öflugri spurningum</item>
+        <item>Búa til spjöld í námsskráarstíl</item>
+    </string-array>
+</resources>

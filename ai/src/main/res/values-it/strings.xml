@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">L\'argomento è obbligatorio</string>
+    <string name="ai_card_count_range">Il numero di schede deve essere almeno 1</string>
+    <string name="title_ai_api_key">Chiave API</string>
+    <string name="hint_api_key">Inserisci la tua chiave API Gemini</string>
+    <string name="ai_settings">Impostazioni API Gemini</string>
+    <string name="ai_not_configured">AI non configurata. Tocca per configurare.</string>
+    <string name="ai_configured">AI configurata</string>
+    <string name="title_generate_deck">Genera Mazzo con Gemini</string>
+    <string name="hint_topic">Inserisci argomento (es. Seconda Guerra Mondiale)</string>
+    <string name="hint_card_count">Numero di schede</string>
+    <string name="generate">Genera</string>
+    <string name="generating_deck">Generazione del mazzo in corso.</string>
+    <string name="error_generating_deck">Errore nella generazione del mazzo</string>
+    <string name="success_generating_deck">Mazzo generato: %1$s (%2$d schede)</string>
+    <string name="topic_is_required">L\'argomento è obbligatorio</string>
+    <string name="remove">Rimuovi</string>
+    <string name="select_model">Seleziona modello</string>
+    <string name="title_select_model">Seleziona modello AI</string>
+    <string name="model_selected">Modello: %s</string>
+    <string name="api_key_saved">Chiave API salvata</string>
+    <string name="api_key_removed">Chiave API rimossa</string>
+    <string name="error_saving_api_key">Errore nel salvataggio della chiave API</string>
+    <string name="error_api_key_not_configured">Configura prima la tua chiave API nelle Impostazioni</string>
+    <string name="error_fetching_models">Errore nel recupero dei modelli</string>
+    <string name="error_no_models_available">Nessun modello disponibile</string>
+    <string name="current_model">Modello attuale: %s</string>
+    <string name="api_key_set">La chiave API è attualmente impostata. Rimuovila per inserirne una nuova.</string>
+    <string name="validating_api_key">Validazione della chiave API\u2026</string>
+    <string name="error_invalid_api_key">Chiave API non valida. Verifica e riprova.</string>
+    <string name="ai_notification_title">Generatore di mazzi AI</string>
+    <string name="ai_generation_started">Generazione del mazzo per \"%s\"\u2026</string>
+    <string name="ai_generation_success" formatted="false">Mazzo \"%s\" creato con %s schede</string>
+    <string name="ai_generation_failed" formatted="false">Generazione del mazzo per \"%s\" non riuscita: %s</string>
+    <string name="title_generate_deck_from_existing">Genera Mazzo da Esistente con Gemini</string>
+    <string name="summary_selected_decks">%1$d mazzo/i, %2$d schede totali</string>
+    <string name="hint_prompt_instructions">Cosa fare con queste schede?</string>
+    <string name="hint_max_cards">Schede massime da generare</string>
+    <string name="ai_prompt_is_required">Il prompt è obbligatorio</string>
+    <string name="ai_max_cards_range">Le schede massime devono essere almeno 1</string>
+    <string name="ai_generation_from_existing_started">Generazione del mazzo da mazzi esistenti\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Mazzo \"%s\" creato con %s schede</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Generazione del mazzo non riuscita: %s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>Traduci tutte le carte in italiano</item>
+        <item>Crea versioni più difficili di queste domande</item>
+        <item>Genera schede simili con esempi diversi</item>
+        <item>Converti le domande in formato con spazi da riempire</item>
+        <item>Crea schede vero/falso da queste domande</item>
+        <item>Riassumi le risposte in versioni più brevi</item>
+        <item>Espandi con domande più avanzate</item>
+        <item>Crea schede in stile appunti di studio</item>
+    </string-array>
+</resources>

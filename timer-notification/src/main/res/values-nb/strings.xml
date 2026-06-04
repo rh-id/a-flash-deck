@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="name_is_required">Navn er påkrevd</string>
+    <string name="error_no_deck_selected">Ingen kortstokk valgt</string>
+    <string name="title_add_notification_timer">Legg til varslingstidtaker</string>
+    <string name="save">Lagre</string>
+    <string name="form_name">Navn</string>
+    <string name="notification_period_in_minutes">Varslingsperiode i minutter</string>
+    <string name="title_error">Feil</string>
+    <string name="success_adding_new_notification_timer">Varslingstidtaker %s lagt til</string>
+    <string name="error_no_card_from_deck">Ingen kort i valgt kortstokk</string>
+    <string name="error_loading_decks">Feil ved lasting av kortstokker</string>
+    <string name="title_confirm">Bekreft</string>
+    <string name="confirm_delete_notification_timer">Slett varslingstidtaker %s ?</string>
+    <string name="error_deleting_notification_timer">Feil ved sletting av varslingstidtaker</string>
+    <string name="success_deleting_notification_timer">Varslingstidtaker %s slettet</string>
+    <string name="search_desc">Søk: </string>
+    <string name="hint_type_to_search">Skriv her for å søke</string>
+    <string name="title_notification_timer_list">Liste over varslingstidtakere</string>
+    <string name="notification_period_every_x_minutes">Hvert %d minutter</string>
+    <string name="success_updating_new_notification_timer">Varslingstidtaker %s oppdatert</string>
+</resources>

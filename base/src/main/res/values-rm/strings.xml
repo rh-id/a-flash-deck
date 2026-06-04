@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_record">Nagin registraziun</string>
+    <string name="press_and_hold_to_record">Smatgar e tegnair per registrar</string>
+    <string name="speak_now">Pleda ussa !</string>
+    <string name="permission_denied_record_audio">Permissiun per registrar audio refusada</string>
+    <string name="error">Errur</string>
+    <string name="cancel">Interrumper</string>
+    <string name="share_image">Cundivider maletg</string>
+    <string name="ok">OK</string>
+    <string name="save">Memorisar</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_record">Aucun enregistrement</string>
+    <string name="press_and_hold_to_record">Appuyez et maintenez pour enregistrer</string>
+    <string name="speak_now">Parlez maintenant !</string>
+    <string name="permission_denied_record_audio">Permission d\'enregistrement audio refusée</string>
+    <string name="error">Erreur</string>
+    <string name="cancel">Annuler</string>
+    <string name="share_image">Partager l\'image</string>
+    <string name="ok">OK</string>
+    <string name="save">Enregistrer</string>
+</resources>
