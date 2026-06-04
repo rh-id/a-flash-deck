@@ -21,14 +21,21 @@ A simple and easy to use flash card app to help you study.
 
 ## Features
 * Easily add deck and cards
+* Reversible cards that swap question and answer during tests
+* Copy and move cards between decks
+* Save & Add Another button for quick consecutive card creation
 * Add notification timer to periodically asking you question
+* Notification time window — set start and end times for periodic reminders
+* Voice playback directly from notifications
 * Support dark mode and light mode
 * Easily export & share your decks to your friends
 * Import and export decks in Anki `.apkg` format (supports Basic cards with images and audio)
 * Record voices and attach images for the cards
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
+* Test state persistence — resume your test after app restart
 * Flash bot to smartly suggest list of card to test you
 * AI-powered deck generation using Google Gemini API (from topic or existing decks - translate, expand, transform)
+* AI model selection — choose from available Gemini models dynamically
 
 ### Anki Integration
 

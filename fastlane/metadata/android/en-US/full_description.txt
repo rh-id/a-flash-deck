@@ -1,10 +1,43 @@
-A simple and easy to use flash card to help you study
+A simple and easy to use flash card app to help you study smarter and learn faster!
+
+<b>Create & Manage</b>
 <ul>
-  <li>Easily add deck and cards</li>
-  <li>Add notification timer to periodically asking you question</li>
-  <li>Support dark mode and light mode</li>
+  <li>Easily add decks and flash cards</li>
+  <li>Reversible cards — swap question and answer during tests</li>
+  <li>Copy and move cards between decks</li>
+  <li>Save & Add Another button for quick consecutive card creation</li>
+  <li>Record voices and attach images for your cards</li>
+</ul>
+
+<b>Study & Test</b>
+<ul>
+  <li>Test mode with shuffle and progress tracking</li>
+  <li>Test state persistence — resume your test after app restart</li>
+  <li>Flash bot to smartly suggest cards to test you based on your behavior</li>
+</ul>
+
+<b>Reminders</b>
+<ul>
+  <li>Notification timer to periodically quiz you</li>
+  <li>Notification time window — set start and end times for reminders</li>
+  <li>Voice playback directly from notifications</li>
+  <li>Create shortcut to show random card from deck for casual study (Android 8+)</li>
+</ul>
+
+<b>Import & Export</b>
+<ul>
   <li>Easily export & share your decks to your friends</li>
-  <li>Record voices and attach images for the cards</li>
-  <li>Create shortcut to show random card from deck for casual study (Android 8 and above)</li>
-  <li>Flash bot to smartly suggest list of card to test you</li>
+  <li>Import and export decks in Anki .apkg format (supports Basic cards with images and audio)</li>
+</ul>
+
+<b>AI-Powered</b>
+<ul>
+  <li>Generate flash card decks from any topic using Google Gemini AI</li>
+  <li>Transform existing decks with AI — translate, expand, create harder questions, and more</li>
+  <li>AI model selection — choose from available Gemini models</li>
+</ul>
+
+<b>Appearance</b>
+<ul>
+  <li>Support dark mode and light mode</li>
 </ul>
