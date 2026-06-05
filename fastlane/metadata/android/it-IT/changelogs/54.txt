@@ -1,0 +1,10 @@
+Release 1.11.1+54
+
+Correzioni:
+* Thread safety per i subject RxJava in tutte le classi notifier
+* Race condition nelle operazioni del database di TestStateModifier
+* Perdita di memoria da sottoscrizioni RxJava in CardItemSV e NotificationTimerItemSV
+* Perdita di CompositeDisposable in DeckItemSV, HomePage e dialogo timer
+
+Novità:
+* Aggiunte traduzioni per 8 nuove lingue

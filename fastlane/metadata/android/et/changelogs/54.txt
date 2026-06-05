@@ -1,0 +1,10 @@
+Release 1.11.1+54
+
+Parandused:
+* RxJava-objektide lõimeohutus kõigis teavitajaklassides parandatud
+* Võistlustingimused TestStateModifier andmebaasioperatsioonides parandatud
+* Mäluleke pesastatud RxJava tellimustest CardItemSV ja NotificationTimerItemSV parandatud
+* CompositeDisposable leke DeckItemSV, HomePage ja taimeri üksikasjade dialoogis parandatud
+
+Uuendus:
+* Lisatud tõlked saksa, prantsuse, itaalia, retoromaani, islandi, eesti, norra (Bokmål) ja norra (Nynorsk) keelde

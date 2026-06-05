@@ -1,0 +1,10 @@
+Release 1.11.1+54
+
+Corrections :
+* Sécurité des threads corrigée pour les sujets RxJava
+* Conditions de concurrence corrigées dans TestStateModifier
+* Fuite mémoire corrigée dans CardItemSV et NotificationTimerItemSV
+* Fuite de CompositeDisposable corrigée dans DeckItemSV et HomePage
+
+Nouveauté :
+* Ajout de traductions pour 8 nouvelles langues

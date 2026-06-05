@@ -1,0 +1,10 @@
+Release 1.11.1+54
+
+Villuleiðréttingar:
+* Leiðrétt þráðöryggi fyrir RxJava-hluti í tilkynningaflokkum
+* Leiðrétt kapphlaupsaðstæður í TestStateModifier gagnagrunni
+* Leiðrétt minnisleka úr RxJava-áskriftum í CardItemSV og NotificationTimerItemSV
+* Leiðrétt CompositeDisposable-leka í DeckItemSV, HomePage og tímavísglugga
+
+Nýtt:
+* Bætt við þýðingum fyrir 8 ný tungumál

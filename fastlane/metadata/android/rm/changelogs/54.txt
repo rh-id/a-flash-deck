@@ -1,0 +1,10 @@
+Release 1.11.1+54
+
+Corecziuns:
+* Corectà la segirezza da threads per subjects RxJava en las classas da notificaziun
+* Corectà las cundiziuns da competiziun en las operaziuns da database da TestStateModifier
+* Corectà la perdita da memoria dals abunaments RxJava en CardItemSV e NotificationTimerItemSV
+* Corectà la perdita da CompositeDisposable en DeckItemSV, HomePage ed il dialog dal timer
+
+Nova funcziun:
+* Agiuntà translaziuns per 8 novas linguas

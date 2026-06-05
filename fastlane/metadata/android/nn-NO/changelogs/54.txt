@@ -1,0 +1,10 @@
+Release 1.11.1+54
+
+Feilrettingar:
+* Retta trådsikkerheit for RxJava-emne i alle varslingsklassar
+* Retta kappløpstilstandar i TestStateModifier databaseoperasjonar
+* Retta minnelekkasje frå nøsta RxJava-abonnement i CardItemSV og NotificationTimerItemSV
+* Retta CompositeDisposable-lekkasje i DeckItemSV, HomePage og detaljdialog for tidtakar
+
+Ny funksjon:
+* Lagt til omsetjingar for tysk, fransk, italiensk, retoromansk, islandsk, estisk, norsk (Bokmål) og norsk (Nynorsk)
