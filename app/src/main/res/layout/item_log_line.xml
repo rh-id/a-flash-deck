@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/text_log_line"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fontFamily="monospace"
+    android:paddingStart="@dimen/text_margin"
+    android:paddingEnd="@dimen/text_margin"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp"
+    android:textSize="12sp" />
