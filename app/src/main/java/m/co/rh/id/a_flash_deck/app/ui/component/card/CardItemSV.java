@@ -214,7 +214,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     public void onClick(View view) {
         Card card = getCard();
         int id = view.getId();
-        if (id == R.id.button_edit) {
+        if (id == R.id.root_layout || id == R.id.button_edit) {
             mNavigator.push(Routes.CARD_DETAIL_PAGE, CardDetailPage.Args.forUpdate(card.clone()),
                     (navigator, navRoute, activity, currentView) -> {
                         CardDetailPage.Result result = CardDetailPage.Result.of(navRoute.getRouteResult());
