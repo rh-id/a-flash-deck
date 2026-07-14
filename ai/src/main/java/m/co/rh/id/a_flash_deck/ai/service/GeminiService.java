@@ -21,6 +21,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -44,17 +47,45 @@ import m.co.rh.id.alogger.ILogger;
 
 public class GeminiService {
     private static final String TAG = GeminiService.class.getName();
+
+    /**
+     * Instructions for the math/Markdown format Gemini must emit. Math uses
+     * dollar delimiters ($...$ / $$...$$) which contain no backslashes and so
+     * survive JSON cleanly. Because the response is JSON, every backslash inside
+     * a LaTeX command MUST be written as a double backslash, or org.json will
+     * silently corrupt the output (e.g. \nabla becomes a newline). The parsed
+     * output is later converted back to Anki-native \(...\) / \[...\] delimiters
+     * before storage, so this dollar form is Gemini-facing only.
+     */
+    private static final String MATH_FORMAT_INSTRUCTION =
+            "The question and answer fields support Markdown: **bold**, *italic*, ~~strikethrough~~, " +
+            "bullet and numbered lists, GFM tables, fenced code blocks, and [link text](url) " +
+            "(bare URLs also become clickable automatically). " +
+            "For math, use LaTeX with dollar delimiters: inline math as $x^2$ and " +
+            "display/block math as $$\\int_0^1 x\\,dx$$. Do NOT use \\(...\\) or \\[...\\) or HTML tags. " +
+            "Do NOT use a literal $ for currency or money; write the word (e.g. '5 dollars') instead, " +
+            "because a lone $ is ambiguous with the math delimiter. " +
+            "Use Markdown instead of HTML for formatting (e.g. a blank line for a paragraph break, **text** for bold). " +
+            "CRITICAL: because the response is JSON, every backslash inside a LaTeX command MUST be " +
+            "written as a double backslash in the JSON string value, otherwise the output is corrupted. " +
+            "For example write \\nabla as \\\\nabla, \\frac{a}{b} as \\\\frac{a}{b}, \\int as \\\\int, " +
+            "\\sum as \\\\sum. A full answer looks like: \"$$\\\\iiint_V (\\\\nabla \\\\cdot \\\\mathbf{F}) dV = " +
+            "\\\\iint_S (\\\\mathbf{F} \\\\cdot \\\\mathbf{n}) dS$$\". ";
+
     private static final String SYSTEM_INSTRUCTION = "You are a flash card creator. " +
             "Create educational flash cards based on the given topic. " +
             "Each card should have a clear, concise question and a clear, accurate answer. " +
-            "The deck name should be descriptive and appropriate for the topic.";
+            "The deck name should be descriptive and appropriate for the topic. " +
+            MATH_FORMAT_INSTRUCTION;
     private static final String SYSTEM_INSTRUCTION_FROM_EXISTING = "You are a flash card creator and transformer. " +
             "You will receive existing flash card decks in JSON format. " +
             "Generate a NEW single deck based on the user's instructions. " +
             "The user may want to translate, expand, create harder versions, or transform the cards. " +
             "hasImage means the card has an image attached. hasVoice means the card has a voice recording attached. " +
             "Each card has 'q' (question) and 'a' (answer) fields. " +
+            MATH_FORMAT_INSTRUCTION +
             "Return JSON: {\"deck_name\": \"string\", \"cards\": [{\"question\": \"string\", \"answer\": \"string\"}]}";
+
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
     private final ApiKeyManager mApiKeyManager;
@@ -268,14 +299,49 @@ public class GeminiService {
         if (cardsArray != null) {
             for (int i = 0; i < cardsArray.length(); i++) {
                 JSONObject cardObj = cardsArray.getJSONObject(i);
-                String question = cardObj.optString("question", "");
-                String answer = cardObj.optString("answer", "");
+                // Gemini emits math with $...$ / $$...$$; convert to the
+                // Anki-native \(...\) / \[...\] form that the renderer and
+                // storage expect.
+                String question = convertMathToAnkiDelimiters(cardObj.optString("question", ""));
+                String answer = convertMathToAnkiDelimiters(cardObj.optString("answer", ""));
                 if (!question.isEmpty() && !answer.isEmpty()) {
                     cards.add(new AiGeneratedCard(question, answer));
                 }
             }
         }
         return new AiGeneratedDeck(deckName, cards);
+    }
+
+    /** Matches $$...$$ (block). DOTALL so multi-line blocks match. Group 1 = inner latex. */
+    private static final Pattern MATH_BLOCK_DOLLAR =
+            Pattern.compile("\\$\\$(.*?)\\$\\$", Pattern.DOTALL);
+    /**
+     * Matches $...$ (inline) where the content is non-empty, has no whitespace
+     * immediately after the opening $ or before the closing $, and contains no
+     * newline. This follows the GitHub/CommonMark math convention and prevents
+     * a lone currency $ (e.g. "$5 and the price is ...") from being paired with
+     * a later math $ as a false inline span.
+     */
+    private static final Pattern MATH_INLINE_DOLLAR =
+            Pattern.compile("\\$(?![\\s$])([^$\\n]*?)(?<![\\s$])\\$");
+
+    /**
+     * Convert Gemini's dollar-delimited math into the Anki-native backslash
+     * delimiters used internally (and expected by MarkdownRenderer): $$...$$ →
+     * \[...\] (block, first) and $...$ → \(...\) (inline). The inline regex is
+     * tight (no boundary whitespace, no newlines) so a lone currency $ is not
+     * mis-paired with a math $. MarkdownRenderer later translates both
+     * \(...\) and \[...\] to $$...$$ for Markwon 4.6.2 (which renders inline
+     * vs block by position, since both use $$).
+     */
+    private String convertMathToAnkiDelimiters(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        // Block first so the inline rule doesn't consume the inner dollars of $$...$$.
+        text = MATH_BLOCK_DOLLAR.matcher(text).replaceAll("\\\\[$1\\\\]");
+        text = MATH_INLINE_DOLLAR.matcher(text).replaceAll("\\\\($1\\\\)");
+        return text;
     }
 
     private String httpGet(String urlString, String apiKey) throws Exception {
@@ -290,14 +356,7 @@ public class GeminiService {
             connection.setReadTimeout(30000);
             int responseCode = connection.getResponseCode();
             if (responseCode >= 200 && responseCode < 300) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line).append('\n');
-                }
-                reader.close();
-                return response.toString();
+                return readResponseBody(connection);
             } else {
                 String errorResponse = readErrorStream(connection);
                 mLogger.e(TAG, "HTTP " + responseCode + ": " + errorResponse);
@@ -307,6 +366,27 @@ public class GeminiService {
             if (connection != null) {
                 connection.disconnect();
             }
+        }
+    }
+
+    /**
+     * Read the HTTP response body as raw bytes and decode once as UTF-8. This
+     * preserves the exact bytes (including in-string escapes like {@code \\n})
+     * without the line-splitting that a readLine() loop would introduce, which
+     * previously corrupted LaTeX/JSON content.
+     */
+    private String readResponseBody(HttpURLConnection connection) throws Exception {
+        InputStream inputStream = connection.getInputStream();
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] chunk = new byte[8192];
+            int read;
+            while ((read = inputStream.read(chunk)) != -1) {
+                buffer.write(chunk, 0, read);
+            }
+            return buffer.toString("UTF-8");
+        } finally {
+            inputStream.close();
         }
     }
 
@@ -330,14 +410,7 @@ public class GeminiService {
             outputStream.close();
             int responseCode = connection.getResponseCode();
             if (responseCode >= 200 && responseCode < 300) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line).append('\n');
-                }
-                reader.close();
-                return response.toString();
+                return readResponseBody(connection);
             } else {
                 String errorResponse = readErrorStream(connection);
                 mLogger.e(TAG, "HTTP " + responseCode + ": " + errorResponse);

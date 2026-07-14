@@ -61,6 +61,15 @@ dependencies {
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'com.github.rh-id:concurrent-utils:v0.0.3'
 
+    // Markwon — markdown rendering for card Q/A (latex + autolinks)
+    api "io.noties.markwon:core:$markwon_version"
+    api "io.noties.markwon:ext-tables:$markwon_version"
+    api "io.noties.markwon:ext-strikethrough:$markwon_version"
+    api "io.noties.markwon:ext-tasklist:$markwon_version"
+    api "io.noties.markwon:linkify:$markwon_version"
+    api "io.noties.markwon:ext-latex:$markwon_version"
+    api "io.noties.markwon:inline-parser:$markwon_version"
+
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
     testImplementation 'junit:junit:4.13.2'

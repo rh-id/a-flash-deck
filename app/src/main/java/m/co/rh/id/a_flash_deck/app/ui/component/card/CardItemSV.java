@@ -31,6 +31,7 @@ import androidx.appcompat.widget.PopupMenu;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
@@ -39,6 +40,7 @@ import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.MoveCardCmd;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardDetailPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectSVDialog;
+import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -64,6 +66,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     private transient Provider mSvProvider;
     private transient ILogger mLogger;
     private transient FileHelper mFileHelper;
+    private transient MarkdownRenderer mMarkdownRenderer;
     private transient CommonNavConfig mCommonNavConfig;
     private transient DeckChangeNotifier mDeckChangeNotifier;
     private transient RxDisposer mRxDisposer;
@@ -85,6 +88,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         mSvProvider = provider.get(IStatefulViewProvider.class);
         mLogger = mSvProvider.get(ILogger.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
+        mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
@@ -107,12 +111,11 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
-        mRxDisposer.add("createView_onChangeCard",
+        // Image visibility is cheap and synchronous — update it immediately on
+        // the main thread so there is no flicker.
+        mRxDisposer.add("createView_onCardImage",
                 mCardSubject.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
-                            Context context = mSvProvider.getContext();
-                            textQuestion.setText(context.getString(R.string.question_desc_value, card.question));
-                            textAnswer.setText(context.getString(R.string.answer_desc_value, card.answer));
                             if (card.questionImage != null) {
                                 imageQuestion.setImageURI(Uri.fromFile(mFileHelper.getCardQuestionImageThumbnail(card.questionImage)));
                                 imageQuestion.setVisibility(View.VISIBLE);
@@ -121,6 +124,31 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                                 imageQuestion.setVisibility(View.GONE);
                             }
                         }));
+        // Text parsing is CPU work — run it off the main thread. switchMapSingle
+        // disposes the previous in-flight parse whenever a new card arrives, so
+        // an updated card never shows stale text. An id guard additionally
+        // covers the recycle/rebind case.
+        mRxDisposer.add("createView_onCardText",
+                mCardSubject.getSubject()
+                        .switchMapSingle(card -> {
+                            Context context = mSvProvider.getContext();
+                            return Single.zip(
+                                    mMarkdownRenderer.toPlainTextAsync(card.question),
+                                    mMarkdownRenderer.toPlainTextAsync(card.answer),
+                                    (q, a) -> new String[]{
+                                            context.getString(R.string.question_desc_value, q),
+                                            context.getString(R.string.answer_desc_value, a),
+                                            String.valueOf(card.id)});
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(qa -> {
+                            Card current = getCard();
+                            if (current != null && String.valueOf(current.id).equals(qa[2])) {
+                                textQuestion.setText(qa[0]);
+                                textAnswer.setText(qa[1]);
+                            }
+                        }, throwable -> mLogger.e(TAG,
+                                mSvProvider.getContext().getString(R.string.error_loading_deck), throwable)));
         mRxDisposer.add("createView_onChangeCard_getDeckById",
                 mCardSubject.getSubject().switchMapSingle(card ->
                         mDeckQueryCmd.getDeckById(card.deckId)
@@ -134,18 +162,29 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                 mDeckChangeNotifier
                         .getMovedCardFlow()
                         .filter(moveCardEvent -> moveCardEvent.getMovedCard().id.equals(getCard().id))
-                        .switchMapSingle(moveCardEvent ->
-                                mDeckQueryCmd
-                                        .getDeckById(moveCardEvent.getDestinationDeck().id)
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .map(deck -> new Object[]{moveCardEvent, deck})
-                        ).subscribe(objects -> {
-                            MoveCardEvent moveCardEvent = (MoveCardEvent) objects[0];
-                            Deck deck = (Deck) objects[1];
+                        .switchMapSingle(moveCardEvent -> {
                             Context context = mSvProvider.getContext();
-                            textQuestion.setText(context.getString(R.string.question_desc_value, moveCardEvent.getMovedCard().question));
-                            textAnswer.setText(context.getString(R.string.answer_desc_value, moveCardEvent.getMovedCard().answer));
-                            textDeckName.setText(deck.name);
+                            Card movedCard = moveCardEvent.getMovedCard();
+                            return Single.zip(
+                                    mDeckQueryCmd.getDeckById(moveCardEvent.getDestinationDeck().id),
+                                    mMarkdownRenderer.toPlainTextAsync(movedCard.question),
+                                    mMarkdownRenderer.toPlainTextAsync(movedCard.answer),
+                                    (deck, q, a) -> new Object[]{
+                                            deck,
+                                            context.getString(R.string.question_desc_value, q),
+                                            context.getString(R.string.answer_desc_value, a),
+                                            String.valueOf(movedCard.id)});
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(objects -> {
+                            Deck deck = (Deck) objects[0];
+                            Card current = getCard();
+                            // Guard: only apply if the row still shows this card.
+                            if (current != null && String.valueOf(current.id).equals(objects[3])) {
+                                textQuestion.setText((String) objects[1]);
+                                textAnswer.setText((String) objects[2]);
+                                textDeckName.setText(deck.name);
+                            }
                         }, throwable -> {
                             mLogger.e(TAG, mSvProvider.getContext().getString(R.string.error_loading_deck), throwable);
                         }));
@@ -186,7 +225,8 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         } else if (id == R.id.button_delete) {
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_card, card.question);
+            String content = context.getString(R.string.confirm_delete_card,
+                    mMarkdownRenderer.toPlainText(card.question));
             mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
                     mCommonNavConfig.args_commonBooleanDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
@@ -208,7 +248,8 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                                             provider.get(ILogger.class)
                                                     .i(TAG,
                                                             deleteContext.getString(
-                                                                    R.string.success_deleting_card, deletedCard.question));
+                                                                    R.string.success_deleting_card,
+                                                                    mMarkdownRenderer.toPlainText(deletedCard.question)));
                                         }
                                         compositeDisposable.dispose();
                                     })

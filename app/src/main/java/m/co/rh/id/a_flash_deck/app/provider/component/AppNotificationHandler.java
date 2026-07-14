@@ -49,6 +49,7 @@ import m.co.rh.id.a_flash_deck.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationPlayVoiceReceiver;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
+import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
@@ -71,6 +72,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<FileHelper> mFileHelper;
     private final ProviderValue<AudioPlayer> mAudioPlayer;
     private final ProviderValue<BotAnalytics> mBotAnalytics;
+    private final ProviderValue<MarkdownRenderer> mMarkdownRenderer;
     private final QueueSubject<NotificationTimerEvent> mNotificationTimerSubject;
     private final QueueSubject<Deck> mDeckMessageSubject;
     private final ReentrantLock mLock;
@@ -84,6 +86,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mFileHelper = provider.lazyGet(FileHelper.class);
         mAudioPlayer = provider.lazyGet(AudioPlayer.class);
         mBotAnalytics = provider.lazyGet(BotAnalytics.class);
+        mMarkdownRenderer = provider.lazyGet(MarkdownRenderer.class);
         mNotificationTimerSubject = new QueueSubject<>();
         mDeckMessageSubject = new QueueSubject<>();
         mLock = new ReentrantLock();
@@ -114,7 +117,10 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
                     intentFlag);
             String title = mAppContext.getString(R.string.notification_title_flash_question);
-            String content = selectedCard.question;
+            // Notifications render plain text only — strip Markdown/LaTeX syntax
+            // (e.g. **bold** -> bold, \(x^2\) -> readable text) so users don't
+            // see raw markup in the notification body.
+            String content = mMarkdownRenderer.get().toPlainText(selectedCard.question);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_NOTIFICATION_TIMER)
                     .setSmallIcon(R.drawable.ic_notification_launcher)
                     .setColorized(true)

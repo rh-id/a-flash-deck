@@ -20,24 +20,23 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
-import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.core.text.HtmlCompat;
-
 import java.io.File;
 import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
+import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
@@ -62,6 +61,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
     private transient RxDisposer mRxDisposer;
     private transient TestStateModifier mTestStateModifier;
     private transient AudioPlayer mAudioPlayer;
+    private transient MarkdownRenderer mMarkdownRenderer;
     private transient BotAnalytics mBotAnalytics;
     private transient BehaviorSubject<TestState> mTestStateSubject;
 
@@ -76,6 +76,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mTestStateModifier = mSvProvider.get(TestStateModifier.class);
         mAudioPlayer = mSvProvider.get(AudioPlayer.class);
+        mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
         mBotAnalytics = mSvProvider.get(BotAnalytics.class);
         mTestStateSubject = BehaviorSubject.create();
     }
@@ -123,9 +124,6 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                         questionVoice = card.questionVoice;
                                     }
 
-                                    textQuestion.setText(HtmlCompat.fromHtml(questionText, HtmlCompat.FROM_HTML_MODE_LEGACY));
-                                    textQuestion.setMovementMethod(LinkMovementMethod.getInstance());
-
                                     if (questionImage != null) {
                                         questionImageView.setImageURI(Uri.fromFile(
                                                 card.isReversed ? fileHelper.getCardAnswerImage(questionImage) : fileHelper.getCardQuestionImage(questionImage)
@@ -155,6 +153,29 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                 }
                         )
                 );
+        // Parse the question markdown off the main thread. switchMapSingle
+        // disposes the previous in-flight parse on prev/next navigation, so the
+        // question always matches the current card. Guard against the card
+        // having changed before the parse completes.
+        mRxDisposer
+                .add("createView_onQuestionText",
+                        mTestStateSubject
+                                .switchMapSingle(testState -> {
+                                    Card card = testState.currentCard();
+                                    String questionText = card.isReversed ? card.answer : card.question;
+                                    return Single.zip(
+                                            Single.just(testState),
+                                            mMarkdownRenderer.parseAsync(questionText),
+                                            (ts, spanned) -> new Object[]{ts, spanned});
+                                })
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(result -> {
+                                    TestState ts = (TestState) result[0];
+                                    if (ts == mTestStateSubject.getValue()) {
+                                        mMarkdownRenderer.applyParsedMarkdown(textQuestion,
+                                                (android.text.Spanned) result[1]);
+                                    }
+                                }));
         mRxDisposer
                 .add("createView_getActiveTest",
                         mTestStateModifier.getActiveTest()
@@ -211,7 +232,9 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             ImageView answerImageView = rootView.findViewById(R.id.image_answer);
             TextView textAnswer = rootView.findViewById(R.id.text_answer);
             Button buttonAnswerVoice = rootView.findViewById(R.id.button_answer_voice);
+            final String answerText;
             if (card.isReversed) {
+                answerText = card.question;
                 if (card.questionImage != null) {
                     answerImageView.setImageURI(Uri.fromFile(
                             fileHelper.getCardQuestionImage(card.questionImage)
@@ -221,11 +244,11 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                     answerImageView.setImageURI(null);
                     answerImageView.setVisibility(View.GONE);
                 }
-                textAnswer.setText(HtmlCompat.fromHtml(card.question, HtmlCompat.FROM_HTML_MODE_LEGACY));
                 if (card.questionVoice != null) {
                     buttonAnswerVoice.setVisibility(View.VISIBLE);
                 }
             } else {
+                answerText = card.answer;
                 if (card.answerImage != null) {
                     answerImageView.setImageURI(Uri.fromFile(
                             fileHelper.getCardAnswerImage(card.answerImage)
@@ -235,13 +258,24 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                     answerImageView.setImageURI(null);
                     answerImageView.setVisibility(View.GONE);
                 }
-                textAnswer.setText(HtmlCompat.fromHtml(card.answer, HtmlCompat.FROM_HTML_MODE_LEGACY));
                 if (card.answerVoice != null) {
                     buttonAnswerVoice.setVisibility(View.VISIBLE);
                 }
             }
-            textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
             textAnswer.setOnClickListener(null);
+            // Parse the answer markdown off the main thread. Keyed so a second
+            // tap (or navigation) disposes any in-flight parse.
+            mRxDisposer
+                    .add("onClick_revealAnswer",
+                            mMarkdownRenderer.parseAsync(answerText)
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(spanned -> {
+                                        Card current = testState.currentCard();
+                                        if (current != null && current.id.equals(card.id)) {
+                                            mMarkdownRenderer.applyParsedMarkdown(textAnswer, spanned);
+                                        }
+                                    }, throwable -> iLogger.e(TAG,
+                                            context.getString(R.string.error_loading_deck), throwable)));
             mBotAnalytics.trackOpenTestAnswer(card.id);
         } else if (id == R.id.button_previous) {
             mRxDisposer

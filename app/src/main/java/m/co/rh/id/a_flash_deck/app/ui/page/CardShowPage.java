@@ -19,7 +19,6 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
 import android.net.Uri;
-import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,17 +27,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
-import androidx.core.text.HtmlCompat;
 
 import java.io.File;
 import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.ui.component.card.CardItemSV;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
+import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
@@ -96,17 +96,12 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
         questionVoiceButton.setOnClickListener(this);
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
+        MarkdownRenderer markdownRenderer = mSvProvider.get(MarkdownRenderer.class);
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onCardShow",
                         mCardStateSubject.observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
                                 card -> {
-                                    textQuestion.setText(HtmlCompat.fromHtml(card.question,
-                                            HtmlCompat.FROM_HTML_MODE_LEGACY));
-                                    textQuestion.setMovementMethod(LinkMovementMethod.getInstance());
-                                    textAnswer.setText(HtmlCompat.fromHtml(card.answer,
-                                            HtmlCompat.FROM_HTML_MODE_LEGACY));
-                                    textAnswer.setMovementMethod(LinkMovementMethod.getInstance());
                                     if (card.questionImage != null) {
                                         File file = mSvProvider.get(FileHelper.class).getCardQuestionImage(card.questionImage);
                                         questionImageView.setImageURI(Uri.fromFile(file));
@@ -131,6 +126,27 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                                 }
                         )
                 );
+        // Parse markdown off the main thread. switchMapSingle disposes the
+        // previous in-flight parse whenever the card changes, so advancing to
+        // the next card never shows stale text. applyParsedMarkdown must run on
+        // the main thread.
+        mSvProvider.get(RxDisposer.class)
+                .add("createView_onCardText",
+                        mCardStateSubject
+                                .switchMapSingle(card -> Single.zip(
+                                        markdownRenderer.parseAsync(card.question),
+                                        markdownRenderer.parseAsync(card.answer),
+                                        (q, a) -> new Object[]{card, q, a}))
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(result -> {
+                                    Card card = (Card) result[0];
+                                    if (card == mCardStateSubject.getValue()) {
+                                        markdownRenderer.applyParsedMarkdown(textQuestion,
+                                                (android.text.Spanned) result[1]);
+                                        markdownRenderer.applyParsedMarkdown(textAnswer,
+                                                (android.text.Spanned) result[2]);
+                                    }
+                                }));
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onCardChanged",
                         mSvProvider.get(DeckChangeNotifier.class).getUpdatedCardFlow()

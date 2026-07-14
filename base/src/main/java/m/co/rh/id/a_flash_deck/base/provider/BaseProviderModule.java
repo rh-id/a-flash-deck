@@ -34,6 +34,7 @@ import co.rh.id.lib.concurrent_utils.concurrent.executor.WeightedThreadPool;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.AudioRecorder;
+import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimeChangeNotifier;
@@ -89,6 +90,7 @@ public class BaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(provider.getContext()));
 
         providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));
+        providerRegistry.register(MarkdownRenderer.class, () -> new MarkdownRenderer(provider));
         providerRegistry.register(CommonNavConfig.class, CommonNavConfig::new);
         providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
         providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(provider));
