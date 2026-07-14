@@ -66,6 +66,8 @@
     <string name="previous">Enavos</string>
     <string name="next">Enavant</string>
     <string name="tap_to_view_answer">[Tocca per vesair la resposta]</string>
+    <string name="tap_to_edit_question">[Tocca per editar la dumonda]</string>
+    <string name="tap_to_edit_answer">[Tocca per editar la resposta]</string>
     <string name="error_loading_test">Errur chargiond il test</string>
     <string name="error_test_not_found">Test betg chattà</string>
     <string name="error_failed_to_get_previous_card">Betg reussì d\'obtegnair la carta precedenta</string>

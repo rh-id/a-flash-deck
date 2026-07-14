@@ -66,6 +66,8 @@
     <string name="previous">Previous</string>
     <string name="next">Next</string>
     <string name="tap_to_view_answer">[Tap to view answer]</string>
+    <string name="tap_to_edit_question">[Tap to edit question]</string>
+    <string name="tap_to_edit_answer">[Tap to edit answer]</string>
     <string name="error_loading_test">Error loading test</string>
     <string name="error_test_not_found">Test not found</string>
     <string name="error_failed_to_get_previous_card">Failed to get previous card</string>

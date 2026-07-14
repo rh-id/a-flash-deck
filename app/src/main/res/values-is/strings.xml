@@ -66,6 +66,8 @@
     <string name="previous">Fyrri</string>
     <string name="next">Næsta</string>
     <string name="tap_to_view_answer">[Ýttu til að sjá svar]</string>
+    <string name="tap_to_edit_question">[Ýttu til að breyta spurningu]</string>
+    <string name="tap_to_edit_answer">[Ýttu til að breyta svari]</string>
     <string name="error_loading_test">Villa við að hlaða prófi</string>
     <string name="error_test_not_found">Próf fannst ekki</string>
     <string name="error_failed_to_get_previous_card">Mistókst að fá fyrra spjald</string>

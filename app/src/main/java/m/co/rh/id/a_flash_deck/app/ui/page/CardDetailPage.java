@@ -26,9 +26,11 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
@@ -36,7 +38,6 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.checkbox.MaterialCheckBox;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
 
@@ -49,6 +50,7 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateCardCmd;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
+import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -99,6 +101,9 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
     private transient BehaviorSubject<Optional<File>> mAnswerVoiceSubject;
     private transient EditText mEditTextQuestion;
     private transient EditText mEditTextAnswer;
+    private transient TextView mTextRenderedQuestion;
+    private transient TextView mTextRenderedAnswer;
+    private transient MarkdownRenderer mMarkdownRenderer;
     private transient MaterialCheckBox mReversibleCheckBox;
     private transient ViewGroup mContainerImageQuestion;
     private transient ViewGroup mContainerImageAnswer;
@@ -123,6 +128,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mFileHelper = mSvProvider.get(FileHelper.class);
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mAudioPlayer = mSvProvider.get(AudioPlayer.class);
+        mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
         if (isUpdate()) {
             mNewCardCmd = mSvProvider.get(UpdateCardCmd.class);
         } else {
@@ -216,6 +222,10 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mVoiceAnswerContainer = rootLayout.findViewById(R.id.container_voice_answer);
         mEditTextQuestion = rootLayout.findViewById(R.id.text_input_edit_question);
         mEditTextAnswer = rootLayout.findViewById(R.id.text_input_edit_answer);
+        mTextRenderedQuestion = rootLayout.findViewById(R.id.text_rendered_question);
+        mTextRenderedAnswer = rootLayout.findViewById(R.id.text_rendered_answer);
+        mTextRenderedQuestion.setOnClickListener(this);
+        mTextRenderedAnswer.setOnClickListener(this);
         mReversibleCheckBox = rootLayout.findViewById(R.id.checkbox_reversible);
         if (mCard != null) {
             mEditTextQuestion.setText(mCard.question);
@@ -224,6 +234,21 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         }
         mEditTextQuestion.addTextChangedListener(mQuestionTextWatcher);
         mEditTextAnswer.addTextChangedListener(mAnswerTextWatcher);
+        // When focus leaves an EditText (user taps elsewhere), switch that field
+        // back to rendered mode so the markdown is re-rendered with any edits.
+        mEditTextQuestion.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && mTextRenderedQuestion.getVisibility() != View.VISIBLE) {
+                switchToRendered(mTextRenderedQuestion, mEditTextQuestion, this::renderQuestion);
+            }
+        });
+        mEditTextAnswer.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && mTextRenderedAnswer.getVisibility() != View.VISIBLE) {
+                switchToRendered(mTextRenderedAnswer, mEditTextAnswer, this::renderAnswer);
+            }
+        });
+        // Render the question/answer into the read-only rendered TextViews.
+        renderQuestion();
+        renderAnswer();
         mReversibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCard.isReversibleQA = isChecked);
         mRxDisposer
                 .add("createView_questionValid",
@@ -446,6 +471,84 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                 mEditTextAnswer.setError(null);
             }
         });
+        // Flip back to rendered mode for both fields (cleared above).
+        switchToRendered(mTextRenderedQuestion, mEditTextQuestion, this::renderQuestion);
+        switchToRendered(mTextRenderedAnswer, mEditTextAnswer, this::renderAnswer);
+    }
+
+    /**
+     * Render the current {@code mCard.question} into the read-only question
+     * TextView asynchronously. Shows a placeholder when the field is empty.
+     * Latex/markdown spans are TextView-specific, so each render re-parses fresh.
+     */
+    private void renderQuestion() {
+        if (mCard.question == null || mCard.question.isEmpty()) {
+            mTextRenderedQuestion.setText(R.string.tap_to_edit_question);
+            return;
+        }
+        mRxDisposer.add("createView_renderQuestion",
+                mMarkdownRenderer.parseAsync(mCard.question)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(spanned ->
+                                        mMarkdownRenderer.applyParsedMarkdown(mTextRenderedQuestion, spanned),
+                                throwable -> mLogger.e(TAG, "render question failed", throwable)));
+    }
+
+    /** Render the current {@code mCard.answer} into the read-only answer TextView. */
+    private void renderAnswer() {
+        if (mCard.answer == null || mCard.answer.isEmpty()) {
+            mTextRenderedAnswer.setText(R.string.tap_to_edit_answer);
+            return;
+        }
+        mRxDisposer.add("createView_renderAnswer",
+                mMarkdownRenderer.parseAsync(mCard.answer)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(spanned ->
+                                        mMarkdownRenderer.applyParsedMarkdown(mTextRenderedAnswer, spanned),
+                                throwable -> mLogger.e(TAG, "render answer failed", throwable)));
+    }
+
+    /**
+     * Switch a field from rendered mode to editable mode: hide the overlay
+     * rendered TextView (which sits on top of the always-visible EditText),
+     * ensure the EditText holds the raw markdown source from {@code mCard}
+     * (remove/setText/re-add dance so the watcher doesn't double-fire), focus
+     * it, and show the soft keyboard.
+     *
+     * <p>The {@code TextInputLayout}/EditText is intentionally kept always
+     * visible (never toggled gone/visible), matching the original working
+     * setup — toggling a {@code TextInputLayout}'s visibility dynamically does
+     * not reliably re-initialize its outlined-box rendering. The rendered
+     * TextView overlays it and is the only thing toggled.
+     */
+    private void switchToEditable(TextView rendered, EditText editable, TextWatcher watcher,
+                                  String rawSource) {
+        rendered.setVisibility(View.GONE);
+        editable.removeTextChangedListener(watcher);
+        editable.setText(rawSource);
+        editable.requestFocus();
+        editable.addTextChangedListener(watcher);
+        InputMethodManager imm = (InputMethodManager) editable.getContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(editable, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    /**
+     * Switch a field back to rendered mode: hide the soft keyboard, clear the
+     * EditText focus, show the overlay rendered TextView, and re-render the
+     * current {@code mCard} content (so any edits are reflected).
+     */
+    private void switchToRendered(TextView rendered, EditText editable, Runnable reRender) {
+        InputMethodManager imm = (InputMethodManager) editable.getContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(editable.getWindowToken(), 0);
+        }
+        editable.clearFocus();
+        rendered.setVisibility(View.VISIBLE);
+        reRender.run();
     }
 
     @Override
@@ -612,6 +715,12 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         int id = view.getId();
         if (id == R.id.button_save_and_add) {
             saveAndReset();
+        } else if (id == R.id.text_rendered_question) {
+            switchToEditable(mTextRenderedQuestion, mEditTextQuestion,
+                    mQuestionTextWatcher, mCard.question);
+        } else if (id == R.id.text_rendered_answer) {
+            switchToEditable(mTextRenderedAnswer, mEditTextAnswer,
+                    mAnswerTextWatcher, mCard.answer);
         } else if (id == R.id.button_question_more_action) {
             PopupMenu popup = new PopupMenu(view.getContext(), view);
             popup.getMenuInflater().inflate(R.menu.page_card_detail_question, popup.getMenu());

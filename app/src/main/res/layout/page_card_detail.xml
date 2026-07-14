@@ -35,20 +35,33 @@
                     android:animateLayoutChanges="true"
                     android:orientation="vertical">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/text_input_question"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/text_margin">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/text_input_edit_question"
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_question"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/text_input_edit_question"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:hint="@string/question"
+                                android:textSize="18sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_rendered_question"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:hint="@string/question"
+                            android:background="?attr/colorSurface"
+                            android:padding="16dp"
                             android:textSize="18sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </FrameLayout>
 
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -144,21 +157,34 @@
                     android:animateLayoutChanges="true"
                     android:orientation="vertical">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/text_input_answer"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/text_margin">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/text_input_edit_answer"
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_answer"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/text_input_edit_answer"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:hint="@string/answer"
+                                android:maxLines="10"
+                                android:textSize="18sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_rendered_answer"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:hint="@string/answer"
-                            android:maxLines="10"
+                            android:background="?attr/colorSurface"
+                            android:padding="16dp"
                             android:textSize="18sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </FrameLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/container_image_answer"
