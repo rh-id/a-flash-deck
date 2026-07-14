@@ -428,4 +428,21 @@
   copyrightHolder: JetBrains s.r.o. and Kotlin Programming Language contributors
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://www.jetbrains.org
+  url: http://www.jetbrains.org- artifact: com.atlassian.commonmark:commonmark:+
+  name: commonmark-java core
+  copyrightHolder: Atlassian
+  license: BSD 2-Clause License
+  licenseUrl: https://opensource.org/licenses/BSD-2-Clause
+  url: https://github.com/commonmark/commonmark.java
+- artifact: com.atlassian.commonmark:commonmark-ext-gfm-tables:+
+  name: commonmark-java extension for tables
+  copyrightHolder: Atlassian
+  license: BSD 2-Clause License
+  licenseUrl: https://opensource.org/licenses/BSD-2-Clause
+  url: https://github.com/commonmark/commonmark.java
+- artifact: com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:+
+  name: commonmark-java extension for strikethrough
+  copyrightHolder: Atlassian
+  license: BSD 2-Clause License
+  licenseUrl: https://opensource.org/licenses/BSD-2-Clause
+  url: https://github.com/commonmark/commonmark.java
