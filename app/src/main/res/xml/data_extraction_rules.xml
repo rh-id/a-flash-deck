@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backup / device-transfer rules.
+    Excludes the encrypted Gemini API key (ai_secure_prefs) and the Room
+    database (a-flash-deck.db) from cloud backup and device-to-device transfer.
+    The API key is Keystore-encrypted but the ciphertext should not be
+    restored onto another device; the database is excluded to avoid
+    inconsistent state on restore.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="ai_secure_prefs.xml" />
+        <exclude domain="database" path="a-flash-deck.db" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="ai_secure_prefs.xml" />
+        <exclude domain="database" path="a-flash-deck.db" />
+    </device-transfer>
+</data-extraction-rules>
