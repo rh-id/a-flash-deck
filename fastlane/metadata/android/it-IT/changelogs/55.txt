@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Correzioni:
+* Corretto il blocco della pagina di log passando a una RecyclerView
+* Corretta la corruzione dei backslash LaTeX nei contenuti delle carte generati da Gemini
+
+Novità:
+* Rendering di domande e risposte delle carte in Markdown con supporto matematico LaTeX
+* Tocco in un punto qualsiasi di una riga carta per aprire la pagina di modifica
+* Alternanza tra testo renderizzato e modificabile durante la modifica di domanda e risposta di una carta
+* Target Android 17 (SDK 37) ed esclusione dei dati sensibili (chiave API, database) dai backup

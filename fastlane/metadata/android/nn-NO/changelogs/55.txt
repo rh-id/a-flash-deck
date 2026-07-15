@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Feilrettingar:
+* Retta frysing av LogPage ved å byta til ein RecyclerView
+* Retta øydelegging av LaTeX-backslash i Gemini-generert kortinnhald
+
+Ny funksjon:
+* Kortspørsmål og -svar vert viste som Markdown med LaTeX-matte-støtte
+* Trykk kor som helst på ei kortrekkje for å opna redigeringssida
+* Bytt mellom gjengjeven og redigerbar tekst ved redigering av spørsmål og svar på eit kort
+* Målplattform Android 17 (SDK 37) og ekskluder sensitiv data (API-nøkkel, database) frå tryggleikskopiar

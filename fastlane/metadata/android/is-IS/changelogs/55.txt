@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Villuleiðréttingar:
+* Leiðrétt að LogPage frýsi með því að skipta yfir í RecyclerView
+* Leiðrétt skástriksspillingu LaTeX-bakslása í Gemini-gjörðu spjaldinnihaldi
+
+Nýtt:
+* Spjaldaspurningar og -svör birt sem Markdown með LaTeX stærðfræðistuðningi
+* Ýtt hvar sem er á spjaldaröð til að opna breytingarsíðuna
+* Skipta milli myndgerts og breytanlegs texta við breytingu á spjaldaspurningu og -svari
+* Markmið Android 17 (SDK 37) og næm gögn (API-lykill, gagnagrunnur) útilokuð frá öryggisafritun

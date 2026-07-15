@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Fehlerbehebungen:
+* Einfrieren der Log-Seite behoben durch Umstellung auf eine RecyclerView
+* Backslash-Korruption bei LaTeX in Gemini-generierten Karteninhalten behoben
+
+Neu:
+* Kartenfragen und -antworten werden als Markdown mit LaTeX-Matheunterstützung gerendert
+* Antippen einer beliebigen Stelle in einer Kartenzeile öffnet die Bearbeitungsseite
+* Wechsel zwischen gerendertem und bearbeitbarem Text beim Bearbeiten von Frage und Antwort einer Karte
+* Zielplattform Android 17 (SDK 37); sensible Daten (API-Schlüssel, Datenbank) vom Backup ausgeschlossen

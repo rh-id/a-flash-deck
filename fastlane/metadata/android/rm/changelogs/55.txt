@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Corecziuns:
+* Corectà il schlarar da la LogPage cun midar ad ina RecyclerView
+* Corectà la corrupziun dals backslashes LaTeX en il cuntegn da cartas generà da Gemini
+
+Nova funcziun:
+* Mussar las dumondas e respuestas da cartas sco Markdown cun agid da matematica LaTeX
+* Tuttgar nua denturn ina lingia da carta avra la pagina d'editur
+* Midar tranter text mussà ed editabel cun editar la dumonda e resposta d'ina carta
+* Platforma da fin Android 17 (SDK 37) ed excluder datas sensiblas (clav API, banca da datas) dal backup

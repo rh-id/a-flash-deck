@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Parandused:
+* LogPage-i hangumise parandamine RecyclerView-ile üleminekuga
+* LaTeX-i tagurpidi kaldkriipsude rikkumise parandamine Gemini-ga loodud kaardi sisus
+
+Uuendus:
+* Kaardi küsimused ja vastused renderdatakse Markdownina LaTeX-i matematikatoega
+* Kaardirea suvalisele kohale puudutamine avab muutmislehe
+* Kaardi küsimuse ja vastuse muutmisel renderdatud ning muudetava teksti vahel lülitamine
+* Sihtplatvormiks Android 17 (SDK 37); tundlikud andmed (API võti, andmebaas) on varukoopiast välja jäetud

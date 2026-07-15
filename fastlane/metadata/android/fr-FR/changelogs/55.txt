@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Corrections :
+* Correction du gel de la page de journal en passant à une RecyclerView
+* Correction de la corruption des barres obliques inverses LaTeX dans le contenu de carte généré par Gemini
+
+Nouveauté :
+* Affichage des questions et réponses des cartes en Markdown avec prise en charge des mathématiques LaTeX
+* Appui n'importe où sur une ligne de carte pour ouvrir la page d'édition
+* Bascule entre texte affiché et texte modifiable lors de la modification de la question et de la réponse d'une carte
+* Ciblage d'Android 17 (SDK 37) et exclusion des données sensibles (clé API, base de données) des sauvegardes

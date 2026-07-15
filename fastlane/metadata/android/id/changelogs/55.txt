@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Perbaikan:
+* Perbaikan pembekuan LogPage dengan beralih ke RecyclerView
+* Perbaikan korupsi garis miring terbalik LaTeX pada konten kartu yang dibuat Gemini
+
+Fitur:
+* Render pertanyaan dan jawaban kartu sebagai Markdown dengan dukungan matematika LaTeX
+* Ketuk di mana saja pada baris kartu untuk membuka halaman edit
+* Beralih antara teks yang dirender dan dapat diedit saat mengedit pertanyaan dan jawaban kartu
+* Menargetkan Android 17 (SDK 37) dan mengecualikan data sensitif (kunci API, basis data) dari pencadangan
