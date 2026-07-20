@@ -21,6 +21,8 @@ A simple and easy to use flash card app to help you study.
 
 ## Features
 * Easily add deck and cards
+* Rendered / editable toggle for card question and answer fields
+* Markdown rendering with LaTeX math support for card questions and answers (powered by Markwon + jlatexmath; Anki-style `\( \)` / `\[ \]` delimiters supported)
 * Reversible cards that swap question and answer during tests
 * Copy and move cards between decks
 * Save & Add Another button for quick consecutive card creation
@@ -34,7 +36,7 @@ A simple and easy to use flash card app to help you study.
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
 * Test state persistence — resume your test after app restart
 * Flash bot to smartly suggest list of card to test you
-* AI-powered deck generation using Google Gemini API (from topic or existing decks - translate, expand, transform)
+* AI-powered deck generation using Google Gemini API — generate from a topic, or transform existing decks (translate, expand, create harder versions)
 * AI model selection — choose from available Gemini models dynamically
 
 ### Anki Integration
@@ -163,6 +165,7 @@ graph TB
         Notifiers[RxJava Notifiers]
         ProviderModules[Provider Modules]
         CommonUI[Common UI Components]
+        Markdown[MarkdownRenderer]
         Utils[Utilities]
     end
 
@@ -184,7 +187,8 @@ graph TB
 
     subgraph "AI Module (Gemini Integration)"
         AiService[GeminiService]
-        AiWorker[GenerateDeckWorker]
+        AiWorkerTopic[GenerateDeckWorker]
+        AiWorkerExisting[GenerateDeckFromExistingWorker]
         AiSecurity[ApiKeyManager]
         AiUI[AI UI Components]
         AiNotifier[ApiKeyChangeNotifier]
@@ -284,7 +288,7 @@ The app uses Room Persistence Library with two databases:
 #### AppDatabase (base module)
 - **Entities**:
   - `Deck`: Collection of flash cards
-  - `Card`: Individual flash card with front/back content
+  - `Card`: Individual flash card with question/answer content, optional image and voice attachments, and a reversible-QA flag
   - `Test`: Test session tracking
   - `AndroidNotification`: Notification history
   - `NotificationTimer`: Scheduled notification timers
@@ -296,6 +300,8 @@ The app uses Room Persistence Library with two databases:
 - **Version**: 1
 
 #### Database Schema
+> Column names below are the actual Room column names. Relationships are logical only — no `@ForeignKey`/`@Index` constraints are declared. `CARD.isReversed` is a runtime-only `@Ignore` field and is not persisted.
+
 ```mermaid
 erDiagram
     DECK ||--o{ CARD : contains
@@ -304,13 +310,14 @@ erDiagram
 
     CARD {
         long id PK
-        long deck_id FK
-        text front_content
-        text back_content
-        text front_image_path
-        text back_image_path
-        text front_voice_path
-        text back_voice_path
+        long deck_id
+        int ordinal
+        text question
+        text question_image
+        text question_voice
+        text answer
+        text answer_image
+        text answer_voice
         boolean is_reversible_qa
     }
 
@@ -323,29 +330,30 @@ erDiagram
 
     TEST {
         long id PK
+        text state_file_location
         date created_date_time
-        date updated_date_time
     }
 
     NOTIFICATION_TIMER {
         long id PK
         text name
+        int period_minutes
         text selected_deck_ids
-        int interval_minutes
-        text current_card_id
+        long current_card_id
         text displayed_card_ids
     }
 
     CARD_LOG {
         long id PK
         long card_id
-        text action
+        int _action
         date created_date_time
     }
 
     SUGGESTED_CARD {
         long id PK
         long card_id
+        date created_date_time
     }
 ```
 
@@ -386,6 +394,7 @@ Business logic is encapsulated in command classes following the Command pattern:
 - `ExportImportCmd`: Deck import/export
 - `PagedDeckItemsCmd` / `PagedCardItemsCmd`: Pagination
 - `DeleteSuggestedCardCmd`: Bot suggestion management
+- `GenerateDeckFromTopicCmd` / `GenerateDeckFromExistingCmd`: AI deck generation (AI module)
 
 **Command Flow**:
 1. Command receives input from `StatefulView`
@@ -427,6 +436,7 @@ WorkManager is used for background tasks:
   - Calls Gemini REST API with user-provided topic and card count
   - Inserts generated deck and cards into database
   - Posts success/failure notification on completion
+- `GenerateDeckFromExistingWorker`: Transforms existing decks (translate, expand, harder versions) via Gemini API. Both AI workers share a common `BaseGenerateDeckWorker`
 
 ### Threading Strategy
 
@@ -497,8 +507,8 @@ base/src/main/java/m/co/rh/id/a_flash_deck/base/
 │   ├── FileHelper.java
 │   ├── IStatefulViewProvider.java
 │   └── notifier/ (RxJava notifiers)
-├── component/ (Shared components)
-├── constants/ (Constants, routes, keys)
+├── component/ (Shared components: AppSharedPreferences, AudioPlayer, AudioRecorder, MarkdownRenderer, ...)
+├── constants/ (Constants, routes, keys, WorkManager keys/tags)
 ├── exception/ (ValidationException)
 ├── model/ (Event models, DeckModel, TestState)
 ├── repository/ (AndroidNotificationRepo)
@@ -527,17 +537,17 @@ timer-notification/src/main/java/m/co/rh/id/a_flash_deck/timer/
 └── workmanager/ (Timer worker)
 
 ai/src/main/java/m/co/rh/id/a_flash_deck/ai/
-├── command/ (GenerateDeckFromTopicCmd)
+├── command/ (GenerateDeckFromTopicCmd, GenerateDeckFromExistingCmd)
 ├── model/ (AiGeneratedCard, AiGeneratedDeck, AvailableModel)
 ├── provider/
 │   ├── AiProviderModule.java
 │   └── notifier/ (ApiKeyChangeNotifier)
 ├── security/ (ApiKeyManager - Android Keystore encryption)
-├── service/ (GeminiService - REST API)
+├── service/ (GeminiService - REST API via HttpURLConnection)
 ├── ui/
 │   ├── component/settings/ (AiSettingsMenuSV)
-│   └── page/ (ApiKeyEntrySVDialog, GenerateDeckFromTopicSVDialog)
-└── workmanager/ (GenerateDeckWorker)
+│   └── page/ (ApiKeyEntrySVDialog, BaseGenerateDeckSVDialog, GenerateDeckFromTopicSVDialog, GenerateDeckFromExistingSVDialog)
+└── workmanager/ (BaseGenerateDeckWorker, GenerateDeckWorker, GenerateDeckFromExistingWorker)
 ```
 
 ### StatefulView Lifecycle
@@ -576,9 +586,9 @@ stateDiagram-v2
 ### Testing
 
 The project has instrumentation tests across modules:
-- `app/androidTest`: 7 test files covering Anki `.apkg` parsing, import, export, round-trip testing, and `ExportImportCmd`
-- `base/androidTest`: 2 test files covering JSON model serialization and database migrations (`DbMigrationTest`)
-- `app/test`: 1 unit test (boilerplate example)
+- `app/androidTest`: tests covering Anki `.apkg` parsing, import, export, round-trip testing, and `ExportImportCmd` (plus helper modules for test DB provisioning and Anki test data)
+- `base/androidTest`: tests covering JSON model serialization, database migrations (`DbMigrationTest`), and Markdown/LaTeX rendering (`MarkdownRendererTest`)
+- `bot`, `timer-notification`, `ai`: no test sources currently
 
 Tests use isolated in-memory databases and mock dependencies for hermetic testing.
 
@@ -594,21 +604,24 @@ The project has three GitHub Actions workflows:
 
 *   `gradlew-build.yml`: Builds the project with Gradle on every push and pull request to the `master` branch.
 *   `android-release.yml`: Creates a GitHub release and attaches the debug and release APKs when a new tag starting with "v" is pushed.
-*   `android-emulator-test.yml`: Runs Android instrumentation tests on an emulator on every push and pull request to the `master` branch.
+*   `android-emulator-test.yml`: Runs Android instrumentation tests (`./gradlew connectedCheck`) on an emulator matrix (API level 23 and 29, default and Google APIs targets) on every push and pull request to the `master` branch.
 
 ### Fastlane
 
-The project uses Fastlane to manage the app's metadata for the Google Play Store. This includes the app's title, description, screenshots, and changelogs. The metadata is stored in the `fastlane/metadata` directory and is organized by language.
+The project uses Fastlane to manage the app's metadata for the Google Play Store. This includes the app's title, description, screenshots, and changelogs. The metadata is stored in the `fastlane/metadata/android` directory and is localized for multiple languages (including en-US, id, de-DE, fr-FR, it-IT, rm, is-IS, et, nb-NO, nn-NO).
 
 ## How to Build
 
 1.  Clone the repository: `git clone https://github.com/rh-id/a-flash-deck.git`
-2.  Open the project in Android Studio.
-3.  Build the project using Gradle: `./gradlew assembleDebug`
+2.  Open the project in Android Studio (recent Canary/preview channel recommended, since the project targets Android 17 / SDK 37 and uses AGP 9.x).
+3.  Make sure JDK 21 is available — the Gradle daemon is pinned to a JDK 21 toolchain via `gradle/gradle-daemon-jvm.properties`.
+4.  Build the project using Gradle: `./gradlew assembleDebug`
+
+The app currently targets `compileSdk`/`targetSdk` 37 (Android 17) with `minSdk` 23.
 
 ## Libraries Used
 
-The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and finally RxJava / RxAndroid to handle UI use cases.
+The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and RxJava / RxAndroid to handle UI use cases. Card questions and answers are rendered as Markdown with LaTeX math support via [Markwon](https://github.com/noties/Markwon) (including its `ext-latex` plugin, which brings in jlatexmath). Other notable dependencies include Room (persistence), WorkManager (background jobs), PhotoView (zoomable images), and LeakCanary's `plumber-android` (startup crash prevention). The Gemini API integration in the `:ai` module uses raw `HttpURLConnection` rather than a networking library.
 
 ## License
 
