@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Villa, vinsamlega veldu spjöld</string>
     <string name="reversible_when_questioned">Vendanleg þegar spurt</string>
     <string name="title_generate_deck_from_existing">Búa til spjöld úr tilvist með Gemini</string>
+    <string name="title_generate_deck_from_image">Búa til spilastokk úr myndum með Gemini</string>
     <string name="save_and_add_another">Vista &amp; Bæta við öðru</string>
 </resources>

@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Viga, palun valige kaardipakk</string>
     <string name="reversible_when_questioned">Pööratav küsimisel</string>
     <string name="title_generate_deck_from_existing">Loo kaardipakk olemasolevast Gemini abil</string>
+    <string name="title_generate_deck_from_image">Loo kaardipakk piltidest Geminiga</string>
     <string name="save_and_add_another">Salvesta &amp; Lisa veel üks</string>
 </resources>

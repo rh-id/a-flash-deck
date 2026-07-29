@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Erreur, veuillez sélectionner un paquet</string>
     <string name="reversible_when_questioned">Réversible lors de l\'interrogation</string>
     <string name="title_generate_deck_from_existing">Générer un paquet à partir de l\'existant avec Gemini</string>
+    <string name="title_generate_deck_from_image">Générer un paquet à partir d\'images avec Gemini</string>
     <string name="save_and_add_another">Enregistrer &amp; en ajouter un autre</string>
 </resources>

@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Feil, vel kortstokk</string>
     <string name="reversible_when_questioned">Kan snurrast når spurd</string>
     <string name="title_generate_deck_from_existing">Lag kortstokk frå eksisterande med Gemini</string>
+    <string name="title_generate_deck_from_image">Generer kortstokk frå bilete med Gemini</string>
     <string name="save_and_add_another">Lagre &amp; legg til nytt</string>
 </resources>

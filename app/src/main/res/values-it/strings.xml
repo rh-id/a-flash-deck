@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Errore, seleziona un mazzo</string>
     <string name="reversible_when_questioned">Reversibile quando interrogato</string>
     <string name="title_generate_deck_from_existing">Genera mazzo da esistente con Gemini</string>
+    <string name="title_generate_deck_from_image">Genera mazzo da immagini con Gemini</string>
     <string name="save_and_add_another">Salva &amp; Aggiungi altro</string>
 </resources>

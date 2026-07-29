@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Fehler, bitte wählen Sie einen Kartensatz aus</string>
     <string name="reversible_when_questioned">Umkehrbar bei Abfrage</string>
     <string name="title_generate_deck_from_existing">Kartensatz aus vorhandenem mit Gemini generieren</string>
+    <string name="title_generate_deck_from_image">Kartenset aus Bildern mit Gemini erstellen</string>
     <string name="save_and_add_another">Speichern &amp; Weitere hinzufügen</string>
 </resources>

@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Errur, tscherna per plaschair in pachet</string>
     <string name="reversible_when_questioned">Reversibel cura dumondà</string>
     <string name="title_generate_deck_from_existing">Generar pachet d\'existents cun Gemini</string>
+    <string name="title_generate_deck_from_image">Generar in pachet da cartas da figuras cun Gemini</string>
     <string name="save_and_add_another">Memorisar &amp; Agiuntar in auter</string>
 </resources>

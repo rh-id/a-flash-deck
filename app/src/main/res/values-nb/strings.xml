@@ -120,5 +120,6 @@
     <string name="error_please_select_deck">Feil, vennligst velg kortstokk</string>
     <string name="reversible_when_questioned">Kan reverseres når spurt</string>
     <string name="title_generate_deck_from_existing">Generer kortstokk fra eksisterende med Gemini</string>
+    <string name="title_generate_deck_from_image">Generer kortstokk fra bilder med Gemini</string>
     <string name="save_and_add_another">Lagre &amp; legg til en annen</string>
 </resources>
