@@ -36,6 +36,7 @@ public class Routes {
     public static final String AI_API_KEY_DIALOG = "/ai/apiKeyDialog";
     public static final String AI_GENERATE_DECK_DIALOG = "/ai/generateDeckDialog";
     public static final String AI_GENERATE_DECK_FROM_EXISTING_DIALOG = "/ai/generateDeckFromExistingDialog";
+    public static final String AI_GENERATE_DECK_FROM_IMAGE_DIALOG = "/ai/generateDeckFromImageDialog";
 
     //Use CommonNavConfig.java to handle arguments and result return by common routes
     public static final String COMMON_BOOLEAN_DIALOG = "/common/booleanDialog";

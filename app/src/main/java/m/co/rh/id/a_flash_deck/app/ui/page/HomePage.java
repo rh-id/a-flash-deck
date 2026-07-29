@@ -144,6 +144,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         Button importDeckButton = rootLayout.findViewById(R.id.button_import_deck);
         Button generateDeckAiButton = rootLayout.findViewById(R.id.button_generate_deck_ai);
         Button generateDeckFromExistingAiButton = rootLayout.findViewById(R.id.button_generate_deck_from_existing_ai);
+        Button generateDeckFromImageAiButton = rootLayout.findViewById(R.id.button_generate_deck_from_image_ai);
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
@@ -153,6 +154,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         importDeckButton.setOnClickListener(this);
         generateDeckAiButton.setOnClickListener(this);
         generateDeckFromExistingAiButton.setOnClickListener(this);
+        generateDeckFromImageAiButton.setOnClickListener(this);
         ViewGroup cardOnGoingTest = rootLayout.findViewById(R.id.container_card_ongoing_test);
         cardOnGoingTest.setOnClickListener(this);
         View flashBotContainer = rootLayout.findViewById(R.id.container_card_flash_bot);
@@ -365,6 +367,16 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                         GenerateDeckFromExistingSVDialog.Args.with(selectedDeckIds));
                             }
                         });
+            } else {
+                String title = mSvProvider.getContext().getString(R.string.title_error);
+                String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
+                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                        mCommonNavConfig.args_commonMessageDialog(title, content));
+            }
+        } else if (id == R.id.button_generate_deck_from_image_ai) {
+            GeminiService geminiService = mSvProvider.get(GeminiService.class);
+            if (geminiService.isConfigured()) {
+                mNavigator.push(Routes.AI_GENERATE_DECK_FROM_IMAGE_DIALOG);
             } else {
                 String title = mSvProvider.getContext().getString(R.string.title_error);
                 String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);

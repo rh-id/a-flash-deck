@@ -36,21 +36,40 @@
     <string name="title_generate_deck_from_existing">Búa til spjöld úr tilvist með Gemini</string>
     <string name="summary_selected_decks">%1$d spjöld, %2$d spjöld alls</string>
     <string name="hint_prompt_instructions">Hvað á að gera með þessi spjöld?</string>
+    <string name="hint_prompt_instructions_image">Leiðbeiningar fyrir fyrirmæli (Valkvætt)</string>
     <string name="hint_max_cards">Hámarksfjöldi spjalda sem á að búa til</string>
     <string name="ai_prompt_is_required">Boðskyn er nauðsynlegt</string>
     <string name="ai_max_cards_range">Hámarksfjöldi spjalda verður að vera að minnsta kosti 1</string>
-    <string name="ai_generation_from_existing_started">Bý til spjöld úr tilvistarspjöldum\u2026</string>
-    <string name="ai_generation_from_existing_success" formatted="false">Spjöld \"%s\" búið til með %s spjöldum</string>
-    <string name="ai_generation_from_existing_failed" formatted="false">Mistókst að búa til spjöld: %s</string>
+    <string name="ai_generation_from_existing_started">Býr til spilastokk úr núverandi spilastokkum\u2026</string>
+    <string name="ai_generation_from_existing_success" formatted="false">Spilastokkur \"%s\" búinn til með %s spilum</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Tókst ekki að búa til spilastokk: %s</string>
+    <string name="title_generate_deck_from_image">Búa til spilastokk úr myndum með Gemini</string>
+    <string name="hint_add_images">Myndir (ýttu á hnappinn fyrir neðan til að bæta við):</string>
+    <string name="ai_images_required">Að minnsta kosti ein mynd er nauðsynleg</string>
+    <string name="ai_generate_from_image_started">Býr til spilastokk úr myndum\u2026</string>
+    <string name="ai_generate_from_image_success" formatted="false">Spilastokkur \"%s\" búinn til með %s spilum</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Tókst ekki að búa til spilastokk úr myndum: %s</string>
+    <string name="take_photo">Taka mynd</string>
+    <string name="pick_from_gallery">Velja úr myndasafni</string>
+    <string name="no_images_added">Engum myndum bætt við ennþá. Bættu við allt að 10 myndum.</string>
 
     <string-array name="ai_prompt_suggestions">
-        <item>Þýða öll spjöld á íslensku</item>
+        <item>Þýða öll spjöld yfir á íslensku</item>
         <item>Búa til erfiðari útgáfur af þessum spurningum</item>
         <item>Búa til svipuð spjöld með öðrum dæmum</item>
-        <item>Umbreyta spurningum í fylla-í-gat-format</item>
-        <item>Búa til satt/ósatt spjöld úr þessum spurningum</item>
-        <item>Summa svörin í styttri útgáfur</item>
-        <item>Stækka með öflugri spurningum</item>
-        <item>Búa til spjöld í námsskráarstíl</item>
+        <item>Breyta spurningum í eyðufyllingarform</item>
+        <item>Búa til rétt/rangt spjöld úr þessum spurningum</item>
+        <item>Draga svör saman í styttri útgáfur</item>
+        <item>Bæta við meira krefjandi spurningum</item>
+        <item>Búa til spjöld í stíl við glópur</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Búa til eyðufyllingarspjöld</item>
+        <item>Búa til rétt eða rangt spjöld byggð á spurningunum</item>
+        <item>Móta spurningar sem einföld S&amp;S án valkosta</item>
+        <item>Láta fylgja ítarlegar útskýringar í svörum</item>
+        <item>Búa til erfiðari spurningar úr efninu</item>
+        <item>Einblína aðeins á lykilhugtök og skilgreiningar</item>
     </string-array>
 </resources>

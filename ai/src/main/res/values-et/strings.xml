@@ -35,22 +35,41 @@
     <string name="ai_generation_failed" formatted="false">Kaardipaki loomine teemale \"%s\" ebaõnnestus: %s</string>
     <string name="title_generate_deck_from_existing">Loo kaardipakk olemasolevast Gemini abil</string>
     <string name="summary_selected_decks">%1$d kaardipakk(id), kokku %2$d kaarti</string>
-    <string name="hint_prompt_instructions">Mida teha nende kaartidega?</string>
+    <string name="hint_prompt_instructions">Mida nende kaartidega teha?</string>
+    <string name="hint_prompt_instructions_image">Viiba juhised (Valikuline)</string>
     <string name="hint_max_cards">Maksimaalselt loodavaid kaarte</string>
     <string name="ai_prompt_is_required">Käsklus on kohustuslik</string>
     <string name="ai_max_cards_range">Maksimaalne kaartide arv peab olema vähemalt 1</string>
     <string name="ai_generation_from_existing_started">Kaardipaki loomine olemasolevatest kaardipakkidest\u2026</string>
     <string name="ai_generation_from_existing_success" formatted="false">Kaardipakk \"%s\" loodud %s kaardiga</string>
     <string name="ai_generation_from_existing_failed" formatted="false">Kaardipaki loomine ebaõnnestus: %s</string>
+    <string name="title_generate_deck_from_image">Loo kaartide pakk piltidest Geminiga</string>
+    <string name="hint_add_images">Pildid (lisamiseks puuduta allolevat nuppu):</string>
+    <string name="ai_images_required">Vähemalt üks pilt on nõutud</string>
+    <string name="ai_generate_from_image_started">Kaardipaki loomine piltidest\u2026</string>
+    <string name="ai_generate_from_image_success" formatted="false">Kaardipakk \"%s\" loodud %s kaardiga</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Kaardipaki loomine piltidest ebaõnnestus: %s</string>
+    <string name="take_photo">Tee foto</string>
+    <string name="pick_from_gallery">Vali galeriist</string>
+    <string name="no_images_added">Pilte pole veel lisatud. Lisa kuni 10 pilti.</string>
 
     <string-array name="ai_prompt_suggestions">
         <item>Tõlgi kõik kaardid eesti keelde</item>
         <item>Loo nendest küsimustest raskemad versioonid</item>
-        <item>Loo sarnaseid kaarte erinevate näidetega</item>
-        <item>Muuda küsimused täitmisvormingusse</item>
-        <item>Loo tõene/vale kaardid nendest küsimustest</item>
-        <item>Koonda vastused lühematesse versioonidesse</item>
-        <item>Laienda arenenumate küsimustega</item>
-        <item>Loo õppemärkmete stiilis kaardid</item>
+        <item>Loo sarnaseid kaarte teiste näidetega</item>
+        <item>Teisenda küsimused lünkteksti vormingusse</item>
+        <item>Loo nendest küsimustest õige/vale kaardid</item>
+        <item>Keeleliselt kokku võtta vastused lühemaks</item>
+        <item>Laienda keerukamate küsimustega</item>
+        <item>Loo õpimärkmete stiilis kaardid</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Loo lünkteksti kaardid</item>
+        <item>Loo küsimuste põhjal õige/vale kaardid</item>
+        <item>Vorminda küsimused lihtsa K&amp;V-na ilma valikuteta</item>
+        <item>Lisa vastustesse üksikasjalikud selgitused</item>
+        <item>Loo materjali põhjal raskemaid küsimusi</item>
+        <item>Keskendu ainult põhimõistetele ja definitsioonidele</item>
     </string-array>
 </resources>

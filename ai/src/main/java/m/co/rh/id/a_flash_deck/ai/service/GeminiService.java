@@ -86,6 +86,20 @@ public class GeminiService {
             MATH_FORMAT_INSTRUCTION +
             "Return JSON: {\"deck_name\": \"string\", \"cards\": [{\"question\": \"string\", \"answer\": \"string\"}]}";
 
+    private static final String SYSTEM_INSTRUCTION_FROM_IMAGE = "You are an expert flash card creator. " +
+            "Analyze the provided image(s) carefully and generate educational flash cards.\n" +
+            "DEFAULT FORMATTING (when no user instruction is provided):\n" +
+            "1. If the image(s) contain QUESTIONS, QUIZZES, EXERCISES, or PROBLEM SETS:\n" +
+            "   - Create a flash card for each question in the image.\n" +
+            "   - By default, preserve the question format from the image. For multiple-choice questions (MCQs), include the question text AND all option choices (A, B, C, D...) inside the 'question' field. The 'answer' field should state the correct option with a clear explanation.\n" +
+            "2. If the image(s) contain KNOWLEDGE CONTENT (text, notes, diagrams, definitions):\n" +
+            "   - Generate flash cards that teach key concepts, facts, or definitions.\n" +
+            "CRITICAL OVERRIDE RULE: If the user provides specific format or transformation instructions (such as requesting fill-in-the-blank cards, true/false questions, removing options, or transforming card styles), ALWAYS FOLLOW THE USER'S INSTRUCTIONS as the highest priority over the default image formatting.\n" +
+            "The deck_name should describe what the images are about. " +
+            "Do not exceed the maximum card count specified by the user. " +
+            MATH_FORMAT_INSTRUCTION +
+            "Return JSON: {\"deck_name\": \"string\", \"cards\": [{\"question\": \"string\", \"answer\": \"string\"}]}";
+
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
     private final ApiKeyManager mApiKeyManager;
@@ -219,6 +233,54 @@ public class GeminiService {
             String responseBody = httpPost(url, requestBody, apiKey);
             AiGeneratedDeck result = parseGenerateContentResponse(responseBody);
             return result;
+        }).subscribeOn(Schedulers.from(mExecutorService));
+    }
+
+    public Single<AiGeneratedDeck> generateDeckFromImages(List<String> base64Images, int maxCards, String modelId) {
+        return generateDeckFromImages(base64Images, null, maxCards, modelId);
+    }
+
+    public Single<AiGeneratedDeck> generateDeckFromImages(List<String> base64Images, String userInstruction, int maxCards, String modelId) {
+        return Single.fromCallable(() -> {
+            String apiKey = mApiKeyManager.getApiKey();
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new IllegalStateException("API key not configured");
+            }
+            String url = BASE_URL + "/models/" + URLEncoder.encode(modelId, "UTF-8") + ":generateContent";
+            StringBuilder promptBuilder = new StringBuilder();
+            promptBuilder.append("Analyze the attached image(s) and generate up to ").append(maxCards).append(" flash cards.\n");
+            if (userInstruction != null && !userInstruction.trim().isEmpty()) {
+                promptBuilder.append("CRITICAL USER INSTRUCTION (OVERRIDE DEFAULT IMAGE FORMATTING): ").append(userInstruction.trim()).append("\n");
+            }
+            promptBuilder.append("Return JSON: {\"deck_name\": string, \"cards\": [{\"question\": string, \"answer\": string}]}");
+            String userPrompt = promptBuilder.toString();
+
+            JSONObject generationConfig = new JSONObject();
+            generationConfig.put("responseMimeType", "application/json");
+            generationConfig.put("candidateCount", 1);
+
+            // Build parts: text prompt + one inlineData part per image
+            JSONArray parts = new JSONArray();
+            parts.put(new JSONObject().put("text", userPrompt));
+            for (String base64Image : base64Images) {
+                JSONObject inlineData = new JSONObject();
+                inlineData.put("mimeType", "image/jpeg");
+                inlineData.put("data", base64Image);
+                parts.put(new JSONObject().put("inlineData", inlineData));
+            }
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("systemInstruction", new JSONObject()
+                    .put("parts", new JSONArray()
+                            .put(new JSONObject().put("text", SYSTEM_INSTRUCTION_FROM_IMAGE))));
+            requestBody.put("contents", new JSONArray()
+                    .put(new JSONObject()
+                            .put("role", "user")
+                            .put("parts", parts)));
+            requestBody.put("generationConfig", generationConfig);
+
+            String responseBody = httpPost(url, requestBody, apiKey);
+            return parseGenerateContentResponse(responseBody);
         }).subscribeOn(Schedulers.from(mExecutorService));
     }
 

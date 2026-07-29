@@ -21,6 +21,7 @@ public class WorkManagerTags {
     public static final String NOTIFICATION_TIMER = "TAG_NOTIFICATION_TIMER";
     public static final String AI_GENERATE_DECK = "TAG_AI_GENERATE_DECK";
     public static final String AI_GENERATE_DECK_FROM_EXISTING = "TAG_AI_GENERATE_DECK_FROM_EXISTING";
+    public static final String AI_GENERATE_DECK_FROM_IMAGE = "TAG_AI_GENERATE_DECK_FROM_IMAGE";
 
     private WorkManagerTags() {
     }

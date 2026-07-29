@@ -36,12 +36,22 @@
     <string name="title_generate_deck_from_existing">Generate Deck from Existing with Gemini</string>
     <string name="summary_selected_decks">%1$d deck(s), %2$d total cards</string>
     <string name="hint_prompt_instructions">What to do with these cards?</string>
+    <string name="hint_prompt_instructions_image">Prompt instructions (Optional)</string>
     <string name="hint_max_cards">Max cards to generate</string>
     <string name="ai_prompt_is_required">Prompt is required</string>
     <string name="ai_max_cards_range">Max cards must be at least 1</string>
     <string name="ai_generation_from_existing_started">Generating deck from existing decks\u2026</string>
     <string name="ai_generation_from_existing_success" formatted="false">Deck \"%s\" created with %s cards</string>
     <string name="ai_generation_from_existing_failed" formatted="false">Failed to generate deck: %s</string>
+    <string name="title_generate_deck_from_image">Generate Deck from Images with Gemini</string>
+    <string name="hint_add_images">Images (tap button below to add):</string>
+    <string name="ai_images_required">At least one image is required</string>
+    <string name="ai_generate_from_image_started">Generating deck from images\u2026</string>
+    <string name="ai_generate_from_image_success" formatted="false">Deck \"%s\" created with %s cards</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Failed to generate deck from images: %s</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="pick_from_gallery">Gallery</string>
+    <string name="no_images_added">No images added yet. Add up to 10 images.</string>
 
     <string-array name="ai_prompt_suggestions">
         <item>Translate all cards to Indonesian</item>
@@ -52,5 +62,14 @@
         <item>Summarize answers into shorter versions</item>
         <item>Expand with more advanced questions</item>
         <item>Create study notes style cards</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Create fill-in-the-blank cards</item>
+        <item>Create true or false cards based on the questions</item>
+        <item>Format questions as simple Q&amp;A without options</item>
+        <item>Include detailed explanations in the answers</item>
+        <item>Create harder questions based on the material</item>
+        <item>Focus only on key terms and definitions</item>
     </string-array>
 </resources>

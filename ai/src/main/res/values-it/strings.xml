@@ -35,22 +35,41 @@
     <string name="ai_generation_failed" formatted="false">Generazione del mazzo per \"%s\" non riuscita: %s</string>
     <string name="title_generate_deck_from_existing">Genera Mazzo da Esistente con Gemini</string>
     <string name="summary_selected_decks">%1$d mazzo/i, %2$d schede totali</string>
-    <string name="hint_prompt_instructions">Cosa fare con queste schede?</string>
+    <string name="hint_prompt_instructions">Cosa fare con queste carte?</string>
+    <string name="hint_prompt_instructions_image">Istruzioni prompt (Opzionale)</string>
     <string name="hint_max_cards">Schede massime da generare</string>
     <string name="ai_prompt_is_required">Il prompt è obbligatorio</string>
     <string name="ai_max_cards_range">Le schede massime devono essere almeno 1</string>
     <string name="ai_generation_from_existing_started">Generazione del mazzo da mazzi esistenti\u2026</string>
     <string name="ai_generation_from_existing_success" formatted="false">Mazzo \"%s\" creato con %s schede</string>
     <string name="ai_generation_from_existing_failed" formatted="false">Generazione del mazzo non riuscita: %s</string>
+    <string name="title_generate_deck_from_image">Genera mazzo da immagini con Gemini</string>
+    <string name="hint_add_images">Immagini (tocca il pulsante in basso per aggiungere):</string>
+    <string name="ai_images_required">"È richiesta almeno un'immagine"</string>
+    <string name="ai_generate_from_image_started">Generazione del mazzo dalle immagini in corso…</string>
+    <string name="ai_generate_from_image_success" formatted="false">Mazzo \"%s\" creato con %s carte</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Impossibile generare il mazzo dalle immagini: %s</string>
+    <string name="take_photo">Scatta foto</string>
+    <string name="pick_from_gallery">Scegli dalla galleria</string>
+    <string name="no_images_added">Nessuna immagine ancora aggiunta. Aggiungi fino a 10 immagini.</string>
 
     <string-array name="ai_prompt_suggestions">
-        <item>Traduci tutte le carte in italiano</item>
-        <item>Crea versioni più difficili di queste domande</item>
-        <item>Genera schede simili con esempi diversi</item>
-        <item>Converti le domande in formato con spazi da riempire</item>
-        <item>Crea schede vero/falso da queste domande</item>
-        <item>Riassumi le risposte in versioni più brevi</item>
-        <item>Espandi con domande più avanzate</item>
-        <item>Crea schede in stile appunti di studio</item>
+        <item>Tradurre tutte le carte in italiano</item>
+        <item>Creare versioni più difficili di queste domande</item>
+        <item>Generare carte simili con esempi diversi</item>
+        <item>Convertire le domande in formato da completare</item>
+        <item>Creare carte vero/falso da queste domande</item>
+        <item>Riassumere le risposte in versioni più brevi</item>
+        <item>Espandere con domande più avanzate</item>
+        <item>Creare carte in stile appunti di studio</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Crea carte da completare</item>
+        <item>Crea carte vero o falso basate sulle domande</item>
+        <item>Formatta le domande come semplice D&amp;R senza opzioni</item>
+        <item>Includi spiegazioni dettagliate nelle risposte</item>
+        <item>Crea domande più difficili basate sul materiale</item>
+        <item>Concentrati solo su termini chiave e definizioni</item>
     </string-array>
 </resources>

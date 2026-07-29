@@ -36,21 +36,40 @@
     <string name="title_generate_deck_from_existing">Generer kortstokk fra eksisterende med Gemini</string>
     <string name="summary_selected_decks">%1$d kortstokk(er), %2$d totalt kort</string>
     <string name="hint_prompt_instructions">Hva skal gjøres med disse kortene?</string>
+    <string name="hint_prompt_instructions_image">Instruksjoner for ledetekst (Valgfritt)</string>
     <string name="hint_max_cards">Maks kort å generere</string>
     <string name="ai_prompt_is_required">Instruks er påkrevd</string>
     <string name="ai_max_cards_range">Maks kort må være minst 1</string>
     <string name="ai_generation_from_existing_started">Genererer kortstokk fra eksisterende kortstokker\u2026</string>
     <string name="ai_generation_from_existing_success" formatted="false">Kortstokk \"%s\" opprettet med %s kort</string>
-    <string name="ai_generation_from_existing_failed" formatted="false">Klarte ikke generere kortstokk: %s</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Kunne ikke generere kortstokk: %s</string>
+    <string name="title_generate_deck_from_image">Generer kortstokk fra bilder med Gemini</string>
+    <string name="hint_add_images">Bilder (trykk på knappen nedenfor for å legge til):</string>
+    <string name="ai_images_required">Minst ett bilde er påkrevd</string>
+    <string name="ai_generate_from_image_started">Genererer kortstokk fra bilder\u2026</string>
+    <string name="ai_generate_from_image_success" formatted="false">Kortstokk \"%s\" opprettet med %s kort</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Kunne ikke generere kortstokk fra bilder: %s</string>
+    <string name="take_photo">Ta bilde</string>
+    <string name="pick_from_gallery">Velg fra galleri</string>
+    <string name="no_images_added">Ingen bilder lagt til ennå. Legg til opptil 10 bilder.</string>
 
     <string-array name="ai_prompt_suggestions">
-        <item>Oversett alle kort til norsk</item>
+        <item>Oversett alle kort til norsk bokmål</item>
         <item>Lag vanskeligere versjoner av disse spørsmålene</item>
-        <item>Generer lignende kort med forskjellige eksempler</item>
-        <item>Konverter spørsmål til fyll-inn-blank-format</item>
-        <item>Lag sanne/usanne kort fra disse spørsmålene</item>
-        <item>Oppsummer svar til kortere versjoner</item>
+        <item>Generer lignende kort med andre eksempler</item>
+        <item>Konverter spørsmål til fyll-inn-felt-format</item>
+        <item>Lag sant/usant-kort fra disse spørsmålene</item>
+        <item>Oppsummer svarene i kortere versjoner</item>
         <item>Utvid med mer avanserte spørsmål</item>
-        <item>Lag notatstil-kort for studier</item>
+        <item>Lag kort i studienotat-stil</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Lag fyll-inn-felt-kort</item>
+        <item>Lag sant eller usant-kort basert på spørsmålene</item>
+        <item>Formater spørsmål som enkel S&amp;S uten alternativer</item>
+        <item>Inkluder detaljerte forklaringer i svarene</item>
+        <item>Lag vanskeligere spørsmål basert på materialet</item>
+        <item>Fokuser kun på nøkkelbegreper og definisjoner</item>
     </string-array>
 </resources>

@@ -35,22 +35,41 @@
     <string name="ai_generation_failed" formatted="false">Betg reussì da generar pachet per \"%s\": %s</string>
     <string name="title_generate_deck_from_existing">Generar pachet d\'existents cun Gemini</string>
     <string name="summary_selected_decks">%1$d pachet(s), %2$d cartas en total</string>
-    <string name="hint_prompt_instructions">Co far cun questas cartas?</string>
+    <string name="hint_prompt_instructions">Tge far cun questas cartas?</string>
+    <string name="hint_prompt_instructions_image">Instrucziuns da prompt (Opziunal)</string>
     <string name="hint_max_cards">Max cartas da generar</string>
     <string name="ai_prompt_is_required">Il prompt è necessari</string>
     <string name="ai_max_cards_range">Max cartas sto esser almain 1</string>
-    <string name="ai_generation_from_existing_started">Generond pachet dals pachets existents\u2026</string>
+    <string name="ai_generation_from_existing_started">Generar il pachet da cartas da pachets existents\u2026</string>
     <string name="ai_generation_from_existing_success" formatted="false">Pachet \"%s\" creà cun %s cartas</string>
-    <string name="ai_generation_from_existing_failed" formatted="false">Betg reussì da generar pachet: %s</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">Es betg reussì da generar il pachet: %s</string>
+    <string name="title_generate_deck_from_image">Generar in pachet da cartas da maletgs cun Gemini</string>
+    <string name="hint_add_images">Maletgs (tatga il buttun sut per agiuntar):</string>
+    <string name="ai_images_required">Al minus un maletg è necessari</string>
+    <string name="ai_generate_from_image_started">Generar il pachet da cartas da maletgs\u2026</string>
+    <string name="ai_generate_from_image_success" formatted="false">Pachet \"%s\" creà cun %s cartas</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Es betg reussì da generar il pachet da maletgs: %s</string>
+    <string name="take_photo">Faria in foto</string>
+    <string name="pick_from_gallery">Tschernair da la galaria</string>
+    <string name="no_images_added">Nagin maletg agiuntà fin ussa. Agiunta fin a 10 maletgs.</string>
 
     <string-array name="ai_prompt_suggestions">
         <item>Translatar tut las cartas en rumantsch</item>
-        <item>Crear versiuns pli grevas da questas dumondas</item>
-        <item>Generar cartas sumegliantas cun differents exempels</item>
-        <item>Convertir dumondas en format cumpletta-vuids</item>
-        <item>Crear cartas ver/fals da questas dumondas</item>
-        <item>Resumar respostas en versiuns pli curtas</item>
+        <item>Crear versiuns pli difficilas da questas dumondas</item>
+        <item>Generar cartas sumegliantas cun auters exempels</item>
+        <item>Convertir dumondas en format da cumplettar</item>
+        <item>Crear cartas pussibel/falsch da questas dumondas</item>
+        <item>Resumair las respostas en versiuns pli curtas</item>
         <item>Extender cun dumondas pli avanzadas</item>
-        <item>Crear cartas en stil notas da studegi</item>
+        <item>Crear cartas en stil da notas d\'studi</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Crear cartas da cumplettar</item>
+        <item>Crear cartas pussibel u falsch abunà sin las dumondas</item>
+        <item>Formatavlar dumondas sco simpla D&amp;R senza opziuns</item>
+        <item>Includer explicaziuns detagliadas en las respostas</item>
+        <item>Crear dumondas pli difficilas abunà sin il material</item>
+        <item>Focusar mo sin ferms nots e definiziuns</item>
     </string-array>
 </resources>

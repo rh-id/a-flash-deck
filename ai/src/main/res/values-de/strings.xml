@@ -36,21 +36,40 @@
     <string name="title_generate_deck_from_existing">Kartensatz aus vorhandenem mit Gemini generieren</string>
     <string name="summary_selected_decks">%1$d Kartensatz/Kartensätze, %2$d Karten insgesamt</string>
     <string name="hint_prompt_instructions">Was soll mit diesen Karten gemacht werden?</string>
+    <string name="hint_prompt_instructions_image">Prompt-Anweisungen (Optional)</string>
     <string name="hint_max_cards">Maximale Anzahl zu generierender Karten</string>
     <string name="ai_prompt_is_required">Eingabeaufforderung ist erforderlich</string>
     <string name="ai_max_cards_range">Maximale Karten muss mindestens 1 betragen</string>
     <string name="ai_generation_from_existing_started">Kartensatz wird aus vorhandenen Kartensätzen generiert\u2026</string>
     <string name="ai_generation_from_existing_success" formatted="false">Kartensatz \"%s\" mit %s Karten erstellt</string>
     <string name="ai_generation_from_existing_failed" formatted="false">Fehler beim Generieren des Kartensatzes: %s</string>
+    <string name="title_generate_deck_from_image">Kartensatz aus Bildern mit Gemini generieren</string>
+    <string name="hint_add_images">Bilder (Tippen Sie unten auf die Schaltfläche, um welche hinzuzufügen):</string>
+    <string name="ai_images_required">Mindestens ein Bild ist erforderlich</string>
+    <string name="ai_generate_from_image_started">Kartensatz wird aus Bildern generiert\u2026</string>
+    <string name="ai_generate_from_image_success" formatted="false">Kartensatz \"%s\" mit %s Karten erstellt</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Fehler beim Generieren des Kartensatzes aus Bildern: %s</string>
+    <string name="take_photo">Foto aufnehmen</string>
+    <string name="pick_from_gallery">Aus Galerie auswählen</string>
+    <string name="no_images_added">Noch keine Bilder hinzugefügt. Fügen Sie bis zu 10 Bilder hinzu.</string>
 
     <string-array name="ai_prompt_suggestions">
         <item>Alle Karten ins Deutsche übersetzen</item>
         <item>Schwerere Versionen dieser Fragen erstellen</item>
         <item>Ähnliche Karten mit anderen Beispielen generieren</item>
-        <item>Fragen in Lückentext-Format umwandeln</item>
+        <item>Fragen in Lückentextformat umwandeln</item>
         <item>Richtig/Falsch-Karten aus diesen Fragen erstellen</item>
-        <item>Antworten zu kürzeren Versionen zusammenfassen</item>
-        <item>Mit fortgeschrittenere Fragen erweitern</item>
-        <item>Lernzettel-Stil-Karten erstellen</item>
+        <item>Antworten in kürzere Versionen zusammenfassen</item>
+        <item>Mit fortgeschritteneren Fragen erweitern</item>
+        <item>Karten im Lernnotizen-Stil erstellen</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Lückentext-Karten erstellen</item>
+        <item>Richtig-oder-Falsch-Karten basierend auf den Fragen erstellen</item>
+        <item>Fragen als einfache F&amp;A ohne Optionen formatieren</item>
+        <item>Detaillierte Erklärungen in die Antworten aufnehmen</item>
+        <item>Schwerere Fragen basierend auf dem Material erstellen</item>
+        <item>Nur auf Schlüsselbegriffe und Definitionen konzentrieren</item>
     </string-array>
 </resources>

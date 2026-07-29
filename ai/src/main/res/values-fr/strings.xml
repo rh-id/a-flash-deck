@@ -36,21 +36,40 @@
     <string name="title_generate_deck_from_existing">Générer un paquet à partir de l\'existant avec Gemini</string>
     <string name="summary_selected_decks">%1$d paquet(s), %2$d cartes au total</string>
     <string name="hint_prompt_instructions">Que faire avec ces cartes ?</string>
+    <string name="hint_prompt_instructions_image">Instructions de prompt (Optionnel)</string>
     <string name="hint_max_cards">Nombre max de cartes à générer</string>
     <string name="ai_prompt_is_required">L\'invite est requise</string>
     <string name="ai_max_cards_range">Le nombre max de cartes doit être au moins 1</string>
     <string name="ai_generation_from_existing_started">Génération du paquet à partir des paquets existants\u2026</string>
     <string name="ai_generation_from_existing_success" formatted="false">Paquet \"%s\" créé avec %s cartes</string>
     <string name="ai_generation_from_existing_failed" formatted="false">Échec de la génération du paquet : %s</string>
+    <string name="title_generate_deck_from_image">"Générer un paquet à partir d'images avec Gemini"</string>
+    <string name="hint_add_images">Images (appuyez sur le bouton ci-dessous pour en ajouter) :</string>
+    <string name="ai_images_required">Au moins une image est requise</string>
+    <string name="ai_generate_from_image_started">"Génération du paquet à partir d'images…"</string>
+    <string name="ai_generate_from_image_success" formatted="false">Paquet \"%s\" créé avec %s cartes</string>
+    <string name="ai_generate_from_image_failed" formatted="false">Échec de la génération du paquet à partir des images : %s</string>
+    <string name="take_photo">Prendre une photo</string>
+    <string name="pick_from_gallery">Choisir dans la galerie</string>
+    <string name="no_images_added">"Aucune image ajoutée pour l'instant. Ajoutez jusqu'à 10 images."</string>
 
     <string-array name="ai_prompt_suggestions">
         <item>Traduire toutes les cartes en français</item>
         <item>Créer des versions plus difficiles de ces questions</item>
-        <item>Générer des cartes similaires avec différents exemples</item>
-        <item>Convertir les questions au format à trous</item>
+        <item>Générer des cartes similaires avec des exemples différents</item>
+        <item>Convertir les questions en texte à trous</item>
         <item>Créer des cartes vrai/faux à partir de ces questions</item>
         <item>Résumer les réponses en versions plus courtes</item>
-        <item>Étendre avec des questions plus avancées</item>
-        <item>Créer des cartes style notes de cours</item>
+        <item>Développer avec des questions plus avancées</item>
+        <item>Créer des cartes style notes de révision</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>Créer des cartes à trous</item>
+        <item>Créer des cartes vrai ou faux basées sur les questions</item>
+        <item>Formater les questions en Q&amp;R simples sans options</item>
+        <item>Inclure des explications détaillées dans les réponses</item>
+        <item>Créer des questions plus difficiles basées sur le matériel</item>
+        <item>Se concentrer uniquement sur les termes clés et définitions</item>
     </string-array>
 </resources>
