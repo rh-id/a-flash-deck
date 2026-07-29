@@ -42,9 +42,9 @@ import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 
-public class GenerateDeckFromExistingSVDialog extends BaseGenerateDeckSVDialog {
+public class GenerateDeckFromExistingPage extends BaseGenerateDeckPage {
 
-    private static final String TAG = GenerateDeckFromExistingSVDialog.class.getName();
+    private static final String TAG = GenerateDeckFromExistingPage.class.getName();
 
     public static class Args implements Serializable {
         public ArrayList<Long> mSelectedDeckIds;
@@ -78,7 +78,7 @@ public class GenerateDeckFromExistingSVDialog extends BaseGenerateDeckSVDialog {
     private transient TextView mTextSummary;
     private transient TextView mTextDeckNames;
 
-    public GenerateDeckFromExistingSVDialog() {
+    public GenerateDeckFromExistingPage() {
         super();
     }
 
@@ -93,7 +93,11 @@ public class GenerateDeckFromExistingSVDialog extends BaseGenerateDeckSVDialog {
         mGenerateCmd = mSvProvider.get(GenerateDeckFromExistingCmd.class);
         mDeckDao = mSvProvider.get(DeckDao.class);
 
-        View view = activity.getLayoutInflater().inflate(R.layout.dialog_generate_deck_from_existing, container, false);
+        View view = activity.getLayoutInflater().inflate(R.layout.page_generate_deck_from_existing, container, false);
+
+        mAppBarSV.setTitle(mSvProvider.getContext().getString(R.string.title_generate_deck_from_existing));
+        ViewGroup containerAppBar = view.findViewById(R.id.container_app_bar);
+        containerAppBar.addView(mAppBarSV.buildView(activity, containerAppBar));
 
         mTextSummary = view.findViewById(R.id.text_summary);
         mTextDeckNames = view.findViewById(R.id.text_deck_names);
@@ -195,7 +199,6 @@ public class GenerateDeckFromExistingSVDialog extends BaseGenerateDeckSVDialog {
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
-        disposeBase();
         mGenerateCmd = null;
         mDeckDao = null;
         mSelectedDeckIds = null;
@@ -214,6 +217,6 @@ public class GenerateDeckFromExistingSVDialog extends BaseGenerateDeckSVDialog {
         mGenerateCmd.execute(mSelectedDeckIds, prompt, maxCards, modelId);
         mSvProvider.get(ILogger.class).i(TAG,
                 mSvProvider.getContext().getString(R.string.ai_generation_from_existing_started));
-        getNavigator().pop();
+        mNavigator.pop();
     }
 }

@@ -18,10 +18,7 @@
 package m.co.rh.id.a_flash_deck.ai.ui.page;
 
 import android.app.Activity;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -38,28 +35,37 @@ import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
+import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
+import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
-import m.co.rh.id.anavigator.StatefulViewDialog;
+import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
+import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public abstract class BaseGenerateDeckSVDialog extends StatefulViewDialog<Activity>
+public abstract class BaseGenerateDeckPage extends StatefulView<Activity>
         implements View.OnClickListener {
 
-    private static final String TAG = "BaseGenerateDeckSVDialog";
+    private static final String TAG = "BaseGenerateDeckPage";
+
     @NavInject
     protected transient NavRoute mNavRoute;
     @NavInject
     protected transient Provider mProvider;
+    @NavInject
+    protected transient INavigator mNavigator;
+    @NavInject
+    protected AppBarSV mAppBarSV;
+
     protected transient Provider mSvProvider;
     protected transient GeminiService mGeminiService;
     protected transient ApiKeyManager mApiKeyManager;
     protected transient List<AvailableModel> mAvailableModels;
     protected transient TextView mTextSelectedModel;
 
-    protected BaseGenerateDeckSVDialog() {
-        super(null);
+    protected BaseGenerateDeckPage() {
+        mAppBarSV = new AppBarSV();
     }
 
     protected void initProviders() {
@@ -74,9 +80,13 @@ public abstract class BaseGenerateDeckSVDialog extends StatefulViewDialog<Activi
     protected void initModelSelection(View view) {
         mTextSelectedModel = view.findViewById(R.id.text_selected_model);
         Button buttonSelectModel = view.findViewById(R.id.button_select_model);
-        mTextSelectedModel.setText(mSvProvider.getContext()
-                .getString(R.string.current_model, mApiKeyManager.getSelectedModel()));
-        buttonSelectModel.setOnClickListener(v -> showModelSelectionDialog());
+        if (mTextSelectedModel != null) {
+            mTextSelectedModel.setText(mSvProvider.getContext()
+                    .getString(R.string.current_model, mApiKeyManager.getSelectedModel()));
+        }
+        if (buttonSelectModel != null) {
+            buttonSelectModel.setOnClickListener(v -> showModelSelectionDialog());
+        }
     }
 
     protected void setupValidationObserver(TextView textValidation, Flowable<String> validationFlowable) {
@@ -110,6 +120,15 @@ public abstract class BaseGenerateDeckSVDialog extends StatefulViewDialog<Activi
     }
 
     protected void showModelSelectionDialog() {
+        if (mTextSelectedModel == null) return;
+        Activity activity = UiUtils.getActivity(mTextSelectedModel);
+        if (activity != null) {
+            showModelSelectionDialog(activity);
+        }
+    }
+
+    protected void showModelSelectionDialog(Activity activity) {
+        if (activity == null) return;
         if (mAvailableModels == null || mAvailableModels.isEmpty()) {
             mSvProvider.get(RxDisposer.class).add("fetchModelsForDialog",
                     mGeminiService.fetchAvailableModels()
@@ -117,13 +136,12 @@ public abstract class BaseGenerateDeckSVDialog extends StatefulViewDialog<Activi
                             .subscribe((models, throwable) -> {
                                 if (throwable == null && models != null && !models.isEmpty()) {
                                     mAvailableModels = models;
-                                    showModelSelectionDialog();
+                                    showModelSelectionDialog(activity);
                                 }
                             }));
             return;
         }
 
-        Activity activity = (Activity) mTextSelectedModel.getContext();
         String[] displayNames = new String[mAvailableModels.size()];
         String currentModel = mApiKeyManager.getSelectedModel();
         int selectedIndex = -1;
@@ -140,8 +158,15 @@ public abstract class BaseGenerateDeckSVDialog extends StatefulViewDialog<Activi
                 .setSingleChoiceItems(displayNames, finalSelectedIndex, (dialog, which) -> {
                     AvailableModel selected = mAvailableModels.get(which);
                     mApiKeyManager.saveSelectedModel(selected.id);
-                    mTextSelectedModel.setText(mSvProvider.getContext()
-                            .getString(R.string.current_model, selected.id));
+                    if (mTextSelectedModel != null) {
+                        if (mTextSelectedModel.getText() != null &&
+                                mTextSelectedModel.getText().toString().contains(":")) {
+                            mTextSelectedModel.setText(mSvProvider.getContext()
+                                    .getString(R.string.current_model, selected.id));
+                        } else {
+                            mTextSelectedModel.setText(selected.id);
+                        }
+                    }
                     dialog.dismiss();
                 })
                 .setNegativeButton(R.string.cancel, null)
@@ -157,32 +182,29 @@ public abstract class BaseGenerateDeckSVDialog extends StatefulViewDialog<Activi
     }
 
     @Override
-    protected Dialog createDialog(Activity activity) {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
-        builder.setCancelable(true);
-        builder.setView(buildView(activity, null));
-        return builder.create();
-    }
-
-    @Override
-    protected void onCancelDialog(DialogInterface dialog) {
-    }
-
-    @Override
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.button_generate) {
             generateDeck();
         } else if (id == R.id.button_cancel) {
-            getNavigator().pop();
+            mNavigator.pop();
         }
     }
 
-    protected void disposeBase() {
+    @Override
+    public void dispose(Activity activity) {
+        super.dispose(activity);
+        if (mAppBarSV != null) {
+            mAppBarSV.dispose(activity);
+            mAppBarSV = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
         }
+        mNavRoute = null;
+        mProvider = null;
+        mNavigator = null;
         mGeminiService = null;
         mApiKeyManager = null;
         mAvailableModels = null;

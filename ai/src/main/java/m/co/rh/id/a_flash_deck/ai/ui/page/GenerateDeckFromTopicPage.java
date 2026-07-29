@@ -29,15 +29,15 @@ import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromTopicCmd;
 import m.co.rh.id.alogger.ILogger;
 
-public class GenerateDeckFromTopicSVDialog extends BaseGenerateDeckSVDialog {
+public class GenerateDeckFromTopicPage extends BaseGenerateDeckPage {
 
-    private static final String TAG = GenerateDeckFromTopicSVDialog.class.getName();
+    private static final String TAG = GenerateDeckFromTopicPage.class.getName();
 
     private transient GenerateDeckFromTopicCmd mGenerateCmd;
     private transient EditText mEditTextTopic;
     private transient EditText mEditTextCardCount;
 
-    public GenerateDeckFromTopicSVDialog() {
+    public GenerateDeckFromTopicPage() {
         super();
     }
 
@@ -46,7 +46,11 @@ public class GenerateDeckFromTopicSVDialog extends BaseGenerateDeckSVDialog {
         initProviders();
         mGenerateCmd = mSvProvider.get(GenerateDeckFromTopicCmd.class);
 
-        View view = activity.getLayoutInflater().inflate(R.layout.dialog_generate_deck, container, false);
+        View view = activity.getLayoutInflater().inflate(R.layout.page_generate_deck, container, false);
+
+        mAppBarSV.setTitle(mSvProvider.getContext().getString(R.string.title_generate_deck));
+        ViewGroup containerAppBar = view.findViewById(R.id.container_app_bar);
+        containerAppBar.addView(mAppBarSV.buildView(activity, containerAppBar));
 
         mEditTextTopic = view.findViewById(R.id.edit_text_topic);
         mEditTextCardCount = view.findViewById(R.id.edit_text_card_count);
@@ -81,7 +85,6 @@ public class GenerateDeckFromTopicSVDialog extends BaseGenerateDeckSVDialog {
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
-        disposeBase();
         mGenerateCmd = null;
         mEditTextTopic = null;
         mEditTextCardCount = null;
@@ -96,6 +99,6 @@ public class GenerateDeckFromTopicSVDialog extends BaseGenerateDeckSVDialog {
         mGenerateCmd.execute(topic, cardCount, modelId);
         mSvProvider.get(ILogger.class).i(TAG,
                 mSvProvider.getContext().getString(R.string.ai_generation_started, topic));
-        getNavigator().pop();
+        mNavigator.pop();
     }
 }

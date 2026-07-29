@@ -34,57 +34,34 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromImageCmd;
-import m.co.rh.id.a_flash_deck.ai.model.AvailableModel;
-import m.co.rh.id.a_flash_deck.ai.security.ApiKeyManager;
-import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
-import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
 import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
-import m.co.rh.id.anavigator.StatefulView;
-import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
-import m.co.rh.id.aprovider.Provider;
 
-public class GenerateDeckFromImagePage extends StatefulView<Activity>
-        implements NavOnActivityResult<Activity>, View.OnClickListener {
+public class GenerateDeckFromImagePage extends BaseGenerateDeckPage
+        implements NavOnActivityResult<Activity> {
 
     private static final String TAG = GenerateDeckFromImagePage.class.getName();
     private static final int REQUEST_CAMERA = 601;
     private static final int REQUEST_GALLERY = 602;
     private static final int MAX_IMAGES = 10;
 
-    @NavInject
-    private transient Provider mProvider;
-    @NavInject
-    private INavigator mNavigator;
-    @NavInject
-    private AppBarSV mAppBarSV;
-
-    private transient Provider mSvProvider;
-    private transient GeminiService mGeminiService;
-    private transient ApiKeyManager mApiKeyManager;
     private transient GenerateDeckFromImageCmd mGenerateCmd;
     private transient FileHelper mFileHelper;
-    private transient List<AvailableModel> mAvailableModels;
 
-    private transient TextView mTextSelectedModel;
     private transient MaterialAutoCompleteTextView mEditTextPrompt;
     private transient EditText mEditTextMaxCards;
     private transient LinearLayout mContainerImages;
@@ -96,16 +73,12 @@ public class GenerateDeckFromImagePage extends StatefulView<Activity>
     private ArrayList<String> mImagePaths;
 
     public GenerateDeckFromImagePage() {
-        mAppBarSV = new AppBarSV();
+        super();
     }
 
-    private void initProviders() {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = mProvider.get(IStatefulViewProvider.class);
-        mGeminiService = mSvProvider.get(GeminiService.class);
-        mApiKeyManager = mSvProvider.get(ApiKeyManager.class);
+    @Override
+    protected void initProviders() {
+        super.initProviders();
         mGenerateCmd = mSvProvider.get(GenerateDeckFromImageCmd.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
     }
@@ -166,73 +139,6 @@ public class GenerateDeckFromImagePage extends StatefulView<Activity>
         refreshImageList(activity);
 
         return view;
-    }
-
-    private void fetchModels() {
-        if (!mGeminiService.isConfigured()) return;
-        mSvProvider.get(RxDisposer.class).add("fetchModels",
-                mGeminiService.fetchAvailableModels()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((models, throwable) -> {
-                            if (throwable != null) {
-                                mSvProvider.get(ILogger.class).e(TAG,
-                                        mSvProvider.getContext().getString(R.string.error_fetching_models),
-                                        throwable);
-                            } else if (models != null) {
-                                mAvailableModels = models;
-                            }
-                        }));
-    }
-
-    private void showModelSelectionDialog(Activity activity) {
-        if (mAvailableModels == null || mAvailableModels.isEmpty()) {
-            mSvProvider.get(RxDisposer.class).add("fetchModelsForDialog",
-                    mGeminiService.fetchAvailableModels()
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe((models, throwable) -> {
-                                if (throwable == null && models != null && !models.isEmpty()) {
-                                    mAvailableModels = models;
-                                    showModelSelectionDialog(activity);
-                                }
-                            }));
-            return;
-        }
-
-        String[] displayNames = new String[mAvailableModels.size()];
-        String currentModel = mApiKeyManager.getSelectedModel();
-        int selectedIndex = -1;
-        for (int i = 0; i < mAvailableModels.size(); i++) {
-            displayNames[i] = mAvailableModels.get(i).displayName;
-            if (mAvailableModels.get(i).id.equals(currentModel)) {
-                selectedIndex = i;
-            }
-        }
-
-        int finalSelectedIndex = selectedIndex >= 0 ? selectedIndex : 0;
-        new MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.title_select_model)
-                .setSingleChoiceItems(displayNames, finalSelectedIndex, (dialog, which) -> {
-                    AvailableModel selected = mAvailableModels.get(which);
-                    mApiKeyManager.saveSelectedModel(selected.id);
-                    mTextSelectedModel.setText(selected.id);
-                    dialog.dismiss();
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
-
-    private void setupValidationObserver(TextView textValidation, Flowable<String> validationFlowable) {
-        mSvProvider.get(RxDisposer.class).add("validation",
-                validationFlowable
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(s -> {
-                            if (s.isEmpty()) {
-                                textValidation.setVisibility(View.GONE);
-                            } else {
-                                textValidation.setVisibility(View.VISIBLE);
-                                textValidation.setText(s);
-                            }
-                        }));
     }
 
     private void onTakePhotoClicked(Activity activity) {
@@ -331,25 +237,8 @@ public class GenerateDeckFromImagePage extends StatefulView<Activity>
         return BitmapFactory.decodeFile(path, opts);
     }
 
-    private int parseEditTextInt(EditText editText, int defaultValue) {
-        try {
-            return Integer.parseInt(editText.getText().toString().trim());
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
     @Override
-    public void onClick(View view) {
-        int id = view.getId();
-        if (id == R.id.button_generate) {
-            generateDeck();
-        } else if (id == R.id.button_cancel) {
-            mNavigator.pop();
-        }
-    }
-
-    private void generateDeck() {
+    protected void generateDeck() {
         int maxCards = parseEditTextInt(mEditTextMaxCards, 10);
         if (!mGenerateCmd.valid(mImagePaths, maxCards)) return;
         String prompt = mEditTextPrompt != null ? mEditTextPrompt.getText().toString().trim() : "";
@@ -363,16 +252,8 @@ public class GenerateDeckFromImagePage extends StatefulView<Activity>
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-            mSvProvider = null;
-        }
-        mGeminiService = null;
-        mApiKeyManager = null;
         mGenerateCmd = null;
         mFileHelper = null;
-        mAvailableModels = null;
-        mTextSelectedModel = null;
         mEditTextPrompt = null;
         mEditTextMaxCards = null;
         mContainerImages = null;

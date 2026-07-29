@@ -42,7 +42,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
-import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingSVDialog;
+import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingPage;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
@@ -345,7 +345,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_generate_deck_ai) {
             GeminiService geminiService = mSvProvider.get(GeminiService.class);
             if (geminiService.isConfigured()) {
-                mNavigator.push(Routes.AI_GENERATE_DECK_DIALOG);
+                mNavigator.push(Routes.AI_GENERATE_DECK_PAGE);
             } else {
                 String title = mSvProvider.getContext().getString(R.string.title_error);
                 String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
@@ -363,8 +363,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                 for (Deck deck : result.getSelectedDeck()) {
                                     selectedDeckIds.add(deck.id);
                                 }
-                                navigator.push(Routes.AI_GENERATE_DECK_FROM_EXISTING_DIALOG,
-                                        GenerateDeckFromExistingSVDialog.Args.with(selectedDeckIds));
+                                navigator.push(Routes.AI_GENERATE_DECK_FROM_EXISTING_PAGE,
+                                        GenerateDeckFromExistingPage.Args.with(selectedDeckIds));
                             }
                         });
             } else {
@@ -376,7 +376,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_generate_deck_from_image_ai) {
             GeminiService geminiService = mSvProvider.get(GeminiService.class);
             if (geminiService.isConfigured()) {
-                mNavigator.push(Routes.AI_GENERATE_DECK_FROM_IMAGE_DIALOG);
+                mNavigator.push(Routes.AI_GENERATE_DECK_FROM_IMAGE_PAGE);
             } else {
                 String title = mSvProvider.getContext().getString(R.string.title_error);
                 String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
