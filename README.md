@@ -541,6 +541,7 @@ ai/src/main/java/m/co/rh/id/a_flash_deck/ai/
 ├── model/ (AiGeneratedCard, AiGeneratedDeck, AvailableModel)
 ├── provider/
 │   ├── AiProviderModule.java
+│   ├── AiCommandProviderModule.java
 │   └── notifier/ (ApiKeyChangeNotifier)
 ├── security/ (ApiKeyManager - Android Keystore encryption)
 ├── service/ (GeminiService - REST API via HttpURLConnection)

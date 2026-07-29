@@ -17,6 +17,7 @@
 
 package m.co.rh.id.a_flash_deck.app.provider;
 
+import m.co.rh.id.a_flash_deck.ai.provider.AiCommandProviderModule;
 import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
@@ -53,5 +54,6 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(ExportImportCmd.class, () -> new ExportImportCmd(provider));
         providerRegistry.registerModule(new NotificationTimerCmdProviderModule());
         providerRegistry.registerModule(new BotCommandProviderModule());
+        providerRegistry.registerModule(new AiCommandProviderModule());
     }
 }
