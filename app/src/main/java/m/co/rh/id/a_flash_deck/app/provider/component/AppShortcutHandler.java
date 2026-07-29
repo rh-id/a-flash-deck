@@ -73,7 +73,7 @@ public class AppShortcutHandler implements ProviderDisposable {
     private void init() {
         // currently only handling pinned shortcut so do this to save some power.
         // in the future if handling other shortcut, remove this check
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mCompositeDisposable.add(
                     mDeckChangeNotifier.getDeletedDeckFlow().observeOn(AndroidSchedulers.mainThread())
                             .subscribe(this::disablePinnedShortcut)
@@ -115,7 +115,7 @@ public class AppShortcutHandler implements ProviderDisposable {
     }
 
     private void disablePinnedShortcut(Deck deck) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ShortcutManager shortcutManager = mAppContext.getSystemService(ShortcutManager.class);
             if (shortcutManager.isRequestPinShortcutSupported()) {
                 String message = mAppContext.getString(R.string.deck_was_deleted, deck.name);
@@ -126,7 +126,7 @@ public class AppShortcutHandler implements ProviderDisposable {
     }
 
     private void updatePinnedShortcut(Deck deck) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ShortcutManager shortcutManager = mAppContext.getSystemService(ShortcutManager.class);
             if (shortcutManager.isRequestPinShortcutSupported()) {
                 shortcutManager.updateShortcuts(Collections.singletonList(createShortcutInfo(deck)));

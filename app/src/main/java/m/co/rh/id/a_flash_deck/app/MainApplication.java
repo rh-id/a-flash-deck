@@ -18,6 +18,7 @@
 package m.co.rh.id.a_flash_deck.app;
 
 import android.app.Activity;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Configuration;
@@ -68,7 +69,7 @@ public class MainApplication extends BaseApplication implements Configuration.Pr
         ExecutorService executorService = mProvider.get(ScheduledExecutorService.class);
 
         return new Configuration.Builder()
-                .setMinimumLoggingLevel(android.util.Log.INFO)
+                .setMinimumLoggingLevel(Log.INFO)
                 .setExecutor(executorService)
                 .setTaskExecutor(executorService)
                 .build();

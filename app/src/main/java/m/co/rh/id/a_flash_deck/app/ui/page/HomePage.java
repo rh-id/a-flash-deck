@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
@@ -499,7 +500,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                         Context context = provider.getContext();
                         CompositeDisposable compositeDisposable = new CompositeDisposable();
-                        io.reactivex.rxjava3.core.Single<File> exportSingle = exportAnki ?
+                        Single<File> exportSingle = exportAnki ?
                                 provider.get(ExportImportCmd.class).exportFileAnki(result.getSelectedDeck()) :
                                 provider.get(ExportImportCmd.class).exportFile(result.getSelectedDeck());
                         compositeDisposable.add(exportSingle

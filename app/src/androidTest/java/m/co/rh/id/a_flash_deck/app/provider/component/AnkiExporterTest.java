@@ -30,9 +30,11 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
@@ -253,9 +255,9 @@ public class AnkiExporterTest {
     private void validateMediaInApkg(File apkgFile, int expectedMediaCount) throws IOException {
         try (ZipFile zipFile = new ZipFile(apkgFile)) {
             int mediaFileCount = 0;
-            java.util.Enumeration<? extends java.util.zip.ZipEntry> entries = zipFile.entries();
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
-                java.util.zip.ZipEntry entry = entries.nextElement();
+                ZipEntry entry = entries.nextElement();
                 String name = entry.getName();
                 if (name.matches("^\\d+$")) {
                     mediaFileCount++;

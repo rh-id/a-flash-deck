@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.text.Spanned;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -142,9 +143,9 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                                     Card card = (Card) result[0];
                                     if (card == mCardStateSubject.getValue()) {
                                         markdownRenderer.applyParsedMarkdown(textQuestion,
-                                                (android.text.Spanned) result[1]);
+                                                (Spanned) result[1]);
                                         markdownRenderer.applyParsedMarkdown(textAnswer,
-                                                (android.text.Spanned) result[2]);
+                                                (Spanned) result[2]);
                                     }
                                 }));
         mSvProvider.get(RxDisposer.class)

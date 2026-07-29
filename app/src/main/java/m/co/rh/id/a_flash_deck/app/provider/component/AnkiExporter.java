@@ -20,12 +20,10 @@ package m.co.rh.id.a_flash_deck.app.provider.component;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -33,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.anki.ApkgGenerator;
@@ -197,7 +196,7 @@ public class AnkiExporter {
     }
 
     private String generateGuid() {
-        return java.util.UUID.randomUUID().toString();
+        return UUID.randomUUID().toString();
     }
 
     private String constructNoteField(String text, String image, String voice) {

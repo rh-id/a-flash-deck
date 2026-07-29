@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
@@ -358,7 +359,7 @@ public class AnkiImporter {
     }
 
     private String generateUniqueFileName() {
-        return java.util.UUID.randomUUID().toString();
+        return UUID.randomUUID().toString();
     }
 
     private void generateThumbnailsForMedia(Map<Long, DeckModel> deckModelMap) {

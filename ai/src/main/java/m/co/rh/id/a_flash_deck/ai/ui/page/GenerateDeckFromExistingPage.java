@@ -33,12 +33,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromExistingCmd;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 
@@ -156,7 +158,7 @@ public class GenerateDeckFromExistingPage extends BaseGenerateDeckPage {
             return;
         }
 
-        mSvProvider.get(m.co.rh.id.a_flash_deck.base.rx.RxDisposer.class).add("loadDeckData",
+        mSvProvider.get(RxDisposer.class).add("loadDeckData",
                 Single.fromCallable(() -> {
                     List<Deck> decks = mDeckDao.findDeckByIds(mSelectedDeckIds);
                     int totalCards = 0;
@@ -173,7 +175,7 @@ public class GenerateDeckFromExistingPage extends BaseGenerateDeckPage {
                     return new DeckData(decks.size(), totalCards, deckNames.toString());
                 })
                         .subscribeOn(Schedulers.io())
-                        .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(deckData -> {
                             mTextSummary.setText(mSvProvider.getContext()
                                     .getString(R.string.summary_selected_decks, deckData.deckCount, deckData.totalCards));

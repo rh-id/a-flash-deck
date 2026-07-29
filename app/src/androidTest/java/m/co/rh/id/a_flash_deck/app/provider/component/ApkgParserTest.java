@@ -18,9 +18,14 @@
 package m.co.rh.id.a_flash_deck.app.provider.component;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import java.nio.charset.StandardCharsets;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import m.co.rh.id.a_flash_deck.app.anki.ApkgParser;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiCard;
@@ -138,7 +143,7 @@ public class ApkgParserTest {
         File extractDir = new File(tempDir, "extract");
         extractDir.mkdirs();
 
-        android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
         assertNotNull(db);
         assertTrue(db.isOpen());
@@ -252,7 +257,7 @@ public class ApkgParserTest {
         File extractDir = new File(tempDir, "read_notes");
         extractDir.mkdirs();
 
-        android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
         List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
         assertTrue(notetypes.size() > 0);
@@ -289,7 +294,7 @@ public class ApkgParserTest {
         File extractDir = new File(tempDir, "read_cards");
         extractDir.mkdirs();
 
-        android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
         List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
         assertTrue(notetypes.size() > 0);
@@ -327,7 +332,7 @@ public class ApkgParserTest {
         File extractDir = new File(tempDir, "read_cards_empty");
         extractDir.mkdirs();
 
-        android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
         List<AnkiCard> cards = ApkgParser.readCards(db, new ArrayList<>());
 
@@ -369,7 +374,7 @@ public class ApkgParserTest {
         File extractDir = new File(tempDir, "read_decks");
         extractDir.mkdirs();
 
-        android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
         List<AnkiDeck> decks = ApkgParser.readDecks(db);
 
@@ -410,7 +415,7 @@ public class ApkgParserTest {
         File extractDir = new File(tempDir, "read_notetypes");
         extractDir.mkdirs();
 
-        android.database.sqlite.SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
 
         List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
 
@@ -478,10 +483,10 @@ public class ApkgParserTest {
      */
     private File createTestApkgWithoutDatabase() throws IOException {
         File apkgFile = new File(tempDir, "no_db.apkg");
-        java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(new FileOutputStream(apkgFile));
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apkgFile));
 
         byte[] dummyData = new byte[]{0, 1, 2, 3};
-        java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry("0");
+        ZipEntry entry = new ZipEntry("0");
         zos.putNextEntry(entry);
         zos.write(dummyData);
         zos.closeEntry();
@@ -497,21 +502,21 @@ public class ApkgParserTest {
      */
     private File createTestApkgWithMedia() throws IOException {
         File apkgFile = new File(tempDir, "with_media.apkg");
-        java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(new FileOutputStream(apkgFile));
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apkgFile));
 
         byte[] dummyData = new byte[]{0, 1, 2, 3};
         
-        java.util.zip.ZipEntry entry0 = new java.util.zip.ZipEntry("0");
+        ZipEntry entry0 = new ZipEntry("0");
         zos.putNextEntry(entry0);
         zos.write(dummyData);
         zos.closeEntry();
 
-        java.util.zip.ZipEntry entry1 = new java.util.zip.ZipEntry("1");
+        ZipEntry entry1 = new ZipEntry("1");
         zos.putNextEntry(entry1);
         zos.write(dummyData);
         zos.closeEntry();
 
-        java.util.zip.ZipEntry entryOther = new java.util.zip.ZipEntry("some_file.txt");
+        ZipEntry entryOther = new ZipEntry("some_file.txt");
         zos.putNextEntry(entryOther);
         zos.write(dummyData);
         zos.closeEntry();
@@ -527,12 +532,12 @@ public class ApkgParserTest {
      */
     private File createTestApkgWithMediaJson() throws IOException {
         File apkgFile = new File(tempDir, "with_media_json.apkg");
-        java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(new FileOutputStream(apkgFile));
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apkgFile));
 
         String mediaJson = "{\"0\":\"image.jpg\",\"1\":\"audio.mp3\"}";
-        java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry("media");
+        ZipEntry entry = new ZipEntry("media");
         zos.putNextEntry(entry);
-        zos.write(mediaJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        zos.write(mediaJson.getBytes(StandardCharsets.UTF_8));
         zos.closeEntry();
 
         zos.close();
@@ -546,10 +551,10 @@ public class ApkgParserTest {
      */
     private File createTestApkgWithoutMediaJson() throws IOException {
         File apkgFile = new File(tempDir, "no_media_json.apkg");
-        java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(new FileOutputStream(apkgFile));
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apkgFile));
 
         byte[] dummyData = new byte[]{0};
-        java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry("dummy");
+        ZipEntry entry = new ZipEntry("dummy");
         zos.putNextEntry(entry);
         zos.write(dummyData);
         zos.closeEntry();

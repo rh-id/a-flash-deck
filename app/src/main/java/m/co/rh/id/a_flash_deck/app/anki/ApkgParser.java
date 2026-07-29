@@ -38,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -108,7 +109,7 @@ public class ApkgParser {
             }
             JSONObject mediaJson = new JSONObject(sb.toString());
             Map<String, String> mediaMap = new HashMap<>();
-            java.util.Iterator<String> keys = mediaJson.keys();
+            Iterator<String> keys = mediaJson.keys();
             while (keys.hasNext()) {
                 String key = keys.next();
                 mediaMap.put(key, mediaJson.getString(key));
@@ -220,7 +221,7 @@ public class ApkgParser {
             if (cursor.moveToFirst()) {
                 String modelsJson = cursor.getString(0);
                 JSONObject models = new JSONObject(modelsJson);
-                java.util.Iterator<String> modelKeys = models.keys();
+                Iterator<String> modelKeys = models.keys();
                 while (modelKeys.hasNext()) {
                     String key = modelKeys.next();
                     JSONObject modelObj = models.getJSONObject(key);

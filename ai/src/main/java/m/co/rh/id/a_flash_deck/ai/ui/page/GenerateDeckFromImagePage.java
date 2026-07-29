@@ -35,12 +35,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromImageCmd;
@@ -98,7 +100,7 @@ public class GenerateDeckFromImagePage extends BaseGenerateDeckPage
         containerAppBar.addView(mAppBarSV.buildView(activity, containerAppBar));
 
         mTextSelectedModel = view.findViewById(R.id.text_selected_model);
-        com.google.android.material.textfield.TextInputLayout layoutSelectedModel = view.findViewById(R.id.input_layout_selected_model);
+        TextInputLayout layoutSelectedModel = view.findViewById(R.id.input_layout_selected_model);
         mContainerImages = view.findViewById(R.id.container_images);
         mTextNoImages = view.findViewById(R.id.text_no_images);
         mEditTextPrompt = view.findViewById(R.id.edit_text_prompt);
@@ -175,7 +177,7 @@ public class GenerateDeckFromImagePage extends BaseGenerateDeckPage
                 Uri uri = data.getData();
                 String disposerKey = "copyGalleryImage_" + UUID.randomUUID().toString();
                 mSvProvider.get(RxDisposer.class).add(disposerKey,
-                        io.reactivex.rxjava3.core.Single.fromCallable(() -> mFileHelper.createImageTempFile(uri))
+                        Single.fromCallable(() -> mFileHelper.createImageTempFile(uri))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
@@ -216,7 +218,7 @@ public class GenerateDeckFromImagePage extends BaseGenerateDeckPage
 
             String disposerKey = "loadThumb_" + path.hashCode();
             mSvProvider.get(RxDisposer.class).add(disposerKey,
-                    io.reactivex.rxjava3.core.Single.fromCallable(() -> loadThumbnail(path))
+                    Single.fromCallable(() -> loadThumbnail(path))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(

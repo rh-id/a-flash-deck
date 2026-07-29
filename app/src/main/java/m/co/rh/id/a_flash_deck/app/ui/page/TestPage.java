@@ -20,6 +20,7 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.text.Spanned;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -173,7 +174,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     TestState ts = (TestState) result[0];
                                     if (ts == mTestStateSubject.getValue()) {
                                         mMarkdownRenderer.applyParsedMarkdown(textQuestion,
-                                                (android.text.Spanned) result[1]);
+                                                (Spanned) result[1]);
                                     }
                                 }));
         mRxDisposer
