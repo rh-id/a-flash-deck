@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Neu:
+* Kartendeck aus Bildern mit Gemini AI Vision-Unterstützung, anpassbaren Anweisungen und Auswahl mehrerer Bilder (bis zu 10 Bilder) erstellen
+* Umwandlung der AI-Deck-Generierungsdialoge in Vollbildseiten-Layouts für verbesserte Benutzerfreundlichkeit und responsive Formulare

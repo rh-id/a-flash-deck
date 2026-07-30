@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Fitur:
+* Fitur Buat Spilastokk/Dek dari Gambar menggunakan dukungan visi Gemini AI dengan instruksi petunjuk yang dapat disesuaikan dan pemilihan banyak gambar (hingga 10 gambar)
+* Mengonversi dialog pembuatan dek AI menjadi tata letak halaman layar penuh untuk meningkatkan kemudahan penggunaan dan formulir responsif

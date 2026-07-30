@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Nýtt:
+* Búa til spjaldastokk úr myndum með Gemini AI sjónstuðningi, sérsniðnum leiðbeiningum og vali á mörgum myndum (allt að 10 myndir)
+* Breyta AI spjaldastokksgervigluggum í heilsíðuskjá fyrir betri notendaupplifun og viðbragðsfljót eyðublöð

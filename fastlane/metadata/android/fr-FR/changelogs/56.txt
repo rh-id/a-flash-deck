@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Nouveauté :
+* Ajout de la fonctionnalité de génération de paquet à partir d'images via la vision Gemini AI avec instructions personnalisables et sélection d'images multiples (jusqu'à 10 images)
+* Conversion des dialogues de génération de paquets IA en pages plein écran pour une meilleure ergonomie et des formulaires réactifs

@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Ny funksjon:
+* Generer kortstokk frå bilete med Gemini AI vision-støtte, tilpassbare instruksjonar og val av fleire bilete (opptil 10 bilete)
+* Konverter AI-kortstokkdialogar til fullskjerm-sider for betre brukarmoro og responsive skjema

@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Nova funcziun:
+* Generar in pachet da cartas da figuras cun agid da visium Gemini AI, instrucziuns personalisablas e tscherna da pliras figuras (fin a 10 figuras)
+* Convertir ils dialogs da generaziun da pachets IA en paginas da scoella plaina per megliera utilisabiltad e formulars responsivs

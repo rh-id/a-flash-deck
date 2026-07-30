@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Novità:
+* Generazione di mazzi da immagini con supporto visione Gemini AI, istruzioni personalizzabili e selezione di immagini multiple (fino a 10 immagini)
+* Conversione dei dialoghi di generazione mazzo IA in pagine a schermo intero per una migliore usabilità e moduli reattivi

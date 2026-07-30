@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Uuendus:
+* Kaardipaki loomine piltidest Gemini AI visioonitoega, kohandatavate juhiste ja mitme pildi valikuga (kuni 10 pilti)
+* Tekoälypaki loomise dialoogide muutmine täisekraanilehtedeks parema kasutusmugavuse ja kohanduvate vormide tagamiseks

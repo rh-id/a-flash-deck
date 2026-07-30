@@ -1,0 +1,5 @@
+Release 1.13.0+56
+
+Feature:
+* Add Generate Deck from Image feature using Gemini AI vision support with customizable prompt instructions and multi-image selection (up to 10 images)
+* Convert AI deck generation dialogs into full-screen page layouts for improved usability and responsive forms
