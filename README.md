@@ -36,8 +36,9 @@ A simple and easy to use flash card app to help you study.
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
 * Test state persistence — resume your test after app restart
 * Flash bot to smartly suggest list of card to test you
-* AI-powered deck generation using Google Gemini API — generate from a topic, or transform existing decks (translate, expand, create harder versions)
+* AI-powered deck generation using Google Gemini API — generate from a topic, transform existing decks (translate, expand, create harder versions), or generate from captured camera photos and gallery images
 * AI model selection — choose from available Gemini models dynamically
+* Encrypted API key storage — secure storage using Android Keystore (`ApiKeyManager`)
 
 ### Anki Integration
 
@@ -189,6 +190,7 @@ graph TB
         AiService[GeminiService]
         AiWorkerTopic[GenerateDeckWorker]
         AiWorkerExisting[GenerateDeckFromExistingWorker]
+        AiWorkerImage[GenerateDeckFromImageWorker]
         AiSecurity[ApiKeyManager]
         AiUI[AI UI Components]
         AiNotifier[ApiKeyChangeNotifier]
@@ -209,9 +211,9 @@ graph TB
     TimerWorkers -->|Access| DAOs
     TimerWorkers -->|Use| TimerCommands
 
-    AiWorker -->|Calls| AiService
+    AiWorkerTopic & AiWorkerExisting & AiWorkerImage -->|Calls| AiService
     AiService -->|Access| AiSecurity
-    AiWorker -->|Updates| DAOs
+    AiWorkerTopic & AiWorkerExisting & AiWorkerImage -->|Updates| DAOs
 ```
 
 ### Layered Architecture
@@ -394,7 +396,7 @@ Business logic is encapsulated in command classes following the Command pattern:
 - `ExportImportCmd`: Deck import/export
 - `PagedDeckItemsCmd` / `PagedCardItemsCmd`: Pagination
 - `DeleteSuggestedCardCmd`: Bot suggestion management
-- `GenerateDeckFromTopicCmd` / `GenerateDeckFromExistingCmd`: AI deck generation (AI module)
+- `GenerateDeckFromTopicCmd` / `GenerateDeckFromExistingCmd` / `GenerateDeckFromImageCmd`: AI deck generation (AI module)
 
 **Command Flow**:
 1. Command receives input from `StatefulView`
@@ -436,7 +438,9 @@ WorkManager is used for background tasks:
   - Calls Gemini REST API with user-provided topic and card count
   - Inserts generated deck and cards into database
   - Posts success/failure notification on completion
-- `GenerateDeckFromExistingWorker`: Transforms existing decks (translate, expand, harder versions) via Gemini API. Both AI workers share a common `BaseGenerateDeckWorker`
+- `GenerateDeckFromExistingWorker`: Transforms existing decks (translate, expand, harder versions) via Gemini API
+- `GenerateDeckFromImageWorker`: Generates flash card decks from captured camera photos or gallery images (up to 10 images) with customizable prompt instructions via Gemini multimodal API
+  - All AI workers inherit from `BaseGenerateDeckWorker`
 
 ### Threading Strategy
 
@@ -537,7 +541,7 @@ timer-notification/src/main/java/m/co/rh/id/a_flash_deck/timer/
 └── workmanager/ (Timer worker)
 
 ai/src/main/java/m/co/rh/id/a_flash_deck/ai/
-├── command/ (GenerateDeckFromTopicCmd, GenerateDeckFromExistingCmd)
+├── command/ (GenerateDeckFromTopicCmd, GenerateDeckFromExistingCmd, GenerateDeckFromImageCmd)
 ├── model/ (AiGeneratedCard, AiGeneratedDeck, AvailableModel)
 ├── provider/
 │   ├── AiProviderModule.java
@@ -547,8 +551,8 @@ ai/src/main/java/m/co/rh/id/a_flash_deck/ai/
 ├── service/ (GeminiService - REST API via HttpURLConnection)
 ├── ui/
 │   ├── component/settings/ (AiSettingsMenuSV)
-│   └── page/ (ApiKeyEntrySVDialog, BaseGenerateDeckSVDialog, GenerateDeckFromTopicSVDialog, GenerateDeckFromExistingSVDialog)
-└── workmanager/ (BaseGenerateDeckWorker, GenerateDeckWorker, GenerateDeckFromExistingWorker)
+│   └── page/ (ApiKeyEntrySVDialog, BaseGenerateDeckPage, GenerateDeckFromTopicPage, GenerateDeckFromExistingPage, GenerateDeckFromImagePage)
+└── workmanager/ (BaseGenerateDeckWorker, GenerateDeckWorker, GenerateDeckFromExistingWorker, GenerateDeckFromImageWorker)
 ```
 
 ### StatefulView Lifecycle
