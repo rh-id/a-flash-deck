@@ -40,6 +40,9 @@
     <string name="success_deleting_deck">Success deleting deck %s</string>
     <string name="hint_type_to_search">Type here to search</string>
     <string name="title_select_deck">Select Deck</string>
+    <string name="title_select_deck_count">Select Deck (%1$d/%2$d selected)</string>
+    <string name="select_all">Select all</string>
+    <string name="deselect_all">Deselect all</string>
     <string name="total_cards">Cards: %d</string>
     <string name="error_counting_cards">Error counting cards</string>
     <string name="question_desc_value">Q: %s</string>

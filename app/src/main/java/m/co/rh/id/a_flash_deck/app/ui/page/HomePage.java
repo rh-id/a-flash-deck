@@ -256,10 +256,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                                             }
                                                         });
                                             } else {
-                                                mNavigator.push(Routes.DECK_SELECT_DIALOG,
+                                                mNavigator.push(Routes.DECK_SELECT_PAGE,
                                                         (navigator, navRoute, activity, currentView) -> {
-                                                            DeckSelectSVDialog.Result result =
-                                                                    DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                                                            DeckSelectPage.Result result =
+                                                                    DeckSelectPage.Result.of(navRoute.getRouteResult());
                                                             if (result != null) {
                                                                 if (!result.getSelectedDeck().isEmpty()) {
                                                                     Deck deck = result.getSelectedDeck().get(0);
@@ -356,9 +356,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_generate_deck_from_existing_ai) {
             GeminiService geminiService = mSvProvider.get(GeminiService.class);
             if (geminiService.isConfigured()) {
-                mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+                mNavigator.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
                         (navigator, navRoute, activity, currentView) -> {
-                            DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                            DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute.getRouteResult());
                             if (result != null && !result.getSelectedDeck().isEmpty()) {
                                 ArrayList<Long> selectedDeckIds = new ArrayList<>();
                                 for (Deck deck : result.getSelectedDeck()) {
@@ -493,9 +493,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     }
 
     private void handleExportClick(boolean exportAnki, String logPrefix) {
-        mNavigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+        mNavigator.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
                 (navigator, navRoute, activity, currentView) -> {
-                    DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute);
+                    DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute);
                     if (result != null) {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                         Context context = provider.getContext();
@@ -529,9 +529,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     }
 
     private void startTestWorkflow(INavigator navigatorInstance) {
-        navigatorInstance.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+        navigatorInstance.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
                 (navigator, navRoute, activity, currentView) -> {
-                    DeckSelectSVDialog.Result result = DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                    DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute.getRouteResult());
                     if (result != null) {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
                         ArrayList<Deck> deckArrayList = result.getSelectedDeck();

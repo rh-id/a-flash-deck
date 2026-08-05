@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import m.co.rh.id.a_flash_deck.R;
@@ -175,6 +176,12 @@ public class DeckListSV extends StatefulView<Activity> implements RequireCompone
                         mDeckChangeNotifier
                                 .getDeletedDeckFlow().observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(mDeckRecyclerViewAdapter::notifyItemDeleted));
+        mRxDisposer
+                .add("createView_onSelectedDeckIdsChanged",
+                        mPagedDeckItemsCmd.getSelectedDeckIdsFlow()
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(ids -> mDeckRecyclerViewAdapter.notifyItemRefreshed())
+                );
 
         return rootLayout;
     }
@@ -203,8 +210,24 @@ public class DeckListSV extends StatefulView<Activity> implements RequireCompone
         mPagedDeckItemsCmd.refresh();
     }
 
-    public ArrayList<Deck> getSelectedDeck() {
+    public Single<ArrayList<Deck>> getSelectedDeck() {
         return mPagedDeckItemsCmd.getSelectedDecks();
+    }
+
+    public void selectAll() {
+        if (mPagedDeckItemsCmd != null) {
+            mPagedDeckItemsCmd.selectAllDecks();
+        }
+    }
+
+    public void unselectAll() {
+        if (mPagedDeckItemsCmd != null) {
+            mPagedDeckItemsCmd.unselectAllDecks();
+        }
+    }
+
+    public PagedDeckItemsCmd getPagedDeckItemsCmd() {
+        return mPagedDeckItemsCmd;
     }
 
     public static class ListMode implements Serializable {

@@ -40,6 +40,9 @@
     <string name="success_deleting_deck">Kaardipakk %s kustutatud edukalt</string>
     <string name="hint_type_to_search">Tippige siia otsimiseks</string>
     <string name="title_select_deck">Valige kaardipakk</string>
+    <string name="title_select_deck_count">Valige kaardipakk (%1$d/%2$d valitud)</string>
+    <string name="select_all">Vali kõik</string>
+    <string name="deselect_all">Tühista kõik</string>
     <string name="total_cards">Kaardid: %d</string>
     <string name="error_counting_cards">Viga kaartide loendamisel</string>
     <string name="question_desc_value">K: %s</string>

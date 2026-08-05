@@ -42,7 +42,7 @@ import m.co.rh.id.a_flash_deck.app.ui.page.CardShowHomePage;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardShowPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckListPage;
-import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectSVDialog;
+import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DonationsPage;
 import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingPage;
 import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromImagePage;
@@ -92,7 +92,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.CARD_DETAIL_PAGE, (args, activity) -> new CardDetailPage());
         navMap.put(Routes.CARD_SHOW_PAGE, (args, activity) -> new CardShowPage());
         navMap.put(Routes.DECK_DETAIL_DIALOG, (args, activity) -> new DeckDetailSVDialog());
-        navMap.put(Routes.DECK_SELECT_DIALOG, (args, activity) -> new DeckSelectSVDialog());
+        navMap.put(Routes.DECK_SELECT_PAGE, (args, activity) -> new DeckSelectPage());
         navMap.put(Routes.DECKS, (args, activity) -> new DeckListPage());
         navMap.put(Routes.CARDS, (args, activity) -> new CardListPage());
         navMap.put(Routes.TEST, (args, activity) -> new TestPage());

@@ -85,10 +85,10 @@ public class CardListPage extends StatefulView<Activity> implements Toolbar.OnMe
             if (deck != null) {
                 mNavigator.push(Routes.CARD_DETAIL_PAGE, CardDetailPage.Args.withDeck(deck));
             } else {
-                mNavigator.push(Routes.DECK_SELECT_DIALOG,
+                mNavigator.push(Routes.DECK_SELECT_PAGE,
                         (navigator, navRoute, activity, currentView) -> {
-                            DeckSelectSVDialog.Result result =
-                                    DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                            DeckSelectPage.Result result =
+                                    DeckSelectPage.Result.of(navRoute.getRouteResult());
                             if (result != null &&
                                     !result.getSelectedDeck().isEmpty()) {
                                 Deck selectedDeck = result.getSelectedDeck().get(0);

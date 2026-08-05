@@ -79,10 +79,10 @@ public class NotificationTimerListPage extends StatefulView<Activity> implements
     }
 
     public static void addNewNotificationTimerWorkflow(INavigator navigator) {
-        navigator.push(Routes.DECK_SELECT_DIALOG, DeckSelectSVDialog.Args.multiSelectMode(),
+        navigator.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
                 (navigator1, navRoute, activity, currentView) -> {
-                    DeckSelectSVDialog.Result result =
-                            DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                    DeckSelectPage.Result result =
+                            DeckSelectPage.Result.of(navRoute.getRouteResult());
                     if (result != null) {
                         navigator1.push(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG,
                                 NotificationTimerDetailSVDialog.Args.withSelectedDecks(result.getSelectedDeck()));

@@ -39,7 +39,7 @@ import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.MoveCardCmd;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardDetailPage;
-import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectSVDialog;
+import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectPage;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -285,10 +285,10 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     }
 
     public static void copyCardAction(INavigator mainNavigator, Card card) {
-        mainNavigator.push(Routes.DECK_SELECT_DIALOG,
+        mainNavigator.push(Routes.DECK_SELECT_PAGE,
                 (navigator, navRoute, activity, currentView) -> {
-                    DeckSelectSVDialog.Result result =
-                            DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                    DeckSelectPage.Result result =
+                            DeckSelectPage.Result.of(navRoute.getRouteResult());
                     if (result != null) {
                         Deck selectedDeck = result.getSelectedDeck().get(0);
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
@@ -314,10 +314,10 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     }
 
     public static void moveCardAction(INavigator mainNavigator, Card card) {
-        mainNavigator.push(Routes.DECK_SELECT_DIALOG,
+        mainNavigator.push(Routes.DECK_SELECT_PAGE,
                 (navigator, navRoute, activity, currentView) -> {
-                    DeckSelectSVDialog.Result result =
-                            DeckSelectSVDialog.Result.of(navRoute.getRouteResult());
+                    DeckSelectPage.Result result =
+                            DeckSelectPage.Result.of(navRoute.getRouteResult());
                     if (result != null) {
                         Deck selectedDeck = result.getSelectedDeck().get(0);
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();

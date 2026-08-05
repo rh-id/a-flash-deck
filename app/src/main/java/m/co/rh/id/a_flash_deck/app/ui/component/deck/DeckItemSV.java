@@ -129,16 +129,27 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         TextView textTotalCards = rootLayout.findViewById(R.id.text_total_cards);
         mRxDisposer.add("createView_onChangeDeck",
                 mDeck.getSubject().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(deck -> textDeckName.setText(deck.name)));
+                        .subscribe(deck -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
+                            textDeckName.setText(deck.name);
+                        }));
         mRxDisposer.add("createView_onChangeCardCount",
                 mDeckCardCount.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(integer -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
                             Context context = mSvProvider.getContext();
                             textTotalCards.setText(context.getString(R.string.total_cards, integer));
                         }));
         mRxDisposer.add("createView_onIsSelectedChanged",
                 mIsSelected.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aBoolean -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
                             if (mListMode != null) {
                                 if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
                                     radioSelect.setChecked(aBoolean);
@@ -151,6 +162,9 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                 mDeckChangeNotifier.getAddedCardFlow()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
                             if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
                             }
@@ -159,6 +173,9 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                 mDeckChangeNotifier.getDeletedCardFlow()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
                             if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
                             }
@@ -167,6 +184,9 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                 mDeckChangeNotifier.getMovedCardFlow()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(moveCardEvent -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
                             Deck sourceDeck = moveCardEvent.getSourceDeck();
                             Deck destDeck = moveCardEvent.getDestinationDeck();
                             Deck currentDeck = mDeck.getValue();
@@ -178,10 +198,16 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     }
 
     private void loadCardCount() {
+        if (mSvProvider == null) {
+            return;
+        }
         mRxDisposer.add("loadCardCount_queryCardCount",
                 mDeckQueryCmd.countCards(mDeck.getValue())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((integer, throwable) -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
                             if (throwable != null) {
                                 Context context = mSvProvider.getContext();
                                 mLogger.e(TAG, context.getString(R.string.error_counting_cards), throwable);

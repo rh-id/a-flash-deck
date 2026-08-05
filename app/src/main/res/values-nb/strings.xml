@@ -40,6 +40,9 @@
     <string name="success_deleting_deck">Kortstokk slettet %s</string>
     <string name="hint_type_to_search">Skriv her for å søke</string>
     <string name="title_select_deck">Velg kortstokk</string>
+    <string name="title_select_deck_count">Velg kortstokk (%1$d/%2$d valgt)</string>
+    <string name="select_all">Velg alle</string>
+    <string name="deselect_all">Fravang alle</string>
     <string name="total_cards">Kort: %d</string>
     <string name="error_counting_cards">Feil ved telling av kort</string>
     <string name="question_desc_value">Sp: %s</string>

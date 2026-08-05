@@ -40,6 +40,9 @@
     <string name="success_deleting_deck">Success stizzond il pachet %s</string>
     <string name="hint_type_to_search">Scrive qua per tschertgar</string>
     <string name="title_select_deck">Tscherner pachet</string>
+    <string name="title_select_deck_count">Tscherner pachet (%1$d/%2$d tschernì)</string>
+    <string name="select_all">Tscherner tut</string>
+    <string name="deselect_all">Barmessar tut</string>
     <string name="total_cards">Cartas: %d</string>
     <string name="error_counting_cards">Errur contond las cartas</string>
     <string name="question_desc_value">D: %s</string>

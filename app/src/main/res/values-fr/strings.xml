@@ -40,6 +40,9 @@
     <string name="success_deleting_deck">Paquet %s supprimé avec succès</string>
     <string name="hint_type_to_search">Tapez ici pour rechercher</string>
     <string name="title_select_deck">Sélectionner un paquet</string>
+    <string name="title_select_deck_count">Sélectionner un paquet (%1$d/%2$d sélectionnés)</string>
+    <string name="select_all">Tout sélectionner</string>
+    <string name="deselect_all">Tout désélectionner</string>
     <string name="total_cards">Cartes : %d</string>
     <string name="error_counting_cards">Erreur lors du comptage des cartes</string>
     <string name="question_desc_value">Q : %s</string>

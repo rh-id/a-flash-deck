@@ -40,6 +40,9 @@
     <string name="success_deleting_deck">Tókst að eyða spjöldi %s</string>
     <string name="hint_type_to_search">Skrifaðu hér til að leita</string>
     <string name="title_select_deck">Velja spjöld</string>
+    <string name="title_select_deck_count">Velja spjöld (%1$d/%2$d valin)</string>
+    <string name="select_all">Velja allt</string>
+    <string name="deselect_all">Aftengja allt</string>
     <string name="total_cards">Spjöld: %d</string>
     <string name="error_counting_cards">Villa við að telja spjöld</string>
     <string name="question_desc_value">Sp: %s</string>

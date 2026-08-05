@@ -40,6 +40,9 @@
     <string name="success_deleting_deck">Successo nell\'eliminazione del mazzo %s</string>
     <string name="hint_type_to_search">Digita qui per cercare</string>
     <string name="title_select_deck">Seleziona Mazzo</string>
+    <string name="title_select_deck_count">Seleziona Mazzo (%1$d/%2$d selezionati)</string>
+    <string name="select_all">Seleziona tutto</string>
+    <string name="deselect_all">Deseleziona tutto</string>
     <string name="total_cards">Schede: %d</string>
     <string name="error_counting_cards">Errore nel conteggio delle schede</string>
     <string name="question_desc_value">D: %s</string>
