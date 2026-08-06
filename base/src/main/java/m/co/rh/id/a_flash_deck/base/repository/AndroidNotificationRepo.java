@@ -53,6 +53,10 @@ public class AndroidNotificationRepo {
         return mAndroidNotificationDao.findByGroupTagAndRefId(groupKey, refId);
     }
 
+    public synchronized long countByGroupKey(String groupKey) {
+        return mAndroidNotificationDao.countByGroupKey(groupKey);
+    }
+
     public synchronized void insertNotification(AndroidNotification androidNotification) {
         androidNotification.requestId = mRequestId.getAndIncrement();
         androidNotification.id = mAndroidNotificationDao.insert(androidNotification);

@@ -40,6 +40,9 @@ public abstract class AndroidNotificationDao {
     @Query("SELECT COUNT(id) FROM android_notification")
     public abstract long count();
 
+    @Query("SELECT COUNT(id) FROM android_notification WHERE group_key=:groupKey")
+    public abstract long countByGroupKey(String groupKey);
+
     @Query("DELETE FROM android_notification WHERE request_id = :requestId")
     public abstract void deleteByRequestId(int requestId);
 

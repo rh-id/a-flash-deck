@@ -308,8 +308,13 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                             NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
                             mBotAnalytics.get().trackDeleteNotification(notificationTimer.currentCardId);
                         }
+                        mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
+                        // Dismiss the system notification. The child is normally
+                        // removed by the swipe itself; this is a safety net for OEM
+                        // ROMs, and is required for the timer group, whose summary
+                        // (ID 0) has no content intent and would otherwise linger.
+                        cancelSystemNotifications(androidNotification.groupKey, androidNotification.requestId);
                     }
-                    mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
                 } finally {
                     mLock.unlock();
                 }
@@ -340,6 +345,12 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                         }
                         // delete after process notification
                         mAndroidNotificationRepo.get().deleteNotification(androidNotification);
+                        // Dismiss the system notification. The child is normally
+                        // auto-cancelled by the system on tap; this is a safety net
+                        // for OEM ROMs, and is required for the timer group, whose
+                        // summary (ID 0) has no content intent and would otherwise
+                        // linger as a blank notification after answering/exiting.
+                        cancelSystemNotifications(androidNotification.groupKey, androidNotification.requestId);
                     }
                 } finally {
                     mLock.unlock();
@@ -358,16 +369,41 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         return Flowable.fromObservable(mDeckMessageSubject, BackpressureStrategy.BUFFER);
     }
 
+    /**
+     * Cancel the child system notification identified by {@code groupKey} and
+     * {@code requestId}. For the timer group (the only one that posts a group
+     * summary with no content intent), also cancel the summary
+     * (ID {@link #GROUP_SUMMARY_ID_NOTIFICATION_TIMER}) when no timer
+     * notifications remain, so it does not linger as a blank notification.
+     * <p>
+     * Cancelling the child explicitly is a safety net for {@code setAutoCancel}
+     * not firing reliably on some OEM ROMs; for groups with no summary it is
+     * otherwise redundant with the system's own dismissal.
+     * <p>
+     * Must be called after the corresponding {@code android_notification}
+     * record has been deleted so the count reflects the post-delete state.
+     * Safe to call from any thread.
+     */
+    private void cancelSystemNotifications(String groupKey, int requestId) {
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+        notificationManagerCompat.cancel(groupKey, requestId);
+        // The timer group posts a summary (ID 0) with no content intent that is
+        // never auto-dismissed. Cancel it only when no timer children remain, so
+        // other still-live timers keep their grouping. Cancelling a summary that
+        // isn't posted (e.g. when dismissing a non-timer notification) is a no-op.
+        if (mAndroidNotificationRepo.get().countByGroupKey(GROUP_KEY_NOTIFICATION_TIMER) == 0) {
+            notificationManagerCompat.cancel(GROUP_KEY_NOTIFICATION_TIMER, GROUP_SUMMARY_ID_NOTIFICATION_TIMER);
+        }
+    }
+
     @Override
     public void cancelNotificationSync(NotificationTimer notificationTimer) {
         mLock.lock();
         try {
             AndroidNotification androidNotification = mAndroidNotificationRepo.get().findByGroupTagAndRefId(GROUP_KEY_NOTIFICATION_TIMER, notificationTimer.id);
             if (androidNotification != null) {
-                NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-                notificationManagerCompat.cancel(GROUP_KEY_NOTIFICATION_TIMER,
-                        androidNotification.requestId);
                 mAndroidNotificationRepo.get().deleteNotification(androidNotification);
+                cancelSystemNotifications(GROUP_KEY_NOTIFICATION_TIMER, androidNotification.requestId);
             }
         } finally {
             mLock.unlock();
