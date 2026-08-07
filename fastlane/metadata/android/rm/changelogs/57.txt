@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Nova funcziun:
+* La tscherna da pachets da cartas è uss ina pagina da scoella plaina cun l'opziun «Tscherner tut» cun tscherner plirs pachets da cartas
+
+Corecziuns:
+* Il resum da la communicaziun dal timer na resta betge pli sco ina communicaziun vida suenter avair respundì u bandunà ina carta

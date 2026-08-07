@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Nýtt:
+* Spilastokaval er nú heilsíðusíða með „Velja allt" valkosti þegar valið er marga spilastokka
+
+Villuleiðréttingar:
+* Tilkynningayfirlit tímatækis er ekki lengur eftir sem auð tilkynning eftir að svarað eða hætt við spjaldi

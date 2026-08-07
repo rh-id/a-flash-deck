@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Nouveauté :
+* Le sélecteur de paquets est désormais une page plein écran avec l'option « Tout sélectionner » lors du choix de plusieurs paquets
+
+Corrections :
+* Le résumé de notification du minuteur ne reste plus comme une notification vide après avoir répondu ou quitté une carte

@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Neu:
+* Die Kartensatzauswahl ist nun eine Vollbildseite mit der Option „Alle auswählen" bei der Auswahl mehrerer Kartensätze
+
+Fehlerbehebungen:
+* Benachrichtigungsübersicht des Timers bleibt nach dem Antworten oder Verlassen einer Karte nicht mehr als leere Benachrichtigung stehen

@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Ny funksjon:
+* Kortstokkvelgeren er nå en fullskjermside med «Velg alle»-valg ved valg av flere kortstokker
+
+Feilrettinger:
+* Varselsammendraget for timeren blir ikke lenger stående som et tomt varsel etter svar eller avslutning av et kort

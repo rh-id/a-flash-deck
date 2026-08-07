@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Novità:
+* La selezione dei mazzi è ora una pagina a schermo intero con l'opzione « Seleziona tutto » quando si scelgono più mazzi
+
+Correzioni:
+* Il riepilogo della notifica del timer non rimane più come notifica vuota dopo aver risposto o chiuso una carta

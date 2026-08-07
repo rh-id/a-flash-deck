@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Feature:
+* The deck selection screen is now a full-screen page with a "Select all" option when choosing multiple decks
+
+Fixes:
+* Timer notification summary no longer stays as a blank notification after answering or exiting a card

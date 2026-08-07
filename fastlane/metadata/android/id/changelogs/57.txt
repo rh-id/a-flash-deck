@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Fitur:
+* Layar pemilih dek kini menjadi halaman layar penuh dengan opsi "Pilih semua" saat memilih beberapa dek
+
+Perbaikan:
+* Ringkasan notifikasi timer tidak lagi tersisa sebagai notifikasi kosong setelah menjawab atau keluar dari kartu

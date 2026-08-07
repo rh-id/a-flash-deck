@@ -1,0 +1,7 @@
+Release 1.14.0+57
+
+Uuendus:
+* Kaardipaki valija on nüüd täisekraanileht koos valikuga „Vali kõik" mitme kaardipaki valimisel
+
+Parandused:
+* Taimeri teavituse kokkuvõte ei jää enam pärast kaardi vastamist või sulgemist tühja teavitusega alles
