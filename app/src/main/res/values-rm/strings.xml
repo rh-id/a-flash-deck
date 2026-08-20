@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Errur chargiond il pachet</string>
     <string name="move_card">Spustar carta</string>
     <string name="copy_card">Copiar carta</string>
+    <string name="generate_deck_from_card">Generar in pachet dad ina carta</string>
     <string name="error_moving_card">Errur spustond la carta</string>
     <string name="success_moving_card">Success spustond la carta en %s</string>
     <string name="error_copying_card">Errur copiond la carta</string>

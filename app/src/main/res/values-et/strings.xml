@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Viga kaardipaki laadimisel</string>
     <string name="move_card">Liiguta kaarti</string>
     <string name="copy_card">Kopeeri kaart</string>
+    <string name="generate_deck_from_card">Loo kaardipakk kaardist</string>
     <string name="error_moving_card">Viga kaardi liigutamisel</string>
     <string name="success_moving_card">Kaart edukalt liigutud kaardipakki %s</string>
     <string name="error_copying_card">Viga kaardi kopeerimisel</string>

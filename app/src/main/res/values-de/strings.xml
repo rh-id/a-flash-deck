@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Fehler beim Laden des Kartensatzes</string>
     <string name="move_card">Karte verschieben</string>
     <string name="copy_card">Karte kopieren</string>
+    <string name="generate_deck_from_card">Kartensatz aus Karte generieren</string>
     <string name="error_moving_card">Fehler beim Verschieben der Karte</string>
     <string name="success_moving_card">Karte erfolgreich nach %s verschoben</string>
     <string name="error_copying_card">Fehler beim Kopieren der Karte</string>

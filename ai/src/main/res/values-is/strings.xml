@@ -52,6 +52,23 @@
     <string name="take_photo">Taka mynd</string>
     <string name="pick_from_gallery">Velja úr myndasafni</string>
     <string name="no_images_added">Engum myndum bætt við ennþá. Bættu við allt að 10 myndum.</string>
+    <string name="title_generate_deck_from_card">Búa til spilastokk úr spjaldi með Gemini</string>
+    <string name="ai_card_preview_question">Sp: %s</string>
+    <string name="ai_card_preview_answer">Sv: %s</string>
+    <string name="ai_generation_from_card_started">Býr til spilastokk úr spjaldi\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Spilastokkur \"%s\" búinn til með %s spilum</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Tókst ekki að búa til spilastokk: %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Búðu til svipaðar spurningar um sama efni</item>
+        <item>Búðu til erfiðari útgáfur af þessu spjaldi</item>
+        <item>Búðu til auðveldari útgáfur af þessu spjaldi</item>
+        <item>Búðu til tengdar frekari spurningar</item>
+        <item>Þýddu þetta spjald á íslensku</item>
+        <item>Breyttu þessari spurningu í snið með eyðum</item>
+        <item>Búðu til rétt/rangt spjöld úr þessari spurningu</item>
+        <item>Þenjdu út með erfiðari spurningum um þetta efni</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Þýða öll spjöld yfir á íslensku</item>

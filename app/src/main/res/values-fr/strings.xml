@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Erreur lors du chargement du paquet</string>
     <string name="move_card">Déplacer la carte</string>
     <string name="copy_card">Copier la carte</string>
+    <string name="generate_deck_from_card">Générer un paquet à partir de la carte</string>
     <string name="error_moving_card">Erreur lors du déplacement de la carte</string>
     <string name="success_moving_card">Carte déplacée avec succès vers %s</string>
     <string name="error_copying_card">Erreur lors de la copie de la carte</string>

@@ -52,6 +52,23 @@
     <string name="take_photo">Tee foto</string>
     <string name="pick_from_gallery">Vali galeriist</string>
     <string name="no_images_added">Pilte pole veel lisatud. Lisa kuni 10 pilti.</string>
+    <string name="title_generate_deck_from_card">Loo kaardipakk kaardist Gemini abil</string>
+    <string name="ai_card_preview_question">K: %s</string>
+    <string name="ai_card_preview_answer">V: %s</string>
+    <string name="ai_generation_from_card_started">Kaardipaki loomine kaardist\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Kaardipakk \"%s\" loodud %s kaardiga</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Kaardipaki loomine ebaõnnestus: %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Loo sama teema kohta sarnaseid küsimusi</item>
+        <item>Loo sellest kaardist raskemaid versioone</item>
+        <item>Loo sellest kaardist lihtsamaid versioone</item>
+        <item>Genereeri seotud järelküsimusi</item>
+        <item>Tõlgi see kaart eesti keelde</item>
+        <item>Muuda see küsimus lünkteksti vormingusse</item>
+        <item>Loo sellest küsimusest õige/vale kaardid</item>
+        <item>Laienda täiustatumate küsimustega sellel teemal</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Tõlgi kõik kaardid eesti keelde</item>

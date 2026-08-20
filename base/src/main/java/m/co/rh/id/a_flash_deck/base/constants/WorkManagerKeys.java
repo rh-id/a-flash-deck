@@ -30,6 +30,10 @@ public class WorkManagerKeys {
     public static final String AI_GENERATE_FROM_IMAGE_PROMPT = "KEY_AI_GENERATE_FROM_IMAGE_PROMPT";
     public static final String AI_GENERATE_FROM_IMAGE_MAX_CARDS = "KEY_AI_GENERATE_FROM_IMAGE_MAX_CARDS";
     public static final String AI_GENERATE_FROM_IMAGE_MODEL_ID = "KEY_AI_GENERATE_FROM_IMAGE_MODEL_ID";
+    public static final String AI_GENERATE_FROM_CARD_CARD_ID = "KEY_AI_GENERATE_FROM_CARD_CARD_ID";
+    public static final String AI_GENERATE_FROM_CARD_PROMPT = "KEY_AI_GENERATE_FROM_CARD_PROMPT";
+    public static final String AI_GENERATE_FROM_CARD_MAX_CARDS = "KEY_AI_GENERATE_FROM_CARD_MAX_CARDS";
+    public static final String AI_GENERATE_FROM_CARD_MODEL_ID = "KEY_AI_GENERATE_FROM_CARD_MODEL_ID";
 
     private WorkManagerKeys() {
     }

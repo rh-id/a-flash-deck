@@ -34,6 +34,8 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
+import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromCardPage;
 import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
@@ -280,6 +282,9 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         } else if (id == R.id.menu_copy_card) {
             copyCardAction(mNavigator, getCard().clone());
             return true;
+        } else if (id == R.id.menu_generate_deck_from_card) {
+            generateDeckFromCardAction(mNavigator, getCard().clone());
+            return true;
         }
         return false;
     }
@@ -350,5 +355,21 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                         );
                     }
                 });
+    }
+
+    public static void generateDeckFromCardAction(INavigator mainNavigator, Card card) {
+        Provider provider = (Provider) mainNavigator.getNavConfiguration().getRequiredComponent();
+        GeminiService geminiService = provider.get(GeminiService.class);
+        if (geminiService.isConfigured()) {
+            mainNavigator.push(Routes.AI_GENERATE_DECK_FROM_CARD_PAGE,
+                    GenerateDeckFromCardPage.Args.with(card.id));
+        } else {
+            Context context = provider.getContext();
+            CommonNavConfig commonNavConfig = provider.get(CommonNavConfig.class);
+            String title = context.getString(R.string.title_error);
+            String content = context.getString(R.string.error_api_key_not_configured);
+            mainNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                    commonNavConfig.args_commonMessageDialog(title, content));
+        }
     }
 }

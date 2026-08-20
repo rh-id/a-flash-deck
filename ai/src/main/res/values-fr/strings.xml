@@ -52,6 +52,23 @@
     <string name="take_photo">Prendre une photo</string>
     <string name="pick_from_gallery">Choisir dans la galerie</string>
     <string name="no_images_added">"Aucune image ajoutée pour l'instant. Ajoutez jusqu'à 10 images."</string>
+    <string name="title_generate_deck_from_card">Générer un paquet à partir de la carte avec Gemini</string>
+    <string name="ai_card_preview_question">Q : %s</string>
+    <string name="ai_card_preview_answer">R : %s</string>
+    <string name="ai_generation_from_card_started">Génération du paquet à partir de la carte\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Paquet \"%s\" créé avec %s cartes</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Échec de la génération du paquet : %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Créer des questions similaires sur le même sujet</item>
+        <item>Créer des versions plus difficiles de cette carte</item>
+        <item>Créer des versions plus faciles de cette carte</item>
+        <item>Générer des questions de suivi liées</item>
+        <item>Traduire cette carte en français</item>
+        <item>Convertir cette question en format à trous</item>
+        <item>Créer des cartes vrai/faux à partir de cette question</item>
+        <item>Élargir avec des questions plus avancées sur ce sujet</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Traduire toutes les cartes en français</item>

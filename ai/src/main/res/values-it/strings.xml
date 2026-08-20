@@ -52,6 +52,23 @@
     <string name="take_photo">Scatta foto</string>
     <string name="pick_from_gallery">Scegli dalla galleria</string>
     <string name="no_images_added">Nessuna immagine ancora aggiunta. Aggiungi fino a 10 immagini.</string>
+    <string name="title_generate_deck_from_card">Genera mazzo da una scheda con Gemini</string>
+    <string name="ai_card_preview_question">D: %s</string>
+    <string name="ai_card_preview_answer">R: %s</string>
+    <string name="ai_generation_from_card_started">Generazione del mazzo dalla scheda\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Mazzo \"%s\" creato con %s schede</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Generazione del mazzo non riuscita: %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Crea domande simili sullo stesso argomento</item>
+        <item>Crea versioni più difficili di questa scheda</item>
+        <item>Crea versioni più facili di questa scheda</item>
+        <item>Genera domande di approfondimento collegate</item>
+        <item>Traduci questa scheda in italiano</item>
+        <item>Converti questa domanda in formato da completare</item>
+        <item>Crea schede vero/falso da questa domanda</item>
+        <item>Amplia con domande più avanzate su questo argomento</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Tradurre tutte le carte in italiano</item>

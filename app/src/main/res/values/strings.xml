@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Error loading deck</string>
     <string name="move_card">Move card</string>
     <string name="copy_card">Copy card</string>
+    <string name="generate_deck_from_card">Generate deck from card</string>
     <string name="error_moving_card">Error moving card</string>
     <string name="success_moving_card">Success moving card to %s</string>
     <string name="error_copying_card">Error copying card</string>

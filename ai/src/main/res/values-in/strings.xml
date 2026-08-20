@@ -52,6 +52,23 @@
     <string name="take_photo">Ambil Foto</string>
     <string name="pick_from_gallery">Galeri</string>
     <string name="no_images_added">Belum ada gambar yang ditambahkan. Tambahkan hingga 10 gambar.</string>
+    <string name="title_generate_deck_from_card">Buat Dek dari Kartu dengan Gemini</string>
+    <string name="ai_card_preview_question">T: %s</string>
+    <string name="ai_card_preview_answer">J: %s</string>
+    <string name="ai_generation_from_card_started">Membuat dek dari kartu\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Dek \"%s\" dibuat dengan %s kartu</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Gagal membuat dek dari kartu: %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Buat pertanyaan serupa tentang topik yang sama</item>
+        <item>Buat versi yang lebih sulit dari kartu ini</item>
+        <item>Buat versi yang lebih mudah dari kartu ini</item>
+        <item>Hasilkan pertanyaan lanjutan yang terkait</item>
+        <item>Terjemahkan kartu ini ke bahasa Indonesia</item>
+        <item>Ubah pertanyaan ini menjadi format isian singkat</item>
+        <item>Buat kartu benar/salah dari pertanyaan ini</item>
+        <item>Kembangkan dengan pertanyaan yang lebih tingkat lanjut tentang topik ini</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Terjemahkan semua kartu ke bahasa Indonesia</item>

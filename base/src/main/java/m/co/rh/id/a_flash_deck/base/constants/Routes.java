@@ -37,6 +37,7 @@ public class Routes {
     public static final String AI_GENERATE_DECK_PAGE = "/ai/generateDeckPage";
     public static final String AI_GENERATE_DECK_FROM_EXISTING_PAGE = "/ai/generateDeckFromExistingPage";
     public static final String AI_GENERATE_DECK_FROM_IMAGE_PAGE = "/ai/generateDeckFromImagePage";
+    public static final String AI_GENERATE_DECK_FROM_CARD_PAGE = "/ai/generateDeckFromCardPage";
 
     //Use CommonNavConfig.java to handle arguments and result return by common routes
     public static final String COMMON_BOOLEAN_DIALOG = "/common/booleanDialog";

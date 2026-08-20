@@ -36,7 +36,7 @@ A simple and easy to use flash card app to help you study.
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
 * Test state persistence — resume your test after app restart
 * Flash bot to smartly suggest list of card to test you
-* AI-powered deck generation using Google Gemini API — generate from a topic, transform existing decks (translate, expand, create harder versions), or generate from captured camera photos and gallery images
+* AI-powered deck generation using Google Gemini API — generate from a topic, transform existing decks (translate, expand, create harder versions), generate from captured camera photos and gallery images, or generate a new deck from a single card
 * AI model selection — choose from available Gemini models dynamically
 * Encrypted API key storage — secure storage using Android Keystore (`ApiKeyManager`)
 
@@ -191,6 +191,7 @@ graph TB
         AiWorkerTopic[GenerateDeckWorker]
         AiWorkerExisting[GenerateDeckFromExistingWorker]
         AiWorkerImage[GenerateDeckFromImageWorker]
+        AiWorkerCard[GenerateDeckFromCardWorker]
         AiSecurity[ApiKeyManager]
         AiUI[AI UI Components]
         AiNotifier[ApiKeyChangeNotifier]
@@ -211,9 +212,9 @@ graph TB
     TimerWorkers -->|Access| DAOs
     TimerWorkers -->|Use| TimerCommands
 
-    AiWorkerTopic & AiWorkerExisting & AiWorkerImage -->|Calls| AiService
+    AiWorkerTopic & AiWorkerExisting & AiWorkerImage & AiWorkerCard -->|Calls| AiService
     AiService -->|Access| AiSecurity
-    AiWorkerTopic & AiWorkerExisting & AiWorkerImage -->|Updates| DAOs
+    AiWorkerTopic & AiWorkerExisting & AiWorkerImage & AiWorkerCard -->|Updates| DAOs
 ```
 
 ### Layered Architecture
@@ -396,7 +397,7 @@ Business logic is encapsulated in command classes following the Command pattern:
 - `ExportImportCmd`: Deck import/export
 - `PagedDeckItemsCmd` / `PagedCardItemsCmd`: Pagination
 - `DeleteSuggestedCardCmd`: Bot suggestion management
-- `GenerateDeckFromTopicCmd` / `GenerateDeckFromExistingCmd` / `GenerateDeckFromImageCmd`: AI deck generation (AI module)
+- `GenerateDeckFromTopicCmd` / `GenerateDeckFromExistingCmd` / `GenerateDeckFromImageCmd` / `GenerateDeckFromCardCmd`: AI deck generation (AI module)
 
 **Command Flow**:
 1. Command receives input from `StatefulView`
@@ -440,6 +441,7 @@ WorkManager is used for background tasks:
   - Posts success/failure notification on completion
 - `GenerateDeckFromExistingWorker`: Transforms existing decks (translate, expand, harder versions) via Gemini API
 - `GenerateDeckFromImageWorker`: Generates flash card decks from captured camera photos or gallery images (up to 10 images) with customizable prompt instructions via Gemini multimodal API
+- `GenerateDeckFromCardWorker`: Generates a new deck from a single existing card via Gemini API
   - All AI workers inherit from `BaseGenerateDeckWorker`
 
 ### Threading Strategy
@@ -541,7 +543,7 @@ timer-notification/src/main/java/m/co/rh/id/a_flash_deck/timer/
 └── workmanager/ (Timer worker)
 
 ai/src/main/java/m/co/rh/id/a_flash_deck/ai/
-├── command/ (GenerateDeckFromTopicCmd, GenerateDeckFromExistingCmd, GenerateDeckFromImageCmd)
+├── command/ (GenerateDeckFromTopicCmd, GenerateDeckFromExistingCmd, GenerateDeckFromImageCmd, GenerateDeckFromCardCmd)
 ├── model/ (AiGeneratedCard, AiGeneratedDeck, AvailableModel)
 ├── provider/
 │   ├── AiProviderModule.java
@@ -551,8 +553,8 @@ ai/src/main/java/m/co/rh/id/a_flash_deck/ai/
 ├── service/ (GeminiService - REST API via HttpURLConnection)
 ├── ui/
 │   ├── component/settings/ (AiSettingsMenuSV)
-│   └── page/ (ApiKeyEntrySVDialog, BaseGenerateDeckPage, GenerateDeckFromTopicPage, GenerateDeckFromExistingPage, GenerateDeckFromImagePage)
-└── workmanager/ (BaseGenerateDeckWorker, GenerateDeckWorker, GenerateDeckFromExistingWorker, GenerateDeckFromImageWorker)
+│   └── page/ (ApiKeyEntrySVDialog, BaseGenerateDeckPage, GenerateDeckFromTopicPage, GenerateDeckFromExistingPage, GenerateDeckFromImagePage, GenerateDeckFromCardPage)
+└── workmanager/ (BaseGenerateDeckWorker, GenerateDeckWorker, GenerateDeckFromExistingWorker, GenerateDeckFromImageWorker, GenerateDeckFromCardWorker)
 ```
 
 ### StatefulView Lifecycle

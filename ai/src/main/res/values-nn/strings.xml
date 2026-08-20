@@ -52,6 +52,23 @@
     <string name="take_photo">Ta bilete</string>
     <string name="pick_from_gallery">Vel frå galleri</string>
     <string name="no_images_added">Ingen bilete lagt til ennå. Legg til opptil 10 bilete.</string>
+    <string name="title_generate_deck_from_card">Lag kortstokk frå eit kort med Gemini</string>
+    <string name="ai_card_preview_question">Sp: %s</string>
+    <string name="ai_card_preview_answer">Sv: %s</string>
+    <string name="ai_generation_from_card_started">Lagar kortstokk frå kort\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Kortstokk \"%s\" oppretta med %s kort</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Kunne ikkje lage kortstokk frå kort: %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Lag liknande spørsmål om same emne</item>
+        <item>Lag vanskelegare versjonar av dette kortet</item>
+        <item>Lag enklare versjonar av dette kortet</item>
+        <item>Lag relaterte oppfølgingsspørsmål</item>
+        <item>Omset dette kortet til norsk</item>
+        <item>Gjer om dette spørsmålet til fyll-ut-format</item>
+        <item>Lag sant/usant-kort frå dette spørsmålet</item>
+        <item>Utvid med meir avanserte spørsmål om dette emnet</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Omset alle kort til nynorsk</item>

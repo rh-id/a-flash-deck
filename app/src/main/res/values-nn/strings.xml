@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Feil ved lasting av kortstokk</string>
     <string name="move_card">Flytt kort</string>
     <string name="copy_card">Kopier kort</string>
+    <string name="generate_deck_from_card">Lag kortstokk frå kort</string>
     <string name="error_moving_card">Feil ved flytting av kort</string>
     <string name="success_moving_card">Kort flytta til %s</string>
     <string name="error_copying_card">Feil ved kopiering av kort</string>

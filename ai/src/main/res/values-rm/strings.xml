@@ -52,6 +52,23 @@
     <string name="take_photo">Faria in foto</string>
     <string name="pick_from_gallery">Tschernair da la galaria</string>
     <string name="no_images_added">Nagin maletg agiuntà fin ussa. Agiunta fin a 10 maletgs.</string>
+    <string name="title_generate_deck_from_card">Generar in pachet dad ina carta cun Gemini</string>
+    <string name="ai_card_preview_question">D: %s</string>
+    <string name="ai_card_preview_answer">R: %s</string>
+    <string name="ai_generation_from_card_started">Generar il pachet dad ina carta\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Pachet \"%s\" creà cun %s cartas</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Es betg reussì da generar il pachet dad ina carta: %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Crear dumondas sumegliantas davart il medem tema</item>
+        <item>Crear versiuns pli difficilas da questa carta</item>
+        <item>Crear versiuns pli simplas da questa carta</item>
+        <item>Generar colliadas dumondas da suandar</item>
+        <item>Translatar questa carta en rumantsch</item>
+        <item>Convertir questa dumonda en in format cun lacunas</item>
+        <item>Crear cartas vair/fals da questa dumonda</item>
+        <item>Extender cun dumondas pli avanzadas davart quest tema</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Translatar tut las cartas en rumantsch</item>

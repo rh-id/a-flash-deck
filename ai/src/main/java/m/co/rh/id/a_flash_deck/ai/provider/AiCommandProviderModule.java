@@ -17,6 +17,7 @@
 
 package m.co.rh.id.a_flash_deck.ai.provider;
 
+import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromCardCmd;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromExistingCmd;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromImageCmd;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromTopicCmd;
@@ -34,5 +35,7 @@ public class AiCommandProviderModule implements ProviderModule {
                 new GenerateDeckFromExistingCmd(provider));
         providerRegistry.registerLazy(GenerateDeckFromImageCmd.class, () ->
                 new GenerateDeckFromImageCmd(provider));
+        providerRegistry.registerLazy(GenerateDeckFromCardCmd.class, () ->
+                new GenerateDeckFromCardCmd(provider));
     }
 }

@@ -22,6 +22,7 @@ public class WorkManagerTags {
     public static final String AI_GENERATE_DECK = "TAG_AI_GENERATE_DECK";
     public static final String AI_GENERATE_DECK_FROM_EXISTING = "TAG_AI_GENERATE_DECK_FROM_EXISTING";
     public static final String AI_GENERATE_DECK_FROM_IMAGE = "TAG_AI_GENERATE_DECK_FROM_IMAGE";
+    public static final String AI_GENERATE_DECK_FROM_CARD = "TAG_AI_GENERATE_DECK_FROM_CARD";
 
     private WorkManagerTags() {
     }

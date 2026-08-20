@@ -52,6 +52,23 @@
     <string name="take_photo">Foto aufnehmen</string>
     <string name="pick_from_gallery">Aus Galerie auswählen</string>
     <string name="no_images_added">Noch keine Bilder hinzugefügt. Fügen Sie bis zu 10 Bilder hinzu.</string>
+    <string name="title_generate_deck_from_card">Kartensatz aus Karte mit Gemini generieren</string>
+    <string name="ai_card_preview_question">F: %s</string>
+    <string name="ai_card_preview_answer">A: %s</string>
+    <string name="ai_generation_from_card_started">Kartensatz wird aus einer Karte generiert\u2026</string>
+    <string name="ai_generation_from_card_success" formatted="false">Kartensatz \"%s\" mit %s Karten erstellt</string>
+    <string name="ai_generation_from_card_failed" formatted="false">Fehler beim Generieren des Kartensatzes: %s</string>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>Ähnliche Fragen zum gleichen Thema erstellen</item>
+        <item>Schwerere Versionen dieser Karte erstellen</item>
+        <item>Leichtere Versionen dieser Karte erstellen</item>
+        <item>Zusammenhängende Folgefragen generieren</item>
+        <item>Diese Karte ins Deutsche übersetzen</item>
+        <item>Diese Frage in ein Lückentextformat umwandeln</item>
+        <item>Richtig/Falsch-Karten aus dieser Frage erstellen</item>
+        <item>Mit fortgeschritteneren Fragen zu diesem Thema erweitern</item>
+    </string-array>
 
     <string-array name="ai_prompt_suggestions">
         <item>Alle Karten ins Deutsche übersetzen</item>

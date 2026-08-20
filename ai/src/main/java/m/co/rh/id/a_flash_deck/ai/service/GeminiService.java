@@ -85,6 +85,15 @@ public class GeminiService {
             "Each card has 'q' (question) and 'a' (answer) fields. " +
             MATH_FORMAT_INSTRUCTION +
             "Return JSON: {\"deck_name\": \"string\", \"cards\": [{\"question\": \"string\", \"answer\": \"string\"}]}";
+    private static final String SYSTEM_INSTRUCTION_FROM_CARD = "You are a flash card creator and transformer. " +
+            "You will receive ONE existing flash card in JSON format. " +
+            "Generate a NEW deck based on the user's instructions and inspired by the provided card — " +
+            "for example similar cards on the same topic, variations, harder or easier versions, " +
+            "or related follow-up concepts. " +
+            "hasImage means the card has an image attached. hasVoice means the card has a voice recording attached. " +
+            "The card has 'q' (question) and 'a' (answer) fields. " +
+            MATH_FORMAT_INSTRUCTION +
+            "Return JSON: {\"deck_name\": \"string\", \"cards\": [{\"question\": \"string\", \"answer\": \"string\"}]}";
 
     private static final String SYSTEM_INSTRUCTION_FROM_IMAGE = "You are an expert flash card creator. " +
             "Analyze the provided image(s) carefully and generate educational flash cards.\n" +
@@ -236,6 +245,38 @@ public class GeminiService {
         }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
+    public Single<AiGeneratedDeck> generateDeckFromCard(Card card, String prompt, int maxCards, String modelId) {
+        return Single.fromCallable(() -> {
+            String apiKey = mApiKeyManager.getApiKey();
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new IllegalStateException("API key not configured");
+            }
+            String url = BASE_URL + "/models/" + URLEncoder.encode(modelId, "UTF-8") + ":generateContent";
+            String cardDataJson = buildCardDataPayload(card);
+            String userPrompt = cardDataJson + "\n\nUser instruction: \"" + prompt +
+                    "\"\nMaximum cards to generate: " + maxCards;
+
+            JSONObject generationConfig = new JSONObject();
+            generationConfig.put("responseMimeType", "application/json");
+            generationConfig.put("candidateCount", 1);
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("systemInstruction", new JSONObject()
+                    .put("parts", new JSONArray()
+                            .put(new JSONObject().put("text", SYSTEM_INSTRUCTION_FROM_CARD))));
+            requestBody.put("contents", new JSONArray()
+                    .put(new JSONObject()
+                            .put("role", "user")
+                            .put("parts", new JSONArray()
+                                    .put(new JSONObject().put("text", userPrompt)))));
+            requestBody.put("generationConfig", generationConfig);
+
+            String responseBody = httpPost(url, requestBody, apiKey);
+            AiGeneratedDeck result = parseGenerateContentResponse(responseBody);
+            return result;
+        }).subscribeOn(Schedulers.from(mExecutorService));
+    }
+
     public Single<AiGeneratedDeck> generateDeckFromImages(List<String> base64Images, int maxCards, String modelId) {
         return generateDeckFromImages(base64Images, null, maxCards, modelId);
     }
@@ -325,6 +366,17 @@ public class GeminiService {
         root.put("totalCards", totalCards);
         root.put("totalDecks", decks.size());
 
+        return root.toString();
+    }
+
+    private String buildCardDataPayload(Card card) throws Exception {
+        JSONObject root = new JSONObject();
+        JSONObject cardObj = new JSONObject();
+        cardObj.put("q", card.question);
+        cardObj.put("a", card.answer);
+        cardObj.put("hasImage", (card.questionImage != null || card.answerImage != null));
+        cardObj.put("hasVoice", (card.questionVoice != null || card.answerVoice != null));
+        root.put("card", cardObj);
         return root.toString();
     }
 

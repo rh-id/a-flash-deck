@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Villa við að hlaða spjöldi</string>
     <string name="move_card">Færa spjald</string>
     <string name="copy_card">Afrita spjald</string>
+    <string name="generate_deck_from_card">Búa til spilastokk úr spjaldi</string>
     <string name="error_moving_card">Villa við að færa spjald</string>
     <string name="success_moving_card">Tókst að færa spjald í %s</string>
     <string name="error_copying_card">Villa við að afrita spjald</string>

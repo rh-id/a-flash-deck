@@ -56,6 +56,7 @@
     <string name="error_loading_deck">Errore nel caricamento del mazzo</string>
     <string name="move_card">Sposta scheda</string>
     <string name="copy_card">Copia scheda</string>
+    <string name="generate_deck_from_card">Genera mazzo dalla scheda</string>
     <string name="error_moving_card">Errore nello spostamento della scheda</string>
     <string name="success_moving_card">Successo nello spostamento della scheda in %s</string>
     <string name="error_copying_card">Errore nella copia della scheda</string>
