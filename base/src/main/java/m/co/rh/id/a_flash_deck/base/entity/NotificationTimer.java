@@ -50,6 +50,7 @@ public class NotificationTimer implements Serializable, Cloneable {
     /**
      * Current card ID that is displayed
      */
+    @ColumnInfo(name = "current_card_id")
     public Long currentCardId;
 
     @Override

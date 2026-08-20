@@ -36,7 +36,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Test;
 
 @Database(entities = {Deck.class, Card.class, Test.class,
         AndroidNotification.class, NotificationTimer.class},
-        version = 13,
+        version = 14,
         autoMigrations = {
                 @AutoMigration(from = 12, to = 13,
                         spec = AppDatabase.RemoveIsReversedSpec.class)

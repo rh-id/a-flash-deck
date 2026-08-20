@@ -10,7 +10,7 @@ public class DbMigration {
         return new Migration[]{MIGRATION_1_2, MIGRATION_2_3,
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
-                MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12};
+                MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -118,6 +118,28 @@ public class DbMigration {
             if (!columnExists) {
                 database.execSQL("ALTER TABLE card ADD COLUMN `isReversed` INTEGER NOT NULL DEFAULT 0");
             }
+        }
+    };
+
+    public static final Migration MIGRATION_13_14 = new Migration(13, 14) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // rename currentCardId to current_card_id for naming consistency.
+            // RENAME COLUMN needs SQLite 3.25 (API 29+), minSdk is 23, so
+            // rebuild the table instead
+            database.execSQL("CREATE TABLE IF NOT EXISTS `_new_notification_timer` " +
+                    "(`id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "`name` TEXT, " +
+                    "`period_minutes` INTEGER NOT NULL, " +
+                    "`selected_deck_ids` TEXT, " +
+                    "`displayed_card_ids` TEXT, " +
+                    "`current_card_id` INTEGER)");
+            database.execSQL("INSERT INTO `_new_notification_timer` " +
+                    "(`id`, `name`, `period_minutes`, `selected_deck_ids`, `displayed_card_ids`, `current_card_id`) " +
+                    "SELECT `id`, `name`, `period_minutes`, `selected_deck_ids`, `displayed_card_ids`, `currentCardId` " +
+                    "FROM `notification_timer`");
+            database.execSQL("DROP TABLE `notification_timer`");
+            database.execSQL("ALTER TABLE `_new_notification_timer` RENAME TO `notification_timer`");
         }
     };
 }

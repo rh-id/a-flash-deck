@@ -306,7 +306,9 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     if (androidNotification != null) {
                         if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                             NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
-                            mBotAnalytics.get().trackDeleteNotification(notificationTimer.currentCardId);
+                            if (notificationTimer != null && notificationTimer.currentCardId != null) {
+                                mBotAnalytics.get().trackDeleteNotification(notificationTimer.currentCardId);
+                            }
                         }
                         mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
                         // Dismiss the system notification. The child is normally
@@ -334,9 +336,13 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     if (androidNotification != null) {
                         if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                             NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
-                            mBotAnalytics.get().trackOpenNotification(notificationTimer.currentCardId);
-                            Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                            mNotificationTimerSubject.onNext(new NotificationTimerEvent(notificationTimer, card));
+                            if (notificationTimer != null && notificationTimer.currentCardId != null) {
+                                mBotAnalytics.get().trackOpenNotification(notificationTimer.currentCardId);
+                                Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                                if (card != null) {
+                                    mNotificationTimerSubject.onNext(new NotificationTimerEvent(notificationTimer, card));
+                                }
+                            }
                         } else if (androidNotification.groupKey.equals(GROUP_KEY_DECK_MESSAGE)) {
                             Deck deck = mDeckDao.get().getDeckById(androidNotification.refId);
                             if (deck != null) {
@@ -421,9 +427,11 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                             mAndroidNotificationRepo.get().findByRequestId((int) serializable);
                     if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                         NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
-                        Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
-                        if (card.questionVoice != null) {
-                            mAudioPlayer.get().play(Uri.fromFile(mFileHelper.get().getCardQuestionVoice(card.questionVoice)));
+                        if (notificationTimer != null && notificationTimer.currentCardId != null) {
+                            Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                            if (card != null && card.questionVoice != null) {
+                                mAudioPlayer.get().play(Uri.fromFile(mFileHelper.get().getCardQuestionVoice(card.questionVoice)));
+                            }
                         }
                     }
                 } finally {

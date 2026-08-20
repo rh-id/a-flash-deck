@@ -31,6 +31,7 @@ A simple and easy to use flash card app to help you study.
 * Voice playback directly from notifications
 * Support dark mode and light mode
 * Easily export & share your decks to your friends
+* Select all option when exporting multiple decks
 * Import and export decks in Anki `.apkg` format (supports Basic cards with images and audio)
 * Record voices and attach images for the cards
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
@@ -342,8 +343,8 @@ erDiagram
         text name
         int period_minutes
         text selected_deck_ids
-        long current_card_id
         text displayed_card_ids
+        long current_card_id
     }
 
     CARD_LOG {
@@ -391,7 +392,7 @@ sequenceDiagram
 Business logic is encapsulated in command classes following the Command pattern:
 
 **Key Commands**:
-- `NewDeckCmd` / `UpdateDeckCmd` / `DeleteDeckCmd`: Deck management
+- `NewDeckCmd` / `UpdateDeckCmd` / `DeleteDeckCmd` / `DeckQueryCmd`: Deck management and queries
 - `NewCardCmd` / `UpdateCardCmd` / `DeleteCardCmd`: Card management
 - `CopyCardCmd` / `MoveCardCmd`: Card operations
 - `ExportImportCmd`: Deck import/export
@@ -494,34 +495,38 @@ app/src/main/java/m/co/rh/id/a_flash_deck/app/
 │   ├── StatefulViewProvider.java
 │   ├── StatefulViewProviderModule.java
 │   ├── command/
-│   ├── component/
+│   ├── component/ (AnkiExporter, AnkiImporter, AppNotificationHandler, AppShortcutHandler)
 │   └── modifier/
 ├── ui/
 │   ├── page/ (StatefulView pages)
 │   └── component/ (UI components)
-└── receiver/ (Broadcast receivers)
+└── receiver/ (NotificationDeleteReceiver, NotificationPlayVoiceReceiver)
 
 base/src/main/java/m/co/rh/id/a_flash_deck/base/
+├── BaseApplication.java
 ├── entity/ (Room entities)
 ├── dao/ (Data access objects)
-├── room/ (Database configuration)
+├── room/ (AppDatabase, DbMigration)
 │   └── converter/ (Type converters)
 ├── provider/
 │   ├── BaseProviderModule.java
 │   ├── DatabaseProviderModule.java
 │   ├── RxProviderModule.java
 │   ├── FileHelper.java
+│   ├── FileCleanUpTask.java
 │   ├── IStatefulViewProvider.java
+│   ├── navigator/ (CommonNavConfig)
 │   └── notifier/ (RxJava notifiers)
 ├── component/ (Shared components: AppSharedPreferences, AudioPlayer, AudioRecorder, MarkdownRenderer, ...)
-├── constants/ (Constants, routes, keys, WorkManager keys/tags)
+├── constants/ (Constants, routes, intent keys, shortcuts, WorkManager keys/tags)
 ├── exception/ (ValidationException)
 ├── model/ (Event models, DeckModel, TestState)
 ├── repository/ (AndroidNotificationRepo)
 ├── rx/ (RxDisposer)
-└── ui/
-    ├── component/common/ (Common UI components)
-    └── recyclerview/ (CustomLinearLayoutManager)
+├── ui/
+│   ├── component/common/ (Common UI components)
+│   └── recyclerview/ (CustomLinearLayoutManager)
+└── util/ (UiUtils)
 
 bot/src/main/java/m/co/rh/id/a_flash_deck/bot/
 ├── entity/ (Bot entities)
@@ -536,6 +541,7 @@ bot/src/main/java/m/co/rh/id/a_flash_deck/bot/
 
 timer-notification/src/main/java/m/co/rh/id/a_flash_deck/timer/
 ├── provider/
+│   ├── NotificationTimerCmdProviderModule.java
 │   └── command/ (Timer commands)
 ├── ui/
 │   ├── component/timer/ (Timer components)
@@ -620,7 +626,7 @@ The project uses Fastlane to manage the app's metadata for the Google Play Store
 ## How to Build
 
 1.  Clone the repository: `git clone https://github.com/rh-id/a-flash-deck.git`
-2.  Open the project in Android Studio (recent Canary/preview channel recommended, since the project targets Android 17 / SDK 37 and uses AGP 9.x).
+2.  Open the project in Android Studio (recent Canary/preview channel recommended, since the project targets Android 17 / SDK 37 and uses AGP 9.2.1 with Gradle 9.4.1).
 3.  Make sure JDK 21 is available — the Gradle daemon is pinned to a JDK 21 toolchain via `gradle/gradle-daemon-jvm.properties`.
 4.  Build the project using Gradle: `./gradlew assembleDebug`
 
