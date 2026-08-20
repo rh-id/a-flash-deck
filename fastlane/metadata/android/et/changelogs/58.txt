@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Uuendus:
+* Lisatud „Loo kaardipakk kaardist" tegevus kaardinimekirja, et luua olemasolevast kaardist uus kaardipakk kasutades Gemini AI-d, koos mudeli valikuga, viipade ettepanekute ja maksimaalse kaartide arvu seadistusega
+
+Parandused:
+* Parandatud krahhid, mis toimuvad taimeri teavitusel klõpsamisel, kustutamisel või heli esitamisel pärast seda, kui taimer või kaart on kustutatud

@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Novità:
+* Aggiunta azione « Genera mazzo dalla scheda » nella lista delle carte per creare un nuovo mazzo da una carta esistente utilizzando Gemini AI, con selezione del modello, suggerimenti per i prompt e impostazione del numero massimo di carte
+
+Correzioni:
+* Risolto crash quando si tocca, si elimina o si riproduce audio da una notifica timer dopo che il timer o la carta sono stati eliminati

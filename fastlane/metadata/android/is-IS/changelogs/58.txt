@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Nýtt:
+* Bætt við aðgerðina „Búa til spilastokk úr spjaldi" á spjaldalista til að búa til nýjan spilastokk úr tilvistandi spjaldi með Gemini AI, með vali á módeli, uppástingum fyrir skipanir og stillingu fyrir hámarksfjölda spilda
+
+Villuleiðréttingar:
+* Leiðrétt villur sem koma upp þegar smellt er, eytt eða spilað hljóð úr tímatæki tilkynningu eftir að tímatæki eða spjald hefur verið eytt

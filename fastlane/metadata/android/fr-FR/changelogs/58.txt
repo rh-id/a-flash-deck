@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Nouveauté :
+* Ajout de l'action « Générer un paquet à partir de la carte » dans la liste des cartes pour créer un nouveau paquet à partir d'une carte existante en utilisant Gemini AI, avec sélection de modèle, suggestions de prompt et paramètre de nombre maximum de cartes
+
+Corrections :
+* Correction des plantages lors du tapotement, de la suppression ou de la lecture vocale depuis une notification de minuteur après que le minuteur ou la carte a été supprimé

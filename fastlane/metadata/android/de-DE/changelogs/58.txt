@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Neu:
+* Neue Aktion „Kartensatz aus Karte generieren" in der Kartenliste, um mit Gemini AI ein neues Deck aus einer vorhandenen Karte zu erstellen, mit Modellauswahl, Promptvorschlägen und Einstellung für maximale Karten
+
+Fehlerbehebungen:
+* Behebung von Abstürzen beim Antippen, Löschen oder Abspielen von Stimme aus einer Timer-Benachrichtigung, nachdem der Timer oder die Karte gelöscht wurde

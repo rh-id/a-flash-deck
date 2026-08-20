@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Nova funcziun:
+* Agiuntà in'acziun «Generar in pachet dad ina carta» en la glista da cartas per crear in nov pachet dad ina carta existenta cun Gemini AI, cun selecziun dal model, proponiments per ils prompts e parameter per il dumber maximal da cartas
+
+Corecziuns:
+* Corregì ils crashes cur ch'ins tutga, stizza u giuca la vusch dad ina communicaziun dal timer suenter ch'il timer u la carta èn vegnids stizzads

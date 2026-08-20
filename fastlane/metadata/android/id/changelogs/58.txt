@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Fitur:
+* Menambahkan aksi "Buat dek dari kartu" dalam daftar kartu untuk membuat dek baru dari kartu yang sudah ada menggunakan Gemini AI, dengan pemilihan model, saran prompt, dan pengaturan jumlah kartu maksimal
+
+Perbaikan:
+* Memperbaiki crash ketika mengetuk, menghapus, atau memutar suara dari notifikasi timer setelah timer atau kartunya telah dihapus

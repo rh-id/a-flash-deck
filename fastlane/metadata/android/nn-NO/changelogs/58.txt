@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Ny funksjon:
+* Legg til ein «Lag kortstokk frå kort»-handling i kortlista for å opprette ein ny kortstokk frå eit eksisterande kort ved hjelp av Gemini AI, med modellval, forslag til leietekstar og innstilling for maksimalt antal kort
+
+Feilrettingar:
+* Fikser krasj når du trykker, slettar eller spelar av tale frå ei timer-varsling etter at timeren eller kortet er sletta
