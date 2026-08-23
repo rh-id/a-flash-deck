@@ -40,65 +40,25 @@ public class FileCleanUpTask {
     private final ProviderValue<ExecutorService> mExecutorService;
     private final ProviderValue<TestDao> mTestDao;
     private final ProviderValue<DeckDao> mDeckDao;
-    private final ProviderValue<FileHelper> mFileHelper;
+    private final ProviderValue<CardMediaStore> mCardMediaStore;
     private final ProviderValue<ILogger> mLogger;
 
     public FileCleanUpTask(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mTestDao = provider.lazyGet(TestDao.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
-        mFileHelper = provider.lazyGet(FileHelper.class);
+        mCardMediaStore = provider.lazyGet(CardMediaStore.class);
         mLogger = provider.lazyGet(ILogger.class);
         cleanUp();
     }
 
     private void cleanUp() {
         Future<Test> testFuture = mExecutorService.get().submit(() -> mTestDao.get().getCurrentTest());
-        Future<List<String>> questionImageFileList = mExecutorService.get().submit(
-                () -> {
-                    File questionImageParent = mFileHelper.get().getCardQuestionImageParent();
-                    File[] files = questionImageParent.listFiles();
-                    List<String> fileNames = new ArrayList<>();
-                    if (files != null && files.length > 0) {
-                        for (File file : files) {
-                            if (!file.isDirectory()) {
-                                fileNames.add(file.getName());
-                            }
-                        }
-                    }
-                    return fileNames;
-                }
-        );
-        Future<List<String>> questionVoiceFileList = mExecutorService.get().submit(
-                () -> {
-                    File questionVoiceParent = mFileHelper.get().getCardQuestionVoiceParent();
-                    File[] files = questionVoiceParent.listFiles();
-                    List<String> fileNames = new ArrayList<>();
-                    if (files != null && files.length > 0) {
-                        for (File file : files) {
-                            if (!file.isDirectory()) {
-                                fileNames.add(file.getName());
-                            }
-                        }
-                    }
-                    return fileNames;
-                }
-        );
-        Future<List<String>> answerImageFileList = mExecutorService.get().submit(
-                () -> {
-                    File answerImageParent = mFileHelper.get().getCardAnswerImageParent();
-                    File[] files = answerImageParent.listFiles();
-                    List<String> fileNames = new ArrayList<>();
-                    if (files != null && files.length > 0) {
-                        for (File file : files) {
-                            if (!file.isDirectory()) {
-                                fileNames.add(file.getName());
-                            }
-                        }
-                    }
-                    return fileNames;
-                }
-        );
+        Future<List<String>> questionImageFileList = submitFileList(mCardMediaStore.get().getCardQuestionImageParent());
+        Future<List<String>> questionVoiceFileList = submitFileList(mCardMediaStore.get().getCardQuestionVoiceParent());
+        Future<List<String>> answerImageFileList = submitFileList(mCardMediaStore.get().getCardAnswerImageParent());
+        Future<List<String>> answerVoiceFileList = submitFileList(mCardMediaStore.get().getCardAnswerVoiceParent());
+
         mExecutorService.get().execute(() -> {
             try {
                 Test test = testFuture.get();
@@ -111,7 +71,7 @@ public class FileCleanUpTask {
                                     for (String questionImage : questionImageNames) {
                                         Card card = mDeckDao.get().findCardByQuestionImage(questionImage);
                                         if (card == null) {
-                                            mFileHelper.get().deleteCardQuestionImage(questionImage);
+                                            mCardMediaStore.get().deleteCardQuestionImage(questionImage);
                                         }
                                     }
                                 }
@@ -125,7 +85,7 @@ public class FileCleanUpTask {
                                     for (String questionVoiceName : questionVoiceNames) {
                                         Card card = mDeckDao.get().findCardByQuestionVoice(questionVoiceName);
                                         if (card == null) {
-                                            mFileHelper.get().deleteCardQuestionVoice(questionVoiceName);
+                                            mCardMediaStore.get().deleteCardQuestionVoice(questionVoiceName);
                                         }
                                     }
                                 }
@@ -139,7 +99,21 @@ public class FileCleanUpTask {
                                     for (String answerImage : answerImageNames) {
                                         Card card = mDeckDao.get().findCardByAnswerImage(answerImage);
                                         if (card == null) {
-                                            mFileHelper.get().deleteCardAnswerImage(answerImage);
+                                            mCardMediaStore.get().deleteCardAnswerImage(answerImage);
+                                        }
+                                    }
+                                }
+                                return true;
+                            })
+                    );
+                    taskList.add(
+                            mExecutorService.get().submit(() -> {
+                                List<String> answerVoiceNames = answerVoiceFileList.get();
+                                if (!answerVoiceNames.isEmpty()) {
+                                    for (String answerVoiceName : answerVoiceNames) {
+                                        Card card = mDeckDao.get().findCardByAnswerVoice(answerVoiceName);
+                                        if (card == null) {
+                                            mCardMediaStore.get().deleteCardAnswerVoice(answerVoiceName);
                                         }
                                     }
                                 }
@@ -154,5 +128,25 @@ public class FileCleanUpTask {
                 mLogger.get().d(TAG, "Error occurred when cleaning file", e);
             }
         });
+    }
+
+    /**
+     * Submit task to list non-directory files in parent directory
+     */
+    private Future<List<String>> submitFileList(File parent) {
+        return mExecutorService.get().submit(
+                () -> {
+                    File[] files = parent.listFiles();
+                    List<String> fileNames = new ArrayList<>();
+                    if (files != null && files.length > 0) {
+                        for (File file : files) {
+                            if (!file.isDirectory()) {
+                                fileNames.add(file.getName());
+                            }
+                        }
+                    }
+                    return fileNames;
+                }
+        );
     }
 }

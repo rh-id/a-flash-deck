@@ -58,6 +58,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -77,6 +78,7 @@ public class ExportImportCmd {
     protected ILogger mLogger;
     protected DeckDao mDeckDao;
     protected FileHelper mFileHelper;
+    protected CardMediaStore mCardMediaStore;
 
     public ExportImportCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -84,6 +86,7 @@ public class ExportImportCmd {
         mLogger = provider.get(ILogger.class);
         mDeckDao = provider.get(DeckDao.class);
         mFileHelper = provider.get(FileHelper.class);
+        mCardMediaStore = provider.get(CardMediaStore.class);
         mAnkiImporter = provider.get(AnkiImporter.class);
         mAnkiExporter = provider.get(AnkiExporter.class);
     }
@@ -135,7 +138,7 @@ public class ExportImportCmd {
 
                                 for (Card card : allCards) {
                                     if (card.questionImage != null) {
-                                        File questionImage = mFileHelper.getCardQuestionImage(card.questionImage);
+                                        File questionImage = mCardMediaStore.getCardQuestionImage(card.questionImage);
                                         if (questionImage != null && questionImage.exists() && questionImage.canRead()) {
                                             ZipEntry questionImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_QUESTION_DIR + card.questionImage);
                                             zipOutputStream.putNextEntry(questionImageZip);
@@ -146,7 +149,7 @@ public class ExportImportCmd {
                                         }
                                     }
                                     if (card.answerImage != null) {
-                                        File answerImage = mFileHelper.getCardAnswerImage(card.answerImage);
+                                        File answerImage = mCardMediaStore.getCardAnswerImage(card.answerImage);
                                         if (answerImage != null && answerImage.exists() && answerImage.canRead()) {
                                             ZipEntry answerImageZip = new ZipEntry(ZIP_CONTENT_IMAGE_ANSWER_DIR + card.answerImage);
                                             zipOutputStream.putNextEntry(answerImageZip);
@@ -157,7 +160,7 @@ public class ExportImportCmd {
                                         }
                                     }
                                     if (card.questionVoice != null) {
-                                        File file = mFileHelper.getCardQuestionVoice(card.questionVoice);
+                                        File file = mCardMediaStore.getCardQuestionVoice(card.questionVoice);
                                         if (file != null && file.exists() && file.canRead()) {
                                             ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_QUESTION_DIR + card.questionVoice);
                                             zipOutputStream.putNextEntry(zipEntry);
@@ -168,7 +171,7 @@ public class ExportImportCmd {
                                         }
                                     }
                                     if (card.answerVoice != null) {
-                                        File file = mFileHelper.getCardAnswerVoice(card.answerVoice);
+                                        File file = mCardMediaStore.getCardAnswerVoice(card.answerVoice);
                                         if (file != null && file.exists() && file.canRead()) {
                                             ZipEntry zipEntry = new ZipEntry(ZIP_CONTENT_VOICE_ANSWER_DIR + card.answerVoice);
                                             zipOutputStream.putNextEntry(zipEntry);
@@ -225,8 +228,8 @@ public class ExportImportCmd {
                                      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
                                     mFileHelper.copyStream(bis, bos);
                                 }
-                                mFileHelper.createCardQuestionImage(imageTempFile, fileName);
-                                mFileHelper.createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
+                                mCardMediaStore.createCardQuestionImage(imageTempFile, fileName);
+                                mCardMediaStore.createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_ANSWER_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_ANSWER_DIR.length());
@@ -235,8 +238,8 @@ public class ExportImportCmd {
                                      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
                                     mFileHelper.copyStream(bis, bos);
                                 }
-                                mFileHelper.createCardAnswerImage(imageTempFile, fileName);
-                                mFileHelper.createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
+                                mCardMediaStore.createCardAnswerImage(imageTempFile, fileName);
+                                mCardMediaStore.createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_QUESTION_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length());
@@ -245,7 +248,7 @@ public class ExportImportCmd {
                                      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
                                     mFileHelper.copyStream(bis, bos);
                                 }
-                                mFileHelper.createCardQuestionVoice(tempFile, fileName);
+                                mCardMediaStore.createCardQuestionVoice(tempFile, fileName);
                             }
                             if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_ANSWER_DIR)) {
                                 String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_ANSWER_DIR.length());
@@ -254,7 +257,7 @@ public class ExportImportCmd {
                                      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
                                     mFileHelper.copyStream(bis, bos);
                                 }
-                                mFileHelper.createCardAnswerVoice(tempFile, fileName);
+                                mCardMediaStore.createCardAnswerVoice(tempFile, fileName);
                             }
                         }
 

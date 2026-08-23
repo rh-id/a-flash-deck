@@ -51,6 +51,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -66,12 +67,14 @@ public class AnkiImporter {
     protected ILogger mLogger;
     protected DeckDao mDeckDao;
     protected FileHelper mFileHelper;
+    protected CardMediaStore mCardMediaStore;
 
     public AnkiImporter(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.get(ILogger.class);
         mDeckDao = provider.get(DeckDao.class);
         mFileHelper = provider.get(FileHelper.class);
+        mCardMediaStore = provider.get(CardMediaStore.class);
         mImgPattern = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
         mSoundPattern = Pattern.compile("\\[sound:([^\\]]+)\\]");
     }
@@ -293,7 +296,7 @@ public class AnkiImporter {
                             extension = ".jpg";
                         }
                         String newFileName = generateUniqueFileName() + extension;
-                        mFileHelper.createCardQuestionImage(sourceFile, newFileName);
+                        mCardMediaStore.createCardQuestionImage(sourceFile, newFileName);
                         card.questionImage = newFileName;
                     } else {
                         mLogger.w(TAG, "Missing media file for question image: " + card.questionImage);
@@ -310,7 +313,7 @@ public class AnkiImporter {
                             extension = ".jpg";
                         }
                         String newFileName = generateUniqueFileName() + extension;
-                        mFileHelper.createCardAnswerImage(sourceFile, newFileName);
+                        mCardMediaStore.createCardAnswerImage(sourceFile, newFileName);
                         card.answerImage = newFileName;
                     } else {
                         mLogger.w(TAG, "Missing media file for answer image: " + card.answerImage);
@@ -323,7 +326,7 @@ public class AnkiImporter {
                     if (numericKey != null && mediaFiles.containsKey(numericKey)) {
                         File sourceFile = mediaFiles.get(numericKey);
                         String newFileName = generateUniqueFileName();
-                        mFileHelper.createCardQuestionVoice(sourceFile, newFileName);
+                        mCardMediaStore.createCardQuestionVoice(sourceFile, newFileName);
                         card.questionVoice = newFileName;
                     } else {
                         mLogger.w(TAG, "Missing media file for question voice: " + card.questionVoice);
@@ -336,7 +339,7 @@ public class AnkiImporter {
                     if (numericKey != null && mediaFiles.containsKey(numericKey)) {
                         File sourceFile = mediaFiles.get(numericKey);
                         String newFileName = generateUniqueFileName();
-                        mFileHelper.createCardAnswerVoice(sourceFile, newFileName);
+                        mCardMediaStore.createCardAnswerVoice(sourceFile, newFileName);
                         card.answerVoice = newFileName;
                     } else {
                         mLogger.w(TAG, "Missing media file for answer voice: " + card.answerVoice);
@@ -367,9 +370,9 @@ public class AnkiImporter {
             for (Card card : deckModel.getCardList()) {
                 if (card.questionImage != null) {
                     try {
-                        File imageFile = mFileHelper.getCardQuestionImage(card.questionImage);
+                        File imageFile = mCardMediaStore.getCardQuestionImage(card.questionImage);
                         Uri uri = Uri.fromFile(imageFile);
-                        mFileHelper.createCardQuestionImageThumbnail(uri, card.questionImage);
+                        mCardMediaStore.createCardQuestionImageThumbnail(uri, card.questionImage);
                     } catch (Exception e) {
                         mLogger.e(TAG, "Failed to create thumbnail for question image", e);
                     }
@@ -377,9 +380,9 @@ public class AnkiImporter {
 
                 if (card.answerImage != null) {
                     try {
-                        File imageFile = mFileHelper.getCardAnswerImage(card.answerImage);
+                        File imageFile = mCardMediaStore.getCardAnswerImage(card.answerImage);
                         Uri uri = Uri.fromFile(imageFile);
-                        mFileHelper.createCardAnswerImageThumbnail(uri, card.answerImage);
+                        mCardMediaStore.createCardAnswerImageThumbnail(uri, card.answerImage);
                     } catch (Exception e) {
                         mLogger.e(TAG, "Failed to create thumbnail for answer image", e);
                     }

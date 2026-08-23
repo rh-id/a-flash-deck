@@ -89,9 +89,11 @@ public class BaseProviderModule implements ProviderModule {
         });
         providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(provider.getContext()));
 
-        providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));
-        providerRegistry.register(MarkdownRenderer.class, () -> new MarkdownRenderer(provider));
-        providerRegistry.register(CommonNavConfig.class, CommonNavConfig::new);
+        providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
+        providerRegistry.registerLazy(ImageHelper.class, () -> new ImageHelper(provider));
+        providerRegistry.registerLazy(CardMediaStore.class, () -> new CardMediaStore(provider));
+        providerRegistry.registerLazy(MarkdownRenderer.class, () -> new MarkdownRenderer(provider));
+        providerRegistry.registerLazy(CommonNavConfig.class, CommonNavConfig::new);
         providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
         providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(provider));
         providerRegistry.registerLazy(AudioPlayer.class, () -> new AudioPlayer(provider));

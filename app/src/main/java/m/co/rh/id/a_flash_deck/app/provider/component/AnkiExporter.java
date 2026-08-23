@@ -39,6 +39,7 @@ import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -50,12 +51,14 @@ public class AnkiExporter {
     protected ILogger mLogger;
     protected DeckDao mDeckDao;
     protected FileHelper mFileHelper;
+    protected CardMediaStore mCardMediaStore;
 
     public AnkiExporter(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.get(ILogger.class);
         mDeckDao = provider.get(DeckDao.class);
         mFileHelper = provider.get(FileHelper.class);
+        mCardMediaStore = provider.get(CardMediaStore.class);
     }
 
     public File exportApkg(List<Deck> deckList) {
@@ -217,16 +220,16 @@ public class AnkiExporter {
     private File findMediaFile(List<Card> cards, String mediaName) {
         for (Card card : cards) {
             if (card.questionImage != null && card.questionImage.equals(mediaName)) {
-                return mFileHelper.getCardQuestionImage(mediaName);
+                return mCardMediaStore.getCardQuestionImage(mediaName);
             }
             if (card.answerImage != null && card.answerImage.equals(mediaName)) {
-                return mFileHelper.getCardAnswerImage(mediaName);
+                return mCardMediaStore.getCardAnswerImage(mediaName);
             }
             if (card.questionVoice != null && card.questionVoice.equals(mediaName)) {
-                return mFileHelper.getCardQuestionVoice(mediaName);
+                return mCardMediaStore.getCardQuestionVoice(mediaName);
             }
             if (card.answerVoice != null && card.answerVoice.equals(mediaName)) {
-                return mFileHelper.getCardAnswerVoice(mediaName);
+                return mCardMediaStore.getCardAnswerVoice(mediaName);
             }
         }
         return null;

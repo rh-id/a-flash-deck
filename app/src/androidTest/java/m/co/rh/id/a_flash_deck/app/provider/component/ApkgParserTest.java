@@ -37,7 +37,9 @@ import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.ImageHelper;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -86,7 +88,6 @@ public class ApkgParserTest {
     private static final String DBNAME = ApkgParserTest.class.getName() + "-testDb";
 
     private Provider testProvider;
-    private FileHelper fileHelper;
     private DeckDao deckDao;
     private File tempDir;
 
@@ -102,7 +103,9 @@ public class ApkgParserTest {
                 providerRegistry.registerModule(new TestDatabaseProviderModule(DBNAME));
                 providerRegistry.register(ExecutorService.class, Executors::newSingleThreadExecutor);
                 providerRegistry.register(ILogger.class, () -> new AndroidLogger(ILogger.VERBOSE));
-                providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));
+                providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
+                providerRegistry.registerLazy(ImageHelper.class, () -> new ImageHelper(provider));
+                providerRegistry.registerLazy(CardMediaStore.class, () -> new CardMediaStore(provider));
             }
 
             @Override
@@ -111,7 +114,6 @@ public class ApkgParserTest {
             }
         });
 
-        fileHelper = testProvider.get(FileHelper.class);
         deckDao = testProvider.get(DeckDao.class);
     }
 

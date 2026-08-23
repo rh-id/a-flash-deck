@@ -41,7 +41,7 @@ import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
@@ -105,7 +105,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         buttonAnswerVoice.setOnClickListener(this);
         TextView textProgress = rootLayout.findViewById(R.id.text_progress);
         Context context = mSvProvider.getContext();
-        FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+        CardMediaStore cardMediaStore = mSvProvider.get(CardMediaStore.class);
         mRxDisposer
                 .add("createView_onTestState",
                         mTestStateSubject.observeOn(AndroidSchedulers.mainThread())
@@ -127,7 +127,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
 
                                     if (questionImage != null) {
                                         questionImageView.setImageURI(Uri.fromFile(
-                                                card.isReversed ? fileHelper.getCardAnswerImage(questionImage) : fileHelper.getCardQuestionImage(questionImage)
+                                                card.isReversed ? cardMediaStore.getCardAnswerImage(questionImage) : cardMediaStore.getCardQuestionImage(questionImage)
                                         ));
                                         questionImageView.setVisibility(View.VISIBLE);
                                     } else {
@@ -226,7 +226,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         Card card = testState.currentCard();
         ILogger iLogger = mSvProvider.get(ILogger.class);
         CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
-        FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+        CardMediaStore cardMediaStore = mSvProvider.get(CardMediaStore.class);
         Context context = mSvProvider.getContext();
         if (id == R.id.text_answer) {
             View rootView = view.getRootView();
@@ -238,7 +238,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                 answerText = card.question;
                 if (card.questionImage != null) {
                     answerImageView.setImageURI(Uri.fromFile(
-                            fileHelper.getCardQuestionImage(card.questionImage)
+                            cardMediaStore.getCardQuestionImage(card.questionImage)
                     ));
                     answerImageView.setVisibility(View.VISIBLE);
                 } else {
@@ -252,7 +252,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                 answerText = card.answer;
                 if (card.answerImage != null) {
                     answerImageView.setImageURI(Uri.fromFile(
-                            fileHelper.getCardAnswerImage(card.answerImage)
+                            cardMediaStore.getCardAnswerImage(card.answerImage)
                     ));
                     answerImageView.setVisibility(View.VISIBLE);
                 } else {
@@ -330,20 +330,20 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         } else if (id == R.id.image_question) {
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(
-                            card.isReversed ? fileHelper.getCardAnswerImage(card.answerImage) :
-                                    fileHelper.getCardQuestionImage(card.questionImage)));
+                            card.isReversed ? cardMediaStore.getCardAnswerImage(card.answerImage) :
+                                    cardMediaStore.getCardQuestionImage(card.questionImage)));
         } else if (id == R.id.image_answer) {
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(
-                            card.isReversed ? fileHelper.getCardQuestionImage(card.questionImage) :
-                                    fileHelper.getCardAnswerImage(card.answerImage)));
+                            card.isReversed ? cardMediaStore.getCardQuestionImage(card.questionImage) :
+                                    cardMediaStore.getCardAnswerImage(card.answerImage)));
         } else if (id == R.id.button_question_voice) {
-            File file = card.isReversed ? fileHelper.getCardAnswerVoice(card.answerVoice) :
-                    fileHelper.getCardQuestionVoice(card.questionVoice);
+            File file = card.isReversed ? cardMediaStore.getCardAnswerVoice(card.answerVoice) :
+                    cardMediaStore.getCardQuestionVoice(card.questionVoice);
             mAudioPlayer.play(Uri.fromFile(file));
         } else if (id == R.id.button_answer_voice) {
-            File file = card.isReversed ? fileHelper.getCardQuestionVoice(card.questionVoice) :
-                    fileHelper.getCardAnswerVoice(card.answerVoice);
+            File file = card.isReversed ? cardMediaStore.getCardQuestionVoice(card.questionVoice) :
+                    cardMediaStore.getCardAnswerVoice(card.answerVoice);
             mAudioPlayer.play(Uri.fromFile(file));
         }
     }

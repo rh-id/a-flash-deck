@@ -42,7 +42,7 @@ import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
@@ -54,8 +54,6 @@ import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.aprovider.Provider;
 
 public class CardShowPage extends StatefulView<Activity> implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
-    private static final String TAG = CardShowPage.class.getName();
-
     @NavInject
     private transient INavigator mNavigator;
     @NavInject
@@ -104,7 +102,7 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                                 .subscribe(
                                 card -> {
                                     if (card.questionImage != null) {
-                                        File file = mSvProvider.get(FileHelper.class).getCardQuestionImage(card.questionImage);
+                                        File file = mSvProvider.get(CardMediaStore.class).getCardQuestionImage(card.questionImage);
                                         questionImageView.setImageURI(Uri.fromFile(file));
                                         questionImageView.setVisibility(View.VISIBLE);
                                     } else {
@@ -112,7 +110,7 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                                         questionImageView.setVisibility(View.GONE);
                                     }
                                     if (card.answerImage != null) {
-                                        File file = mSvProvider.get(FileHelper.class).getCardAnswerImage(card.answerImage);
+                                        File file = mSvProvider.get(CardMediaStore.class).getCardAnswerImage(card.answerImage);
                                         answerImageView.setImageURI(Uri.fromFile(file));
                                         answerImageView.setVisibility(View.VISIBLE);
                                     } else {
@@ -199,19 +197,19 @@ public class CardShowPage extends StatefulView<Activity> implements View.OnClick
                     CardDetailPage.Args.forUpdate(mCard));
         } else if (id == R.id.image_question) {
             CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+            CardMediaStore cardMediaStore = mSvProvider.get(CardMediaStore.class);
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(
-                            fileHelper.getCardQuestionImage(mCard.questionImage)));
+                            cardMediaStore.getCardQuestionImage(mCard.questionImage)));
         } else if (id == R.id.image_answer) {
             CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
+            CardMediaStore cardMediaStore = mSvProvider.get(CardMediaStore.class);
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(
-                            fileHelper.getCardAnswerImage(mCard.answerImage)));
+                            cardMediaStore.getCardAnswerImage(mCard.answerImage)));
         } else if (id == R.id.button_question_voice) {
-            FileHelper fileHelper = mSvProvider.get(FileHelper.class);
-            File file = fileHelper.getCardQuestionVoice(mCard.questionVoice);
+            CardMediaStore cardMediaStore = mSvProvider.get(CardMediaStore.class);
+            File file = cardMediaStore.getCardQuestionVoice(mCard.questionVoice);
             mSvProvider.get(AudioPlayer.class).play(Uri.fromFile(file));
         }
     }

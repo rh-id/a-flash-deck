@@ -151,6 +151,9 @@ public abstract class DeckDao {
     @Query("SELECT * FROM card WHERE question_voice=:questionVoice")
     public abstract Card findCardByQuestionVoice(String questionVoice);
 
+    @Query("SELECT * FROM card WHERE answer_voice=:answerVoice")
+    public abstract Card findCardByAnswerVoice(String answerVoice);
+
     public List<Long> findCardIdsByCardIds(List<Long> cardIds) {
         return queryInBatches(cardIds, this::getCardIdsByCardIds);
     }

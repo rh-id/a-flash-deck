@@ -39,7 +39,9 @@ import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.ImageHelper;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -75,7 +77,7 @@ public class AnkiImporterTest {
     private static final String DBNAME = AnkiImporterTest.class.getName() + "-testDb";
 
     private Provider testProvider;
-    private FileHelper fileHelper;
+    private CardMediaStore cardMediaStore;
     private DeckDao deckDao;
     private File tempDir;
 
@@ -91,7 +93,9 @@ public class AnkiImporterTest {
                 providerRegistry.registerModule(new TestDatabaseProviderModule(DBNAME));
                 providerRegistry.register(ExecutorService.class, Executors::newSingleThreadExecutor);
                 providerRegistry.register(ILogger.class, () -> new AndroidLogger(ILogger.VERBOSE));
-                providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));
+                providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
+                providerRegistry.registerLazy(ImageHelper.class, () -> new ImageHelper(provider));
+                providerRegistry.registerLazy(CardMediaStore.class, () -> new CardMediaStore(provider));
             }
 
             @Override
@@ -100,7 +104,7 @@ public class AnkiImporterTest {
             }
         });
 
-        fileHelper = testProvider.get(FileHelper.class);
+        cardMediaStore = testProvider.get(CardMediaStore.class);
         deckDao = testProvider.get(DeckDao.class);
     }
 
@@ -182,10 +186,10 @@ public class AnkiImporterTest {
         deckDao.insertDeck(deck);
 
         File testImage = AnkiTestDataHelper.createTestImageFile(tempDir, "test_image.jpg");
-        String imageName = fileHelper.createCardQuestionImage(testImage, "test_image.jpg").getName();
+        String imageName = cardMediaStore.createCardQuestionImage(testImage, "test_image.jpg").getName();
 
         File testAnswerImage = AnkiTestDataHelper.createTestPngFile(tempDir, "test_answer.png");
-        String answerImageName = fileHelper.createCardAnswerImage(testAnswerImage, "test_answer.png").getName();
+        String answerImageName = cardMediaStore.createCardAnswerImage(testAnswerImage, "test_answer.png").getName();
 
         Card card = AnkiTestDataHelper.createTestCardWithImages(
             deck.id, 1, "What is this?", "This is an image", 
@@ -231,10 +235,10 @@ public class AnkiImporterTest {
         deckDao.insertDeck(deck);
 
         File testVoice = AnkiTestDataHelper.createTestAudioFile(tempDir, "test_audio.mp3");
-        String voiceName = fileHelper.createCardQuestionVoice(testVoice, "test_audio.mp3").getName();
+        String voiceName = cardMediaStore.createCardQuestionVoice(testVoice, "test_audio.mp3").getName();
 
         File testAnswerVoice = AnkiTestDataHelper.createTestAudioFile(tempDir, "test_answer_audio.mp3");
-        String answerVoiceName = fileHelper.createCardAnswerVoice(testAnswerVoice, "test_answer_audio.mp3").getName();
+        String answerVoiceName = cardMediaStore.createCardAnswerVoice(testAnswerVoice, "test_answer_audio.mp3").getName();
 
         Card card = AnkiTestDataHelper.createTestCardWithVoice(
             deck.id, 1, "Say this word", "Hello", 
@@ -344,7 +348,7 @@ public class AnkiImporterTest {
         deckDao.insertDeck(deck);
 
         File testImage = AnkiTestDataHelper.createTestImageFile(tempDir, "test_image.jpg");
-        String imageName = fileHelper.createCardQuestionImage(testImage, "test_image.jpg").getName();
+        String imageName = cardMediaStore.createCardQuestionImage(testImage, "test_image.jpg").getName();
 
         Card card = AnkiTestDataHelper.createTestCardWithImages(
             deck.id, 1, "Q", "A", 

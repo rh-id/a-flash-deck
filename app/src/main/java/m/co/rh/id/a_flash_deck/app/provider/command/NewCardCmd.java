@@ -32,7 +32,7 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -44,7 +44,7 @@ public class NewCardCmd {
     protected ILogger mLogger;
     protected DeckChangeNotifier mDeckChangeNotifier;
     protected DeckDao mDeckDao;
-    protected FileHelper mFileHelper;
+    protected CardMediaStore mCardMediaStore;
     protected BehaviorSubject<String> mDeckIdValidSubject;
     protected BehaviorSubject<String> mQuestionValidSubject;
     protected BehaviorSubject<String> mAnswerValidSubject;
@@ -55,7 +55,7 @@ public class NewCardCmd {
         mLogger = provider.get(ILogger.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mDeckDao = provider.get(DeckDao.class);
-        mFileHelper = provider.get(FileHelper.class);
+        mCardMediaStore = provider.get(CardMediaStore.class);
         mDeckIdValidSubject = BehaviorSubject.create();
         mQuestionValidSubject = BehaviorSubject.create();
         mAnswerValidSubject = BehaviorSubject.create();
@@ -103,9 +103,9 @@ public class NewCardCmd {
         return Single.fromCallable(() -> {
                     if (questionImage != null) {
                         try {
-                            File questionImageFile = mFileHelper.createCardQuestionImage(questionImage);
+                            File questionImageFile = mCardMediaStore.createCardQuestionImage(questionImage);
                             card.questionImage = questionImageFile.getName();
-                            mFileHelper.createCardQuestionImageThumbnail(questionImage,
+                            mCardMediaStore.createCardQuestionImageThumbnail(questionImage,
                                     questionImageFile.getName());
                         } catch (Exception e) {
                             mLogger.d(TAG, e.getMessage(), e);
@@ -116,9 +116,9 @@ public class NewCardCmd {
                     }
                     if (answerImage != null) {
                         try {
-                            File answerImageFile = mFileHelper.createCardAnswerImage(answerImage);
+                            File answerImageFile = mCardMediaStore.createCardAnswerImage(answerImage);
                             card.answerImage = answerImageFile.getName();
-                            mFileHelper.createCardAnswerImageThumbnail(answerImage,
+                            mCardMediaStore.createCardAnswerImageThumbnail(answerImage,
                                     answerImageFile.getName());
                         } catch (Exception e) {
                             mLogger.d(TAG, e.getMessage(), e);
@@ -129,7 +129,7 @@ public class NewCardCmd {
                     }
                     if (questionVoice != null) {
                         try {
-                            File file = mFileHelper.createCardQuestionVoice(questionVoice);
+                            File file = mCardMediaStore.createCardQuestionVoice(questionVoice);
                             card.questionVoice = file.getName();
                         } catch (Exception e) {
                             mLogger.d(TAG, e.getMessage(), e);
@@ -140,7 +140,7 @@ public class NewCardCmd {
                     }
                     if (answerVoice != null) {
                         try {
-                            File file = mFileHelper.createCardAnswerVoice(answerVoice);
+                            File file = mCardMediaStore.createCardAnswerVoice(answerVoice);
                             card.answerVoice = file.getName();
                         } catch (Exception e) {
                             mLogger.d(TAG, e.getMessage(), e);

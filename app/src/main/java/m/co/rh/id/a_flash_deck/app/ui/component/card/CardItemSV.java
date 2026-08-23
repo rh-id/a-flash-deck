@@ -48,7 +48,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.model.CopyCardEvent;
 import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
@@ -67,7 +67,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
 
     private transient Provider mSvProvider;
     private transient ILogger mLogger;
-    private transient FileHelper mFileHelper;
+    private transient CardMediaStore mCardMediaStore;
     private transient MarkdownRenderer mMarkdownRenderer;
     private transient CommonNavConfig mCommonNavConfig;
     private transient DeckChangeNotifier mDeckChangeNotifier;
@@ -89,7 +89,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(IStatefulViewProvider.class);
         mLogger = mSvProvider.get(ILogger.class);
-        mFileHelper = mSvProvider.get(FileHelper.class);
+        mCardMediaStore = mSvProvider.get(CardMediaStore.class);
         mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
@@ -119,7 +119,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                 mCardSubject.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(card -> {
                             if (card.questionImage != null) {
-                                imageQuestion.setImageURI(Uri.fromFile(mFileHelper.getCardQuestionImageThumbnail(card.questionImage)));
+                                imageQuestion.setImageURI(Uri.fromFile(mCardMediaStore.getCardQuestionImageThumbnail(card.questionImage)));
                                 imageQuestion.setVisibility(View.VISIBLE);
                             } else {
                                 imageQuestion.setImageURI(null);
@@ -267,7 +267,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
             if (card != null && card.questionImage != null) {
                 mNavigator.push(Routes.COMMON_IMAGEVIEW,
                         mCommonNavConfig.args_commonImageView(
-                                mFileHelper.getCardQuestionImage(card.questionImage)
+                                mCardMediaStore.getCardQuestionImage(card.questionImage)
                         ));
             }
         }

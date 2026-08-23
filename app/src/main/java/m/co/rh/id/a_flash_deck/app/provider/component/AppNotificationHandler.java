@@ -57,7 +57,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.a_flash_deck.bot.provider.component.BotAnalytics;
 import m.co.rh.id.aprovider.Provider;
@@ -69,7 +69,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<AndroidNotificationRepo> mAndroidNotificationRepo;
     private final ProviderValue<NotificationTimerDao> mNotificationTimerDao;
     private final ProviderValue<DeckDao> mDeckDao;
-    private final ProviderValue<FileHelper> mFileHelper;
+    private final ProviderValue<CardMediaStore> mCardMediaStore;
     private final ProviderValue<AudioPlayer> mAudioPlayer;
     private final ProviderValue<BotAnalytics> mBotAnalytics;
     private final ProviderValue<MarkdownRenderer> mMarkdownRenderer;
@@ -83,7 +83,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);
         mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
-        mFileHelper = provider.lazyGet(FileHelper.class);
+        mCardMediaStore = provider.lazyGet(CardMediaStore.class);
         mAudioPlayer = provider.lazyGet(AudioPlayer.class);
         mBotAnalytics = provider.lazyGet(BotAnalytics.class);
         mMarkdownRenderer = provider.lazyGet(MarkdownRenderer.class);
@@ -135,8 +135,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     .setGroup(GROUP_KEY_NOTIFICATION_TIMER)
                     .setAutoCancel(true);
             if (selectedCard.questionImage != null) {
-                File questionImageFile = mFileHelper.get().getCardQuestionImage(selectedCard.questionImage);
-                File questionImageThumbnailFile = mFileHelper.get().getCardQuestionImageThumbnail(selectedCard.questionImage);
+                File questionImageFile = mCardMediaStore.get().getCardQuestionImage(selectedCard.questionImage);
+                File questionImageThumbnailFile = mCardMediaStore.get().getCardQuestionImageThumbnail(selectedCard.questionImage);
                 questionImage = BitmapFactory.decodeFile(questionImageFile.getAbsolutePath());
                 questionImageThumbnail = BitmapFactory.decodeFile(questionImageThumbnailFile.getAbsolutePath());
                 builder.setLargeIcon(questionImageThumbnail);
@@ -430,7 +430,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                         if (notificationTimer != null && notificationTimer.currentCardId != null) {
                             Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
                             if (card != null && card.questionVoice != null) {
-                                mAudioPlayer.get().play(Uri.fromFile(mFileHelper.get().getCardQuestionVoice(card.questionVoice)));
+                                mAudioPlayer.get().play(Uri.fromFile(mCardMediaStore.get().getCardQuestionVoice(card.questionVoice)));
                             }
                         }
                     }

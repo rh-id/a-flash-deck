@@ -55,6 +55,7 @@ import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
@@ -89,6 +90,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient FileHelper mFileHelper;
+    private transient CardMediaStore mCardMediaStore;
     private transient AudioPlayer mAudioPlayer;
     private transient CommonNavConfig mCommonNavConfig;
     private transient NewCardCmd mNewCardCmd;
@@ -126,6 +128,7 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
+        mCardMediaStore = mSvProvider.get(CardMediaStore.class);
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mAudioPlayer = mSvProvider.get(AudioPlayer.class);
         mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
@@ -148,28 +151,28 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
             }
         }
         if (mCard.questionImage != null && !mCard.questionImage.isEmpty()) {
-            setQuestionImageFileSubject(mFileHelper.getCardQuestionImage(mCard.questionImage));
+            setQuestionImageFileSubject(mCardMediaStore.getCardQuestionImage(mCard.questionImage));
         } else {
             if (mQuestionImageFileSubject == null) {
                 setQuestionImageFileSubject(null);
             }
         }
         if (mCard.answerImage != null && !mCard.answerImage.isEmpty()) {
-            setAnswerImageFileSubject(mFileHelper.getCardAnswerImage(mCard.answerImage));
+            setAnswerImageFileSubject(mCardMediaStore.getCardAnswerImage(mCard.answerImage));
         } else {
             if (mAnswerImageFileSubject == null) {
                 setAnswerImageFileSubject(null);
             }
         }
         if (mCard.questionVoice != null && !mCard.questionVoice.isEmpty()) {
-            setQuestionVoiceSubject(mFileHelper.getCardQuestionVoice(mCard.questionVoice));
+            setQuestionVoiceSubject(mCardMediaStore.getCardQuestionVoice(mCard.questionVoice));
         } else {
             if (mQuestionVoiceSubject == null) {
                 setQuestionVoiceSubject(null);
             }
         }
         if (mCard.answerVoice != null && !mCard.answerVoice.isEmpty()) {
-            setAnswerVoiceSubject(mFileHelper.getCardAnswerVoice(mCard.answerVoice));
+            setAnswerVoiceSubject(mCardMediaStore.getCardAnswerVoice(mCard.answerVoice));
         } else {
             if (mAnswerVoiceSubject == null) {
                 setAnswerVoiceSubject(null);

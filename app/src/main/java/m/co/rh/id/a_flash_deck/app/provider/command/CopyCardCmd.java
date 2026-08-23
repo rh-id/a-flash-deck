@@ -26,20 +26,20 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.CopyCardEvent;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.aprovider.Provider;
 
 public class CopyCardCmd {
     protected ExecutorService mExecutorService;
-    protected FileHelper mFileHelper;
+    protected CardMediaStore mCardMediaStore;
     protected DeckChangeNotifier mDeckChangeNotifier;
     protected DeckDao mDeckDao;
     protected NewCardCmd mNewCardCmd;
 
     public CopyCardCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
-        mFileHelper = provider.get(FileHelper.class);
+        mCardMediaStore = provider.get(CardMediaStore.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mDeckDao = provider.get(DeckDao.class);
         mNewCardCmd = provider.get(NewCardCmd.class);
@@ -50,25 +50,25 @@ public class CopyCardCmd {
                     Card card = copyCardEvent.getCopyCard();
                     Uri questionImageUri;
                     if (card.questionImage != null) {
-                        questionImageUri = Uri.fromFile(mFileHelper.getCardQuestionImage(card.questionImage));
+                        questionImageUri = Uri.fromFile(mCardMediaStore.getCardQuestionImage(card.questionImage));
                     } else {
                         questionImageUri = null;
                     }
                     Uri answerImageUri;
                     if (card.answerImage != null) {
-                        answerImageUri = Uri.fromFile(mFileHelper.getCardAnswerImage(card.answerImage));
+                        answerImageUri = Uri.fromFile(mCardMediaStore.getCardAnswerImage(card.answerImage));
                     } else {
                         answerImageUri = null;
                     }
                     Uri questionVoiceUri;
                     if (card.questionVoice != null) {
-                        questionVoiceUri = Uri.fromFile(mFileHelper.getCardQuestionVoice(card.questionVoice));
+                        questionVoiceUri = Uri.fromFile(mCardMediaStore.getCardQuestionVoice(card.questionVoice));
                     } else {
                         questionVoiceUri = null;
                     }
                     Uri answerVoiceUri;
                     if (card.answerVoice != null) {
-                        answerVoiceUri = Uri.fromFile(mFileHelper.getCardAnswerVoice(card.answerVoice));
+                        answerVoiceUri = Uri.fromFile(mCardMediaStore.getCardAnswerVoice(card.answerVoice));
                     } else {
                         answerVoiceUri = null;
                     }
