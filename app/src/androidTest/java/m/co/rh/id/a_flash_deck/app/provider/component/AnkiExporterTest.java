@@ -38,6 +38,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -82,6 +83,7 @@ public class AnkiExporterTest {
     private Provider testProvider;
     private CardMediaStore cardMediaStore;
     private DeckDao deckDao;
+    private CardDao cardDao;
     private File tempDir;
 
     @Before
@@ -109,6 +111,7 @@ public class AnkiExporterTest {
 
         cardMediaStore = testProvider.get(CardMediaStore.class);
         deckDao = testProvider.get(DeckDao.class);
+        cardDao = testProvider.get(CardDao.class);
     }
 
     @After
@@ -140,7 +143,7 @@ public class AnkiExporterTest {
         deckDao.insertDeck(deck);
 
         Card card = AnkiTestDataHelper.createTestCard(deck.id, 1, "Question", "Answer");
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         AnkiExporter exporter = new AnkiExporter(testProvider);
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
@@ -179,7 +182,7 @@ public class AnkiExporterTest {
             deck.id, 1, "What is this?", "An image", 
             imageName, answerImageName
         );
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         AnkiExporter exporter = new AnkiExporter(testProvider);
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
@@ -214,7 +217,7 @@ public class AnkiExporterTest {
             deck.id, 1, "Say this", "Hello", 
             voiceName, null
         );
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         AnkiExporter exporter = new AnkiExporter(testProvider);
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));

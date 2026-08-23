@@ -35,7 +35,7 @@ import java.util.concurrent.Future;
 
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.bot.R;
 import m.co.rh.id.a_flash_deck.bot.dao.CardLogDao;
 import m.co.rh.id.a_flash_deck.bot.dao.SuggestedCardDao;
@@ -60,7 +60,7 @@ public class BotAnalyzeWorker extends Worker {
         ILogger logger = provider.get(ILogger.class);
         IAppNotificationHandler appNotificationHandler = provider.get(IAppNotificationHandler.class);
         SuggestedCardChangeNotifier suggestedCardChangeNotifier = provider.get(SuggestedCardChangeNotifier.class);
-        DeckDao deckDao = provider.get(DeckDao.class);
+        CardDao cardDao = provider.get(CardDao.class);
         CardLogDao cardLogDao = provider.get(CardLogDao.class);
         SuggestedCardDao suggestedCardDao = provider.get(SuggestedCardDao.class);
         int countCards = suggestedCardDao.countSuggestedCard();
@@ -78,7 +78,7 @@ public class BotAnalyzeWorker extends Worker {
         long todayCreatedTo = today.atTime(OffsetTime.now()).toInstant().toEpochMilli();
         List<Long> cardIds = cardLogDao.findCardLogCardIdByCreatedDateFromTo(_2dayCreatedFrom, todayCreatedTo);
         // check if the card actually still exist
-        List<Long> existingCardIds = deckDao.findCardIdsByCardIds(cardIds);
+        List<Long> existingCardIds = cardDao.findCardIdsByCardIds(cardIds);
         Set<Long> selectedCardIds = new LinkedHashSet<>(existingCardIds);
         List<Future<CardIdScore>> cardFutureList = new ArrayList<>();
         for (Long cardId : selectedCardIds) {

@@ -521,7 +521,7 @@ base/src/main/java/m/co/rh/id/a_flash_deck/base/
 ├── constants/ (Constants, routes, intent keys, shortcuts, WorkManager keys/tags)
 ├── exception/ (ValidationException)
 ├── model/ (Event models, DeckModel, TestState)
-├── repository/ (AndroidNotificationRepo)
+├── repository/ (AndroidNotificationRepository, DeckCardRepository)
 ├── rx/ (RxDisposer)
 ├── ui/
 │   ├── component/common/ (Common UI components)

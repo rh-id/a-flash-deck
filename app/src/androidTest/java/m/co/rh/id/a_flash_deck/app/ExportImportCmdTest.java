@@ -50,6 +50,7 @@ import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -57,6 +58,7 @@ import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.ImageHelper;
+import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -109,6 +111,8 @@ public class ExportImportCmdTest {
         ExportImportCmd cmd = new ExportImportCmd(testProvider);
         // prepare data
         DeckDao deckDao = testProvider.get(DeckDao.class);
+        CardDao cardDao = testProvider.get(CardDao.class);
+        DeckCardRepository deckCardRepo = testProvider.get(DeckCardRepository.class);
         Date date = new Date();
         Deck deck = new Deck();
         deck.id = 1L;
@@ -128,14 +132,14 @@ public class ExportImportCmdTest {
         card2.question = "this is question 2";
         card2.answer = "this is answer 2";
         deckDao.insertDeck(deck);
-        deckDao.insertCard(card);
-        deckDao.insertCard(card2);
+        cardDao.insertCard(card);
+        cardDao.insertCard(card2);
 
         File exportedFile = cmd.exportFile(Collections.singletonList(deck)).blockingGet();
         assertTrue(exportedFile.exists());
 
         // delete record after export
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
 
@@ -170,7 +174,7 @@ public class ExportImportCmdTest {
         assertEquals(deck.createdDateTime, dbDeck.createdDateTime);
         assertEquals(deck.updatedDateTime, dbDeck.updatedDateTime);
 
-        List<Card> cardList = deckDao.getCardByDeckId(dbDeck.id);
+        List<Card> cardList = cardDao.getCardByDeckId(dbDeck.id);
         assertEquals(2, cardList.size());
         Card dbCard = cardList.get(0);
         Card dbCard2 = cardList.get(1);
@@ -224,6 +228,8 @@ public class ExportImportCmdTest {
             cardMediaStore.createCardAnswerVoice(tempAVoice, "test_a_voice.3gp");
 
             DeckDao deckDao = testProvider.get(DeckDao.class);
+            CardDao cardDao = testProvider.get(CardDao.class);
+            DeckCardRepository deckCardRepo = testProvider.get(DeckCardRepository.class);
             Date date = new Date();
             Deck deck = new Deck();
             deck.name = "test deck";
@@ -242,7 +248,7 @@ public class ExportImportCmdTest {
             card.questionVoice = "test_q_voice.3gp";
             card.answerVoice = "test_a_voice.3gp";
 
-            deckDao.insertCard(card);
+            cardDao.insertCard(card);
 
             File exportedFile = cmd.exportFile(Collections.singletonList(deck)).blockingGet();
             assertTrue(exportedFile.exists());
@@ -260,7 +266,7 @@ public class ExportImportCmdTest {
             cardMediaStore.deleteCardAnswerImage("test_a_img.jpg");
             cardMediaStore.deleteCardQuestionVoice("test_q_voice.3gp");
             cardMediaStore.deleteCardAnswerVoice("test_a_voice.3gp");
-            deckDao.deleteDeck(deck);
+            deckCardRepo.deleteDeck(deck);
 
             assertFalse(cardMediaStore.getCardQuestionImage("test_q_img.jpg").exists());
             assertFalse(cardMediaStore.getCardAnswerImage("test_a_img.jpg").exists());
@@ -301,7 +307,7 @@ public class ExportImportCmdTest {
             List<Deck> dbDeckList = deckDao.getAllDecks();
             assertEquals(1, dbDeckList.size());
             assertEquals(deckResult.id, dbDeckList.get(0).id);
-            List<Card> dbCardList = deckDao.getCardByDeckId(deckResult.id);
+            List<Card> dbCardList = cardDao.getCardByDeckId(deckResult.id);
             assertEquals(1, dbCardList.size());
             assertEquals(card.questionImage, dbCardList.get(0).questionImage);
             assertEquals(card.answerImage, dbCardList.get(0).answerImage);
@@ -339,6 +345,8 @@ public class ExportImportCmdTest {
         ExportImportCmd cmd = new ExportImportCmd(testProvider);
         // prepare data
         DeckDao deckDao = testProvider.get(DeckDao.class);
+        CardDao cardDao = testProvider.get(CardDao.class);
+        DeckCardRepository deckCardRepo = testProvider.get(DeckCardRepository.class);
         Date date = new Date();
         Deck deck = new Deck();
         deck.id = 1L;
@@ -358,14 +366,14 @@ public class ExportImportCmdTest {
         card2.question = "this is question 2";
         card2.answer = "this is answer 2";
         deckDao.insertDeck(deck);
-        deckDao.insertCard(card);
-        deckDao.insertCard(card2);
+        cardDao.insertCard(card);
+        cardDao.insertCard(card2);
 
         File exportedFile = cmd.exportFileAnki(Collections.singletonList(deck)).blockingGet();
         assertTrue(exportedFile.exists());
 
         // delete record after export
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
 
@@ -394,7 +402,7 @@ public class ExportImportCmdTest {
         assertNotEquals(deck.id, dbDeck.id);
         assertEquals(deck.name, dbDeck.name);
 
-        List<Card> cardList = deckDao.getCardByDeckId(dbDeck.id);
+        List<Card> cardList = cardDao.getCardByDeckId(dbDeck.id);
         assertEquals(2, cardList.size());
         Card dbCard = cardList.get(0);
         Card dbCard2 = cardList.get(1);
@@ -426,6 +434,8 @@ public class ExportImportCmdTest {
         ExportImportCmd cmd = new ExportImportCmd(testProvider);
         // prepare data
         DeckDao deckDao = testProvider.get(DeckDao.class);
+        CardDao cardDao = testProvider.get(CardDao.class);
+        DeckCardRepository deckCardRepo = testProvider.get(DeckCardRepository.class);
         Date date = new Date();
         Deck deck = new Deck();
         deck.id = 1L;
@@ -439,7 +449,7 @@ public class ExportImportCmdTest {
         assertTrue(exportedFile.exists());
 
         // delete record after export
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         // import
         List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
@@ -463,7 +473,7 @@ public class ExportImportCmdTest {
         assertEquals(deck.createdDateTime, dbDeck.createdDateTime);
         assertEquals(deck.updatedDateTime, dbDeck.updatedDateTime);
 
-        List<Card> cardList = deckDao.getCardByDeckId(dbDeck.id);
+        List<Card> cardList = cardDao.getCardByDeckId(dbDeck.id);
         assertEquals(0, cardList.size());
     }
 

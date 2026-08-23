@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.aprovider.Provider;
@@ -28,15 +29,17 @@ import m.co.rh.id.aprovider.Provider;
 public class DeckQueryCmd {
     private ExecutorService mExecutorService;
     private DeckDao mDeckDao;
+    private CardDao mCardDao;
 
     public DeckQueryCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
     }
 
     public Single<Integer> countCards(Deck deck) {
         return Single.fromCallable(() ->
-                mDeckDao.countCardByDeckId(deck.id))
+                mCardDao.countCardByDeckId(deck.id))
                 .subscribeOn(Schedulers.from(mExecutorService));
     }
 

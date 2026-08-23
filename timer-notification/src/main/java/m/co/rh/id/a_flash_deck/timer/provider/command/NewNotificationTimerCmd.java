@@ -38,7 +38,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerKeys;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerTags;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
@@ -55,7 +55,7 @@ public class NewNotificationTimerCmd {
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<NotificationTimerDao> mNotificationTimerDao;
     protected ProviderValue<NotificationTimerChangeNotifier> mNotificationTimerChangeNotifier;
-    protected ProviderValue<DeckDao> mDeckDao;
+    protected ProviderValue<CardDao> mCardDao;
     protected ProviderValue<AppSharedPreferences> mAppSharedPreferences;
     protected BehaviorSubject<String> mNameValidSubject;
     protected BehaviorSubject<String> mSelectedDeckIdsValidSubject;
@@ -66,7 +66,7 @@ public class NewNotificationTimerCmd {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);
         mNotificationTimerChangeNotifier = provider.lazyGet(NotificationTimerChangeNotifier.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mCardDao = provider.lazyGet(CardDao.class);
         mAppSharedPreferences = provider.lazyGet(AppSharedPreferences.class);
         mNameValidSubject = BehaviorSubject.create();
         mSelectedDeckIdsValidSubject = BehaviorSubject.create();
@@ -106,7 +106,7 @@ public class NewNotificationTimerCmd {
                         for (int i = 0; i < size; i++) {
                             deckIds.add(jsonArray.getLong(i));
                         }
-                        List<Card> cardList = mDeckDao.get().findCardByDeckIds(deckIds);
+                        List<Card> cardList = mCardDao.get().findCardByDeckIds(deckIds);
                         if (cardList.isEmpty()) {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }

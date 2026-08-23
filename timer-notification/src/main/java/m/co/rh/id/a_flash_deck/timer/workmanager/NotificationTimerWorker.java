@@ -37,7 +37,7 @@ import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerKeys;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
@@ -95,7 +95,7 @@ public class NotificationTimerWorker extends Worker {
             for (int i = 0; i < size; i++) {
                 deckIds.add(jsonArray.getLong(i));
             }
-            List<Card> cards = provider.get(DeckDao.class).findCardByDeckIds(deckIds);
+            List<Card> cards = provider.get(CardDao.class).findCardByDeckIds(deckIds);
             if (cards.isEmpty()) {
                 iLogger.d(TAG, "cards is empty");
                 return Result.success();

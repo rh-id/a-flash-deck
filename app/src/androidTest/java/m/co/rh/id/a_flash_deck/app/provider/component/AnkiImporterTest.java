@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -42,6 +43,7 @@ import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.ImageHelper;
+import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -79,6 +81,8 @@ public class AnkiImporterTest {
     private Provider testProvider;
     private CardMediaStore cardMediaStore;
     private DeckDao deckDao;
+    private CardDao cardDao;
+    private DeckCardRepository deckCardRepo;
     private File tempDir;
 
     @Before
@@ -106,6 +110,8 @@ public class AnkiImporterTest {
 
         cardMediaStore = testProvider.get(CardMediaStore.class);
         deckDao = testProvider.get(DeckDao.class);
+        cardDao = testProvider.get(CardDao.class);
+        deckCardRepo = testProvider.get(DeckCardRepository.class);
     }
 
     @After
@@ -141,14 +147,14 @@ public class AnkiImporterTest {
 
         Card card1 = AnkiTestDataHelper.createTestCard(deck.id, 1, "Question 1", "Answer 1");
         Card card2 = AnkiTestDataHelper.createTestCard(deck.id, 2, "Question 2", "Answer 2");
-        deckDao.insertCard(card1);
-        deckDao.insertCard(card2);
+        cardDao.insertCard(card1);
+        cardDao.insertCard(card2);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         assertNotNull(apkgFile);
         assertTrue(apkgFile.exists());
 
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         List<DeckModel> imported = importer.importApkg(apkgFile);
         assertEquals(1, imported.size());
@@ -195,13 +201,13 @@ public class AnkiImporterTest {
             deck.id, 1, "What is this?", "This is an image", 
             imageName, answerImageName
         );
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         assertNotNull(apkgFile);
         assertTrue(apkgFile.exists());
 
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         List<DeckModel> imported = importer.importApkg(apkgFile);
         assertEquals(1, imported.size());
@@ -244,13 +250,13 @@ public class AnkiImporterTest {
             deck.id, 1, "Say this word", "Hello", 
             voiceName, answerVoiceName
         );
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         assertNotNull(apkgFile);
         assertTrue(apkgFile.exists());
 
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         List<DeckModel> imported = importer.importApkg(apkgFile);
         assertEquals(1, imported.size());
@@ -284,10 +290,10 @@ public class AnkiImporterTest {
         deckDao.insertDeck(newDeck);
 
         Card card = AnkiTestDataHelper.createTestCard(newDeck.id, 1, "Q", "A");
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(newDeck)));
-        deckDao.deleteDeck(newDeck);
+        deckCardRepo.deleteDeck(newDeck);
 
         List<DeckModel> imported = importer.importApkg(apkgFile);
         assertEquals(1, imported.size());
@@ -312,12 +318,12 @@ public class AnkiImporterTest {
         deckDao.insertDeck(deck);
 
         Card card = AnkiTestDataHelper.createTestCard(deck.id, 1, "日", "Day");
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         assertNotNull(apkgFile);
 
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         List<DeckModel> imported = importer.importApkg(apkgFile);
         assertEquals(1, imported.size());
@@ -354,11 +360,11 @@ public class AnkiImporterTest {
             deck.id, 1, "Q", "A", 
             imageName, "missing_image.png"
         );
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
 
-        deckDao.deleteDeck(deck);
+        deckCardRepo.deleteDeck(deck);
 
         List<DeckModel> imported = importer.importApkg(apkgFile);
         assertEquals(1, imported.size());
@@ -391,20 +397,20 @@ public class AnkiImporterTest {
         deckDao.insertDeck(deck1);
 
         Card card1 = AnkiTestDataHelper.createTestCard(deck1.id, 1, "Question 1", "Answer 1");
-        deckDao.insertCard(card1);
+        cardDao.insertCard(card1);
 
         Deck deck2 = AnkiTestDataHelper.createTestDeck("Second Deck");
         deckDao.insertDeck(deck2);
 
         Card card2 = AnkiTestDataHelper.createTestCard(deck2.id, 1, "Question 2", "Answer 2");
-        deckDao.insertCard(card2);
+        cardDao.insertCard(card2);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck1, deck2)));
         assertNotNull(apkgFile);
         assertTrue(apkgFile.exists());
 
-        deckDao.deleteDeck(deck1);
-        deckDao.deleteDeck(deck2);
+        deckCardRepo.deleteDeck(deck1);
+        deckCardRepo.deleteDeck(deck2);
 
         List<DeckModel> imported = importer.importApkg(apkgFile);
         assertEquals(2, imported.size());

@@ -35,7 +35,7 @@ import java.util.UUID;
 
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.anki.ApkgGenerator;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
@@ -49,14 +49,14 @@ public class AnkiExporter {
 
     protected Context mAppContext;
     protected ILogger mLogger;
-    protected DeckDao mDeckDao;
+    protected CardDao mCardDao;
     protected FileHelper mFileHelper;
     protected CardMediaStore mCardMediaStore;
 
     public AnkiExporter(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.get(ILogger.class);
-        mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
         mFileHelper = provider.get(FileHelper.class);
         mCardMediaStore = provider.get(CardMediaStore.class);
     }
@@ -77,7 +77,7 @@ public class AnkiExporter {
                 deckIds.add(deck.id);
             }
 
-            List<Card> allCards = mDeckDao.findCardByDeckIds(deckIds);
+            List<Card> allCards = mCardDao.findCardByDeckIds(deckIds);
             if (allCards.isEmpty()) {
                 throw new ValidationException("No cards found in selected decks");
             }

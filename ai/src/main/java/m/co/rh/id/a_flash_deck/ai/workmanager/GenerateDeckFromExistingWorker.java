@@ -30,6 +30,7 @@ import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedDeck;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerKeys;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -48,6 +49,7 @@ public class GenerateDeckFromExistingWorker extends BaseGenerateDeckWorker {
         Provider provider = getProvider();
         GeminiService geminiService = provider.get(GeminiService.class);
         DeckDao deckDao = provider.get(DeckDao.class);
+        CardDao cardDao = provider.get(CardDao.class);
 
         String deckIdsJson = getInputData().getString(WorkManagerKeys.AI_GENERATE_FROM_EXISTING_DECK_IDS);
         String prompt = getInputData().getString(WorkManagerKeys.AI_GENERATE_FROM_EXISTING_PROMPT);
@@ -62,7 +64,7 @@ public class GenerateDeckFromExistingWorker extends BaseGenerateDeckWorker {
             }
 
             ArrayList<Deck> decks = new ArrayList<>(deckDao.findDeckByIds(deckIds));
-            ArrayList<Card> cards = new ArrayList<>(deckDao.findCardByDeckIds(deckIds));
+            ArrayList<Card> cards = new ArrayList<>(cardDao.findCardByDeckIds(deckIds));
 
             AiGeneratedDeck aiDeck = geminiService.generateDeckFromExisting(decks, cards, prompt, maxCards, modelId).blockingGet();
             Deck deck = saveAiDeckToDatabase(aiDeck);

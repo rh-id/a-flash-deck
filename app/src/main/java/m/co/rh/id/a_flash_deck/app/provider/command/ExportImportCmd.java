@@ -53,13 +53,14 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
@@ -76,7 +77,8 @@ public class ExportImportCmd {
     protected AnkiExporter mAnkiExporter;
     protected ExecutorService mExecutorService;
     protected ILogger mLogger;
-    protected DeckDao mDeckDao;
+    protected CardDao mCardDao;
+    protected DeckCardRepository mDeckCardRepo;
     protected FileHelper mFileHelper;
     protected CardMediaStore mCardMediaStore;
 
@@ -84,7 +86,8 @@ public class ExportImportCmd {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mLogger = provider.get(ILogger.class);
-        mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
+        mDeckCardRepo = provider.get(DeckCardRepository.class);
         mFileHelper = provider.get(FileHelper.class);
         mCardMediaStore = provider.get(CardMediaStore.class);
         mAnkiImporter = provider.get(AnkiImporter.class);
@@ -112,7 +115,7 @@ public class ExportImportCmd {
                     if (!deckList.isEmpty()) {
                         File zipFile = mFileHelper.createTempFile("Decks.zip");
                         try {
-                            List<Card> allCards = mDeckDao.getCardsByDecks(deckList);
+                            List<Card> allCards = mCardDao.getCardsByDecks(deckList);
                             Map<Long, List<Card>> cardsByDeckId = new HashMap<>();
                             for (Card card : allCards) {
                                 cardsByDeckId.computeIfAbsent(card.deckId, k -> new ArrayList<>()).add(card);
@@ -203,7 +206,7 @@ public class ExportImportCmd {
             return Single.fromCallable(() -> {
                         List<DeckModel> result = mAnkiImporter.importApkg(file);
                         if (!result.isEmpty()) {
-                            mDeckDao.importDecks(result);
+                            mDeckCardRepo.importDecks(result);
                         }
                         return result;
                     })
@@ -262,7 +265,7 @@ public class ExportImportCmd {
                         }
 
                         if (!deckModelList.isEmpty()) {
-                            mDeckDao.importDecks(deckModelList);
+                            mDeckCardRepo.importDecks(deckModelList);
                         }
                         return deckModelList;
                     } catch (ZipException e) {
@@ -271,7 +274,7 @@ public class ExportImportCmd {
                         try (FileInputStream fis = new FileInputStream(file)) {
                             List<DeckModel> deckModelList = getDeckModelsFromJson(fis);
                             if (!deckModelList.isEmpty()) {
-                                mDeckDao.importDecks(deckModelList);
+                                mDeckCardRepo.importDecks(deckModelList);
                             }
                             return deckModelList;
                         } catch (Exception exception) {

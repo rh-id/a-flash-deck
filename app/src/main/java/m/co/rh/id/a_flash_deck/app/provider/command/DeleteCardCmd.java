@@ -21,25 +21,25 @@ import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.aprovider.Provider;
 
 public class DeleteCardCmd {
     private ExecutorService mExecutorService;
-    private DeckDao mDeckDao;
+    private CardDao mCardDao;
     private DeckChangeNotifier mDeckChangeNotifier;
 
     public DeleteCardCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
-        mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
     }
 
     public Single<Card> execute(Card card) {
         return Single.fromCallable(() -> {
-            mDeckDao.deleteCard(card);
+            mCardDao.deleteCard(card);
             mDeckChangeNotifier.cardDeleted(card);
             return card;
         }).subscribeOn(Schedulers.from(mExecutorService));

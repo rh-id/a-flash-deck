@@ -24,17 +24,13 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Function;
 
-import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
-import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 
 /**
- * DAO that handles deck and cards
+ * DAO that handles deck entity
  */
 @Dao
 public abstract class DeckDao {
@@ -61,20 +57,8 @@ public abstract class DeckDao {
         update(deck);
     }
 
-    @Transaction
-    public void deleteDeck(Deck deck) {
-        if (deck == null) {
-            return;
-        }
-        delete(deck);
-        deleteCardsByDeckId(deck.id);
-    }
-
-    @Query("DELETE FROM card WHERE deck_id = :deckId")
-    public abstract void deleteCardsByDeckId(long deckId);
-
-    @Query("SELECT COUNT(*) FROM card WHERE deck_id = :deckId")
-    public abstract int countCardByDeckId(long deckId);
+    @Delete
+    public abstract void delete(Deck deck);
 
     @Query("SELECT COUNT(*) FROM deck")
     public abstract int countDeck();
@@ -85,55 +69,14 @@ public abstract class DeckDao {
     @Query("SELECT * FROM deck WHERE name LIKE '%'||:search||'%' ORDER BY name")
     public abstract List<Deck> searchDeck(String search);
 
-    @Query("SELECT * FROM card ORDER BY ordinal ASC LIMIT :limit")
-    public abstract List<Card> getCardWithLimit(int limit);
-
-    @Query("SELECT * FROM card WHERE deck_id=:deckId ORDER BY ordinal ASC LIMIT :limit")
-    public abstract List<Card> getCardByDeckIdWithLimit(long deckId, int limit);
-
-    @Query("SELECT * FROM card WHERE deck_id=:deckId ORDER BY ordinal")
-    public abstract List<Card> getCardByDeckId(long deckId);
-
-    @Query("SELECT * FROM card WHERE question LIKE '%'||:search||'%' " +
-            "OR answer LIKE '%'||:search||'%' ORDER BY ordinal")
-    public abstract List<Card> searchCard(String search);
-
-    @Query("SELECT * FROM card WHERE deck_id=:deckId AND (question LIKE '%'||:search||'%' " +
-            "OR answer LIKE '%'||:search||'%') ORDER BY ordinal")
-    public abstract List<Card> searchCardByDeckId(long deckId, String search);
-
     @Query("SELECT * FROM deck WHERE id=:deckId")
     public abstract Deck getDeckById(long deckId);
 
-    private <T> List<T> queryInBatches(List<Long> ids, Function<List<Long>, List<T>> query) {
-        int size = ids.size();
-        int maxQuerySize = 30;
-        if (size <= maxQuerySize) {
-            return query.apply(ids);
-        }
-        List<T> result = new ArrayList<>();
-        for (int i = 0, i2 = maxQuerySize;
-             size > 0;
-             size -= maxQuerySize,
-                     i = i2,
-                     i2 += Math.min(size, maxQuerySize)) {
-            result.addAll(query.apply(ids.subList(i, i2)));
-        }
-        return result;
-    }
-
-    public List<Card> findCardByDeckIds(List<Long> deckIds) {
-        return queryInBatches(deckIds, this::getCardByDeckIds);
-    }
-
-    @Query("SELECT * FROM card WHERE deck_id IN (:deckIds)")
-    abstract List<Card> getCardByDeckIds(List<Long> deckIds);
-
-    @Query("SELECT * FROM card WHERE id =:cardId")
-    public abstract Card getCardByCardId(long cardId);
-
+    /**
+     * Returns all decks whose id is in the given list (queried in batches; deduplicates and tolerates null/empty input).
+     */
     public List<Deck> findDeckByIds(List<Long> deckIds) {
-        return queryInBatches(deckIds, this::getDeckByIds);
+        return DaoBatchQueryUtil.queryInBatches(deckIds, this::getDeckByIds);
     }
 
     @Query("SELECT * FROM deck WHERE id IN (:deckIds)")
@@ -142,120 +85,9 @@ public abstract class DeckDao {
     @Query("SELECT * FROM deck")
     public abstract List<Deck> getAllDecks();
 
-    @Query("SELECT * FROM card WHERE question_image=:questionImage")
-    public abstract Card findCardByQuestionImage(String questionImage);
-
-    @Query("SELECT * FROM card WHERE answer_image=:answerImage")
-    public abstract Card findCardByAnswerImage(String answerImage);
-
-    @Query("SELECT * FROM card WHERE question_voice=:questionVoice")
-    public abstract Card findCardByQuestionVoice(String questionVoice);
-
-    @Query("SELECT * FROM card WHERE answer_voice=:answerVoice")
-    public abstract Card findCardByAnswerVoice(String answerVoice);
-
-    public List<Long> findCardIdsByCardIds(List<Long> cardIds) {
-        return queryInBatches(cardIds, this::getCardIdsByCardIds);
-    }
-
-    @Query("SELECT id FROM card WHERE id IN (:cardIds)")
-    abstract List<Long> getCardIdsByCardIds(List<Long> cardIds);
-
-    @Query("SELECT * FROM card WHERE id IN (:cardIds)")
-    abstract List<Card> getCardsByCardIds(List<Long> cardIds);
-
-    public List<Card> findCardsByCardIds(List<Long> cardIds) {
-        return queryInBatches(cardIds, this::getCardsByCardIds);
-    }
-
-    @Transaction
-    public void importDecks(List<DeckModel> deckModels) {
-        if (deckModels == null || deckModels.isEmpty()) return;
-        for (DeckModel deckModel : deckModels) {
-            Deck deck = deckModel.getDeck();
-            // imported deck id and our deck id must not same
-            deck.id = null;
-            deck.id = insert(deck);
-            List<Card> cardList = deckModel.getCardList();
-            if (cardList != null && !cardList.isEmpty()) {
-                for (Card card : cardList) {
-                    // replace imported deck id with our deck id
-                    card.deckId = deck.id;
-                    card.id = null;
-                    card.id = insert(card);
-                }
-            }
-        }
-    }
-
-    public List<Card> getCardsByDecks(List<Deck> decks) {
-        if (decks == null || decks.isEmpty()) return new ArrayList<>();
-        List<Long> deckIds = new ArrayList<>();
-        for (Deck deck : decks) {
-            deckIds.add(deck.id);
-        }
-        return findCardByDeckIds(deckIds);
-    }
-
-    @Transaction
-    public void moveCardToDeck(Card card, Deck deck) {
-        if (card == null || deck == null || card.id == null || deck.id == null) {
-            return;
-        }
-        card.deckId = deck.id;
-        update(card);
-    }
-
-    @Transaction
-    public void copyCardToDeck(Card card, Deck deck) {
-        if (card == null || deck == null || card.id == null || deck.id == null) {
-            return;
-        }
-        card.deckId = deck.id;
-        card.id = null;
-        card.id = insert(card);
-    }
-
-    @Transaction
-    public void insertCard(Card card) {
-        if (card == null) {
-            return;
-        }
-        card.ordinal = countCardByDeckId(card.deckId);
-        card.id = insert(card);
-    }
-
-    @Transaction
-    public void updateCard(Card card) {
-        if (card == null) {
-            return;
-        }
-        update(card);
-    }
-
-    @Transaction
-    public void deleteCard(Card card) {
-        if (card == null) {
-            return;
-        }
-        delete(card);
-    }
-
     @Insert
     protected abstract long insert(Deck deck);
 
     @Update
     protected abstract void update(Deck deck);
-
-    @Delete
-    protected abstract void delete(Deck deck);
-
-    @Insert
-    protected abstract long insert(Card card);
-
-    @Update
-    protected abstract void update(Card card);
-
-    @Delete
-    protected abstract void delete(Card card);
 }

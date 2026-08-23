@@ -38,6 +38,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromExistingCmd;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
@@ -74,6 +75,7 @@ public class GenerateDeckFromExistingPage extends BaseGenerateDeckPage {
 
     private transient GenerateDeckFromExistingCmd mGenerateCmd;
     private transient DeckDao mDeckDao;
+    private transient CardDao mCardDao;
     private transient ArrayList<Long> mSelectedDeckIds;
     private transient MaterialAutoCompleteTextView mEditTextPrompt;
     private transient EditText mEditTextMaxCards;
@@ -94,6 +96,7 @@ public class GenerateDeckFromExistingPage extends BaseGenerateDeckPage {
         initProviders();
         mGenerateCmd = mSvProvider.get(GenerateDeckFromExistingCmd.class);
         mDeckDao = mSvProvider.get(DeckDao.class);
+        mCardDao = mSvProvider.get(CardDao.class);
 
         View view = activity.getLayoutInflater().inflate(R.layout.page_generate_deck_from_existing, container, false);
 
@@ -165,7 +168,7 @@ public class GenerateDeckFromExistingPage extends BaseGenerateDeckPage {
                     StringBuilder deckNames = new StringBuilder();
                     for (int i = 0; i < decks.size(); i++) {
                         Deck deck = decks.get(i);
-                        int cardCount = mDeckDao.countCardByDeckId(deck.id);
+                        int cardCount = mCardDao.countCardByDeckId(deck.id);
                         totalCards += cardCount;
                         if (i > 0) {
                             deckNames.append(", ");
@@ -203,6 +206,7 @@ public class GenerateDeckFromExistingPage extends BaseGenerateDeckPage {
         super.dispose(activity);
         mGenerateCmd = null;
         mDeckDao = null;
+        mCardDao = null;
         mSelectedDeckIds = null;
         mEditTextPrompt = null;
         mEditTextMaxCards = null;

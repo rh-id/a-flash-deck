@@ -24,6 +24,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.AutoMigrationSpec;
 
 import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
@@ -43,6 +44,8 @@ import m.co.rh.id.a_flash_deck.base.entity.Test;
         })
 public abstract class AppDatabase extends RoomDatabase {
     public abstract DeckDao deckDao();
+
+    public abstract CardDao cardDao();
 
     public abstract TestDao testDao();
 

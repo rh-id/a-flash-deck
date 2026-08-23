@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -44,6 +45,7 @@ import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.ImageHelper;
+import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -87,6 +89,8 @@ public class AnkiRoundTripTest {
     private Provider testProvider;
     private CardMediaStore cardMediaStore;
     private DeckDao deckDao;
+    private CardDao cardDao;
+    private DeckCardRepository deckCardRepo;
     private File tempDir;
 
     @Before
@@ -114,6 +118,8 @@ public class AnkiRoundTripTest {
 
         cardMediaStore = testProvider.get(CardMediaStore.class);
         deckDao = testProvider.get(DeckDao.class);
+        cardDao = testProvider.get(CardDao.class);
+        deckCardRepo = testProvider.get(DeckCardRepository.class);
     }
 
     @After
@@ -151,12 +157,12 @@ public class AnkiRoundTripTest {
 
         Card originalCard1 = AnkiTestDataHelper.createTestCard(originalDeck.id, 1, "Q1", "A1");
         Card originalCard2 = AnkiTestDataHelper.createTestCard(originalDeck.id, 2, "Q2", "A2");
-        deckDao.insertCard(originalCard1);
-        deckDao.insertCard(originalCard2);
+        cardDao.insertCard(originalCard1);
+        cardDao.insertCard(originalCard2);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(originalDeck)));
 
-        deckDao.deleteDeck(originalDeck);
+        deckCardRepo.deleteDeck(originalDeck);
 
         List<DeckModel> importedDecks = importer.importApkg(apkgFile);
         assertEquals(1, importedDecks.size());
@@ -214,11 +220,11 @@ public class AnkiRoundTripTest {
             originalDeck.id, 1, "What color is this?", "Blue", 
             questionImageName, answerImageName
         );
-        deckDao.insertCard(originalCard);
+        cardDao.insertCard(originalCard);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(originalDeck)));
 
-        deckDao.deleteDeck(originalDeck);
+        deckCardRepo.deleteDeck(originalDeck);
 
         List<DeckModel> importedDecks = importer.importApkg(apkgFile);
         assertEquals(1, importedDecks.size());
@@ -260,11 +266,11 @@ public class AnkiRoundTripTest {
             originalDeck.id, 1, "Listen and repeat", "Test", 
             questionVoiceName, answerVoiceName
         );
-        deckDao.insertCard(originalCard);
+        cardDao.insertCard(originalCard);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(originalDeck)));
 
-        deckDao.deleteDeck(originalDeck);
+        deckCardRepo.deleteDeck(originalDeck);
 
         List<DeckModel> importedDecks = importer.importApkg(apkgFile);
         assertEquals(1, importedDecks.size());
@@ -324,11 +330,11 @@ public class AnkiRoundTripTest {
         originalCard.answerVoice = null;
         originalCard.isReversibleQA = false;
         originalCard.isReversed = false;
-        deckDao.insertCard(originalCard);
+        cardDao.insertCard(originalCard);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(originalDeck)));
 
-        deckDao.deleteDeck(originalDeck);
+        deckCardRepo.deleteDeck(originalDeck);
 
         List<DeckModel> importedDecks = importer.importApkg(apkgFile);
         assertEquals(1, importedDecks.size());

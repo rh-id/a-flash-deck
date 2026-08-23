@@ -29,6 +29,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
@@ -44,6 +45,7 @@ public class NewCardCmd {
     protected ILogger mLogger;
     protected DeckChangeNotifier mDeckChangeNotifier;
     protected DeckDao mDeckDao;
+    protected CardDao mCardDao;
     protected CardMediaStore mCardMediaStore;
     protected BehaviorSubject<String> mDeckIdValidSubject;
     protected BehaviorSubject<String> mQuestionValidSubject;
@@ -55,6 +57,7 @@ public class NewCardCmd {
         mLogger = provider.get(ILogger.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
         mCardMediaStore = provider.get(CardMediaStore.class);
         mDeckIdValidSubject = BehaviorSubject.create();
         mQuestionValidSubject = BehaviorSubject.create();
@@ -92,7 +95,7 @@ public class NewCardCmd {
 
     public Single<Card> execute(Card card) {
         return Single.fromCallable(() -> {
-                    mDeckDao.insertCard(card);
+                    mCardDao.insertCard(card);
                     mDeckChangeNotifier.cardAdded(card);
                     return card;
                 })
@@ -149,7 +152,7 @@ public class NewCardCmd {
                     } else {
                         card.answerVoice = null;
                     }
-                    mDeckDao.updateCard(card);
+                    mCardDao.updateCard(card);
                     mDeckChangeNotifier.cardUpdated(card);
                     return card;
                 })

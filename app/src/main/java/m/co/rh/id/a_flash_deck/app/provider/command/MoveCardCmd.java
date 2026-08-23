@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.aprovider.Provider;
@@ -29,17 +29,17 @@ import m.co.rh.id.aprovider.Provider;
 public class MoveCardCmd {
     protected ExecutorService mExecutorService;
     protected DeckChangeNotifier mDeckChangeNotifier;
-    protected DeckDao mDeckDao;
+    protected CardDao mCardDao;
 
     public MoveCardCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
-        mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
     }
 
     public Single<MoveCardEvent> execute(MoveCardEvent moveCardEvent) {
         return Single.fromCallable(() -> {
-                    mDeckDao.moveCardToDeck(moveCardEvent.getMovedCard(), moveCardEvent.getDestinationDeck());
+                    mCardDao.moveCardToDeck(moveCardEvent.getMovedCard(), moveCardEvent.getDestinationDeck());
                     mDeckChangeNotifier.cardMoved(moveCardEvent);
                     return moveCardEvent;
                 })

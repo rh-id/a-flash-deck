@@ -28,7 +28,7 @@ import java.util.Date;
 import m.co.rh.id.a_flash_deck.base.entity.Test;
 
 /**
- * DAO that handles deck and cards
+ * DAO that handles test entity
  */
 @Dao
 public abstract class TestDao {

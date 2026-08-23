@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
 
-public class AndroidNotificationRepo {
+public class AndroidNotificationRepository {
     private static final String SHARED_PREFERENCES_NAME = "AndroidNotificationRepo";
 
     private SharedPreferences mSharedPreferences;
@@ -34,8 +34,8 @@ public class AndroidNotificationRepo {
     private AtomicInteger mRequestId;
     private String mRequestIdKey;
 
-    public AndroidNotificationRepo(Context context,
-                                   AndroidNotificationDao androidNotificationDao) {
+    public AndroidNotificationRepository(Context context,
+                                         AndroidNotificationDao androidNotificationDao) {
         mSharedPreferences = context.getSharedPreferences(
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mAndroidNotificationDao = androidNotificationDao;

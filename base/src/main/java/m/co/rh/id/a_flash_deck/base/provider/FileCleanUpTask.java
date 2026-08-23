@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Test;
@@ -39,14 +39,14 @@ public class FileCleanUpTask {
 
     private final ProviderValue<ExecutorService> mExecutorService;
     private final ProviderValue<TestDao> mTestDao;
-    private final ProviderValue<DeckDao> mDeckDao;
+    private final ProviderValue<CardDao> mCardDao;
     private final ProviderValue<CardMediaStore> mCardMediaStore;
     private final ProviderValue<ILogger> mLogger;
 
     public FileCleanUpTask(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mTestDao = provider.lazyGet(TestDao.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mCardDao = provider.lazyGet(CardDao.class);
         mCardMediaStore = provider.lazyGet(CardMediaStore.class);
         mLogger = provider.lazyGet(ILogger.class);
         cleanUp();
@@ -69,7 +69,7 @@ public class FileCleanUpTask {
                                 List<String> questionImageNames = questionImageFileList.get();
                                 if (!questionImageNames.isEmpty()) {
                                     for (String questionImage : questionImageNames) {
-                                        Card card = mDeckDao.get().findCardByQuestionImage(questionImage);
+                                        Card card = mCardDao.get().findCardByQuestionImage(questionImage);
                                         if (card == null) {
                                             mCardMediaStore.get().deleteCardQuestionImage(questionImage);
                                         }
@@ -83,7 +83,7 @@ public class FileCleanUpTask {
                                 List<String> questionVoiceNames = questionVoiceFileList.get();
                                 if (!questionVoiceNames.isEmpty()) {
                                     for (String questionVoiceName : questionVoiceNames) {
-                                        Card card = mDeckDao.get().findCardByQuestionVoice(questionVoiceName);
+                                        Card card = mCardDao.get().findCardByQuestionVoice(questionVoiceName);
                                         if (card == null) {
                                             mCardMediaStore.get().deleteCardQuestionVoice(questionVoiceName);
                                         }
@@ -97,7 +97,7 @@ public class FileCleanUpTask {
                                 List<String> answerImageNames = answerImageFileList.get();
                                 if (!answerImageNames.isEmpty()) {
                                     for (String answerImage : answerImageNames) {
-                                        Card card = mDeckDao.get().findCardByAnswerImage(answerImage);
+                                        Card card = mCardDao.get().findCardByAnswerImage(answerImage);
                                         if (card == null) {
                                             mCardMediaStore.get().deleteCardAnswerImage(answerImage);
                                         }
@@ -111,7 +111,7 @@ public class FileCleanUpTask {
                                 List<String> answerVoiceNames = answerVoiceFileList.get();
                                 if (!answerVoiceNames.isEmpty()) {
                                     for (String answerVoiceName : answerVoiceNames) {
-                                        Card card = mDeckDao.get().findCardByAnswerVoice(answerVoiceName);
+                                        Card card = mCardDao.get().findCardByAnswerVoice(answerVoiceName);
                                         if (card == null) {
                                             mCardMediaStore.get().deleteCardAnswerVoice(answerVoiceName);
                                         }

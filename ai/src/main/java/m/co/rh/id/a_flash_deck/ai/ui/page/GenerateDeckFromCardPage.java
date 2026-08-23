@@ -37,7 +37,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.command.GenerateDeckFromCardCmd;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
-import m.co.rh.id.a_flash_deck.base.constants.Routes;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -75,6 +75,7 @@ public class GenerateDeckFromCardPage extends BaseGenerateDeckPage {
 
     private transient GenerateDeckFromCardCmd mGenerateCmd;
     private transient DeckDao mDeckDao;
+    private transient CardDao mCardDao;
     private transient MarkdownRenderer mMarkdownRenderer;
     private transient Long mCardId;
     private transient MaterialAutoCompleteTextView mEditTextPrompt;
@@ -97,6 +98,7 @@ public class GenerateDeckFromCardPage extends BaseGenerateDeckPage {
         initProviders();
         mGenerateCmd = mSvProvider.get(GenerateDeckFromCardCmd.class);
         mDeckDao = mSvProvider.get(DeckDao.class);
+        mCardDao = mSvProvider.get(CardDao.class);
         mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
 
         View view = activity.getLayoutInflater().inflate(R.layout.page_generate_deck_from_card, container, false);
@@ -161,7 +163,7 @@ public class GenerateDeckFromCardPage extends BaseGenerateDeckPage {
     private void loadCardData() {
         mSvProvider.get(RxDisposer.class).add("loadCardData",
                 Single.fromCallable(() -> {
-                    Card card = mDeckDao.getCardByCardId(mCardId);
+                    Card card = mCardDao.getCardByCardId(mCardId);
                     Deck deck = null;
                     String question = "";
                     String answer = "";
@@ -212,6 +214,7 @@ public class GenerateDeckFromCardPage extends BaseGenerateDeckPage {
         super.dispose(activity);
         mGenerateCmd = null;
         mDeckDao = null;
+        mCardDao = null;
         mMarkdownRenderer = null;
         mCardId = null;
         mEditTextPrompt = null;

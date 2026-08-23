@@ -26,7 +26,7 @@ import m.co.rh.id.a_flash_deck.ai.R;
 import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedDeck;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.base.constants.WorkManagerKeys;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.aprovider.Provider;
@@ -43,7 +43,7 @@ public class GenerateDeckFromCardWorker extends BaseGenerateDeckWorker {
     public Result doWork() {
         Provider provider = getProvider();
         GeminiService geminiService = provider.get(GeminiService.class);
-        DeckDao deckDao = provider.get(DeckDao.class);
+        CardDao cardDao = provider.get(CardDao.class);
 
         long cardId = getInputData().getLong(WorkManagerKeys.AI_GENERATE_FROM_CARD_CARD_ID, -1L);
         String prompt = getInputData().getString(WorkManagerKeys.AI_GENERATE_FROM_CARD_PROMPT);
@@ -51,7 +51,7 @@ public class GenerateDeckFromCardWorker extends BaseGenerateDeckWorker {
         String modelId = getInputData().getString(WorkManagerKeys.AI_GENERATE_FROM_CARD_MODEL_ID);
 
         try {
-            Card card = deckDao.getCardByCardId(cardId);
+            Card card = cardDao.getCardByCardId(cardId);
             if (card == null) {
                 throw new IllegalStateException("Card not found: " + cardId);
             }

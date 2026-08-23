@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -58,7 +58,7 @@ public class TestStateModifier {
     protected Context mAppContext;
     private ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<TestChangeNotifier> mTestChangeNotifier;
-    protected ProviderValue<DeckDao> mDeckDao;
+    protected ProviderValue<CardDao> mCardDao;
     private ProviderValue<TestDao> mTestDao;
     private ProviderValue<ILogger> mLogger;
 
@@ -66,7 +66,7 @@ public class TestStateModifier {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mTestChangeNotifier = provider.lazyGet(TestChangeNotifier.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mCardDao = provider.lazyGet(CardDao.class);
         mTestDao = provider.lazyGet(TestDao.class);
         mLogger = provider.lazyGet(ILogger.class);
     }
@@ -151,7 +151,7 @@ public class TestStateModifier {
         return Single.fromCallable(() -> {
                     synchronized (mLock) {
                         if (deckList != null && !deckList.isEmpty()) {
-                            return prepareTest(mDeckDao.get().getCardsByDecks(deckList));
+                            return prepareTest(mCardDao.get().getCardsByDecks(deckList));
                         } else {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }
@@ -164,7 +164,7 @@ public class TestStateModifier {
         return Single.fromCallable(() -> {
                     synchronized (mLock) {
                         if (cardIds != null && !cardIds.isEmpty()) {
-                            return prepareTest(mDeckDao.get().findCardsByCardIds(cardIds));
+                            return prepareTest(mCardDao.get().findCardsByCardIds(cardIds));
                         } else {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }

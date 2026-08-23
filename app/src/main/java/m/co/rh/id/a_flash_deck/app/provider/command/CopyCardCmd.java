@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.model.CopyCardEvent;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
@@ -34,14 +34,14 @@ public class CopyCardCmd {
     protected ExecutorService mExecutorService;
     protected CardMediaStore mCardMediaStore;
     protected DeckChangeNotifier mDeckChangeNotifier;
-    protected DeckDao mDeckDao;
+    protected CardDao mCardDao;
     protected NewCardCmd mNewCardCmd;
 
     public CopyCardCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mCardMediaStore = provider.get(CardMediaStore.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
-        mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
         mNewCardCmd = provider.get(NewCardCmd.class);
     }
 
@@ -72,7 +72,7 @@ public class CopyCardCmd {
                     } else {
                         answerVoiceUri = null;
                     }
-                    mDeckDao.copyCardToDeck(card, copyCardEvent.getDestinationDeck());
+                    mCardDao.copyCardToDeck(card, copyCardEvent.getDestinationDeck());
                     return new CopyCardData(copyCardEvent, card, questionImageUri, answerImageUri, questionVoiceUri, answerVoiceUri);
                 })
                 .subscribeOn(Schedulers.from(mExecutorService))

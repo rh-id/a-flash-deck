@@ -40,7 +40,7 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.CardShowActivity;
 import m.co.rh.id.a_flash_deck.base.constants.IntentKeys;
 import m.co.rh.id.a_flash_deck.base.constants.Shortcuts;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
@@ -54,7 +54,7 @@ public class AppShortcutHandler implements ProviderDisposable {
     private Context mAppContext;
     private ProviderValue<ILogger> mLogger;
     private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<DeckDao> mDeckDao;
+    private ProviderValue<CardDao> mCardDao;
     private DeckChangeNotifier mDeckChangeNotifier;
     private BehaviorSubject<Optional<Card>> mCardSubject;
     private CompositeDisposable mCompositeDisposable;
@@ -63,7 +63,7 @@ public class AppShortcutHandler implements ProviderDisposable {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         mExecutorService = provider.lazyGet(ExecutorService.class);
-        mDeckDao = provider.lazyGet(DeckDao.class);
+        mCardDao = provider.lazyGet(CardDao.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mCardSubject = BehaviorSubject.create();
         mCompositeDisposable = new CompositeDisposable();
@@ -137,7 +137,7 @@ public class AppShortcutHandler implements ProviderDisposable {
 
     public void dispatchRandomCard(long deckId) {
         mExecutorService.get().execute(() -> {
-            List<Card> cardList = mDeckDao.get().getCardByDeckId(deckId);
+            List<Card> cardList = mCardDao.get().getCardByDeckId(deckId);
             if (!cardList.isEmpty()) {
                 if (cardList.size() > 1) {
                     Collections.shuffle(cardList);

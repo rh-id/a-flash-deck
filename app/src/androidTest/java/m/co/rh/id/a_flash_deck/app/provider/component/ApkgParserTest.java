@@ -34,6 +34,7 @@ import m.co.rh.id.a_flash_deck.app.anki.model.AnkiField;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiNote;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiNotetype;
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -89,6 +90,7 @@ public class ApkgParserTest {
 
     private Provider testProvider;
     private DeckDao deckDao;
+    private CardDao cardDao;
     private File tempDir;
 
     @Before
@@ -115,6 +117,7 @@ public class ApkgParserTest {
         });
 
         deckDao = testProvider.get(DeckDao.class);
+        cardDao = testProvider.get(CardDao.class);
     }
 
     @After
@@ -365,10 +368,10 @@ public class ApkgParserTest {
         deckDao.insertDeck(deck2);
 
         Card card1 = AnkiTestDataHelper.createTestCard(deck1.id, 1, "Question 1", "Answer 1");
-        deckDao.insertCard(card1);
+        cardDao.insertCard(card1);
 
         Card card2 = AnkiTestDataHelper.createTestCard(deck2.id, 1, "Question 2", "Answer 2");
-        deckDao.insertCard(card2);
+        cardDao.insertCard(card2);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck1, deck2)));
         assertNotNull(apkgFile);
@@ -409,7 +412,7 @@ public class ApkgParserTest {
         deckDao.insertDeck(deck);
 
         Card card = AnkiTestDataHelper.createTestCard(deck.id, 1, "Question", "Answer");
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         assertNotNull(apkgFile);
@@ -472,7 +475,7 @@ public class ApkgParserTest {
         deckDao.insertDeck(deck);
 
         Card card = AnkiTestDataHelper.createTestCard(deck.id, 1, "Question", "Answer");
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         return apkgFile;
@@ -578,8 +581,8 @@ public class ApkgParserTest {
 
         Card card1 = AnkiTestDataHelper.createTestCard(deck.id, 1, "Question 1", "Answer 1");
         Card card2 = AnkiTestDataHelper.createTestCard(deck.id, 2, "Question 2", "Answer 2");
-        deckDao.insertCard(card1);
-        deckDao.insertCard(card2);
+        cardDao.insertCard(card1);
+        cardDao.insertCard(card2);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         return apkgFile;
@@ -597,7 +600,7 @@ public class ApkgParserTest {
         deckDao.insertDeck(deck);
 
         Card card = AnkiTestDataHelper.createTestCard(deck.id, 1, "Question", "Answer");
-        deckDao.insertCard(card);
+        cardDao.insertCard(card);
 
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(deck)));
         return apkgFile;

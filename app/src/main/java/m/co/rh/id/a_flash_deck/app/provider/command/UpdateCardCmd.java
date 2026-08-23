@@ -30,7 +30,7 @@ public class UpdateCardCmd extends NewCardCmd {
     @Override
     public Single<Card> execute(Card card) {
         return Single.fromCallable(() -> {
-                    mDeckDao.updateCard(card);
+                    mCardDao.updateCard(card);
                     mDeckChangeNotifier.cardUpdated(card);
                     return card;
                 })

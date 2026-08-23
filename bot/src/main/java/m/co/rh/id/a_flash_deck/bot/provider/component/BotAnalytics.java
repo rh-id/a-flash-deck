@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.bot.dao.CardLogDao;
 import m.co.rh.id.a_flash_deck.bot.dao.SuggestedCardDao;
@@ -57,7 +57,7 @@ public class BotAnalytics implements ProviderDisposable {
     private CardLogDao mCardLogDao;
     private SuggestedCardDao mSuggestedCardDao;
     private SuggestedCardChangeNotifier mSuggestedCardChangeNotifier;
-    private DeckDao mDeckDao;
+    private CardDao mCardDao;
     private DeckChangeNotifier mDeckChangeNotifier;
     private CompositeDisposable mCompositeDisposable;
 
@@ -67,7 +67,7 @@ public class BotAnalytics implements ProviderDisposable {
         mCardLogDao = provider.get(CardLogDao.class);
         mSuggestedCardDao = provider.get(SuggestedCardDao.class);
         mSuggestedCardChangeNotifier = provider.get(SuggestedCardChangeNotifier.class);
-        mDeckDao = provider.get(DeckDao.class);
+        mCardDao = provider.get(CardDao.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mCompositeDisposable = new CompositeDisposable();
         init();
@@ -89,14 +89,14 @@ public class BotAnalytics implements ProviderDisposable {
                 .subscribe(deck -> {
                     mExecutorService.execute(() -> {
                         List<Long> cardLogCardIds = mCardLogDao.findAllCardLogCardIds();
-                        List<Long> existingCardIds = mDeckDao.findCardIdsByCardIds(cardLogCardIds);
+                        List<Long> existingCardIds = mCardDao.findCardIdsByCardIds(cardLogCardIds);
                         Set<Long> removedCardIds = new LinkedHashSet<>(cardLogCardIds);
                         removedCardIds.removeAll(existingCardIds);
                         mCardLogDao.deleteCardLogsByCardIds(new ArrayList<>(removedCardIds));
                     });
                     mExecutorService.execute(() -> {
                         List<Long> suggestedCardIds = mSuggestedCardDao.findAllSuggestedCardCardIds();
-                        List<Long> existingCardIds = mDeckDao.findCardIdsByCardIds(suggestedCardIds);
+                        List<Long> existingCardIds = mCardDao.findCardIdsByCardIds(suggestedCardIds);
                         Set<Long> removedCardIds = new LinkedHashSet<>(suggestedCardIds);
                         removedCardIds.removeAll(existingCardIds);
                         mSuggestedCardDao.deleteSuggestedCardByCardIds(new ArrayList<>(removedCardIds));

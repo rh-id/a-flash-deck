@@ -29,6 +29,7 @@ import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedCard;
 import m.co.rh.id.a_flash_deck.ai.model.AiGeneratedDeck;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -49,6 +50,7 @@ public abstract class BaseGenerateDeckWorker extends Worker {
     protected Deck saveAiDeckToDatabase(AiGeneratedDeck aiDeck) {
         Provider provider = getProvider();
         DeckDao deckDao = provider.get(DeckDao.class);
+        CardDao cardDao = provider.get(CardDao.class);
         DeckChangeNotifier deckChangeNotifier = provider.get(DeckChangeNotifier.class);
 
         Deck deck = new Deck();
@@ -66,7 +68,7 @@ public abstract class BaseGenerateDeckWorker extends Worker {
             card.question = aiCard.question;
             card.answer = aiCard.answer;
             card.isReversibleQA = false;
-            deckDao.insertCard(card);
+            cardDao.insertCard(card);
             deckChangeNotifier.cardAdded(card);
         }
 

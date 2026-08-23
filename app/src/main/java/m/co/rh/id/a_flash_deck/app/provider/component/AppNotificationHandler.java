@@ -50,6 +50,7 @@ import m.co.rh.id.a_flash_deck.app.receiver.NotificationPlayVoiceReceiver;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
+import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
@@ -58,7 +59,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
-import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepo;
+import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepository;
 import m.co.rh.id.a_flash_deck.bot.provider.component.BotAnalytics;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -66,9 +67,10 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class AppNotificationHandler implements IAppNotificationHandler {
     private final Context mAppContext;
     private final ProviderValue<ExecutorService> mExecutorService;
-    private final ProviderValue<AndroidNotificationRepo> mAndroidNotificationRepo;
+    private final ProviderValue<AndroidNotificationRepository> mAndroidNotificationRepo;
     private final ProviderValue<NotificationTimerDao> mNotificationTimerDao;
     private final ProviderValue<DeckDao> mDeckDao;
+    private final ProviderValue<CardDao> mCardDao;
     private final ProviderValue<CardMediaStore> mCardMediaStore;
     private final ProviderValue<AudioPlayer> mAudioPlayer;
     private final ProviderValue<BotAnalytics> mBotAnalytics;
@@ -80,9 +82,10 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     public AppNotificationHandler(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
-        mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);
+        mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepository.class);
         mNotificationTimerDao = provider.lazyGet(NotificationTimerDao.class);
         mDeckDao = provider.lazyGet(DeckDao.class);
+        mCardDao = provider.lazyGet(CardDao.class);
         mCardMediaStore = provider.lazyGet(CardMediaStore.class);
         mAudioPlayer = provider.lazyGet(AudioPlayer.class);
         mBotAnalytics = provider.lazyGet(BotAnalytics.class);
@@ -338,7 +341,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                             NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
                             if (notificationTimer != null && notificationTimer.currentCardId != null) {
                                 mBotAnalytics.get().trackOpenNotification(notificationTimer.currentCardId);
-                                Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                                Card card = mCardDao.get().getCardByCardId(notificationTimer.currentCardId);
                                 if (card != null) {
                                     mNotificationTimerSubject.onNext(new NotificationTimerEvent(notificationTimer, card));
                                 }
@@ -428,7 +431,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
                         NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
                         if (notificationTimer != null && notificationTimer.currentCardId != null) {
-                            Card card = mDeckDao.get().getCardByCardId(notificationTimer.currentCardId);
+                            Card card = mCardDao.get().getCardByCardId(notificationTimer.currentCardId);
                             if (card != null && card.questionVoice != null) {
                                 mAudioPlayer.get().play(Uri.fromFile(mCardMediaStore.get().getCardQuestionVoice(card.questionVoice)));
                             }
