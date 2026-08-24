@@ -18,49 +18,34 @@
 package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingPage;
-import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
-import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
+import m.co.rh.id.a_flash_deck.app.provider.component.ExportImportCoordinator;
+import m.co.rh.id.a_flash_deck.app.provider.component.TestWorkflowCoordinator;
+import m.co.rh.id.a_flash_deck.app.ui.component.OngoingTestBannerSV;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
-import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
-import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
-import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
-import m.co.rh.id.a_flash_deck.bot.entity.SuggestedCard;
-import m.co.rh.id.a_flash_deck.bot.provider.command.DeleteSuggestedCardCmd;
 import m.co.rh.id.a_flash_deck.bot.provider.notifier.SuggestedCardChangeNotifier;
-import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -72,7 +57,6 @@ import m.co.rh.id.aprovider.Provider;
 
 public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, View.OnClickListener, DrawerLayout.DrawerListener, NavOnActivityResult<Activity> {
     private static final String TAG = HomePage.class.getName();
-    private static final int REQUEST_CODE_IMPORT_DECK = 1;
 
     @NavInject
     private transient INavigator mNavigator;
@@ -83,19 +67,19 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient Provider mSvProvider;
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
-    private transient TestStateModifier mTestStateModifier;
-    private transient TestChangeNotifier mTestChangeNotifier;
-    private transient SuggestedCardChangeNotifier mSuggestedCardChangeNotifier;
     private transient CommonNavConfig mCommonNavConfig;
     private transient NewCardCmd mNewCardCmd;
-    private transient DeleteSuggestedCardCmd mDeleteSuggestedCardCmd;
-    private transient ExportImportCmd mExportImportCmd;
     private transient IAppNotificationHandler mAppNotificationHandler;
     private transient DrawerLayout mDrawerLayout;
-    private transient BehaviorSubject<Optional<TestState>> mTestStateSubject;
+    @NavInject
+    private OngoingTestBannerSV mOngoingTestBannerSV;
+    private transient TestWorkflowCoordinator mTestWorkflowCoordinator;
+    private transient ExportImportCoordinator mExportImportCoordinator;
+    private transient SuggestedCardChangeNotifier mSuggestedCardChangeNotifier;
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
+        mOngoingTestBannerSV = new OngoingTestBannerSV();
     }
 
     @Override
@@ -103,15 +87,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mSvProvider = provider.get(IStatefulViewProvider.class);
         mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
-        mTestStateModifier = mSvProvider.get(TestStateModifier.class);
-        mTestChangeNotifier = mSvProvider.get(TestChangeNotifier.class);
-        mSuggestedCardChangeNotifier = mSvProvider.get(SuggestedCardChangeNotifier.class);
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mNewCardCmd = mSvProvider.get(NewCardCmd.class);
-        mDeleteSuggestedCardCmd = mSvProvider.get(DeleteSuggestedCardCmd.class);
-        mExportImportCmd = mSvProvider.get(ExportImportCmd.class);
         mAppNotificationHandler = mSvProvider.get(IAppNotificationHandler.class);
-        mTestStateSubject = BehaviorSubject.create();
+        mSuggestedCardChangeNotifier = mSvProvider.get(SuggestedCardChangeNotifier.class);
+        mTestWorkflowCoordinator = new TestWorkflowCoordinator(mSvProvider, mRxDisposer);
+        mExportImportCoordinator = new ExportImportCoordinator(mSvProvider, mRxDisposer);
     }
 
     @Override
@@ -156,56 +137,15 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         generateDeckAiButton.setOnClickListener(this);
         generateDeckFromExistingAiButton.setOnClickListener(this);
         generateDeckFromImageAiButton.setOnClickListener(this);
-        ViewGroup cardOnGoingTest = rootLayout.findViewById(R.id.container_card_ongoing_test);
-        cardOnGoingTest.setOnClickListener(this);
+
+        // Mount ongoing test banner into container
+        ViewGroup ongoingTestContainer = rootLayout.findViewById(R.id.container_card_ongoing_test);
+        ongoingTestContainer.addView(mOngoingTestBannerSV.buildView(activity, ongoingTestContainer));
+
         View flashBotContainer = rootLayout.findViewById(R.id.container_card_flash_bot);
         Button flashBotAcceptButton = rootLayout.findViewById(R.id.button_flash_bot_accept);
         flashBotAcceptButton.setOnClickListener(this);
-        mRxDisposer
-                .add("createView_onGoingTest",
-                        mTestStateSubject.observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(testStateOptional -> {
-                                    if (testStateOptional.isPresent()) {
-                                        TestState testState = testStateOptional.get();
-                                        String totalCards = (testState.getCurrentCardIndex() + 1) + " / " + testState.getTotalCards();
-                                        cardOnGoingTest.setVisibility(View.VISIBLE);
-                                        TextView textTotalCard = cardOnGoingTest.findViewById(R.id.text_total_cards);
-                                        textTotalCard.setText(totalCards);
-                                    } else {
-                                        cardOnGoingTest.setVisibility(View.GONE);
-                                    }
-                                }));
-        mRxDisposer
-                .add("createView_loadActiveTest",
-                        mTestStateModifier.getActiveTest()
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((testStateOptional, throwable) -> {
-                                    Context svContext = mSvProvider.getContext();
-                                    if (throwable != null) {
-                                        mLogger.e(TAG, svContext.getString(R.string.error_loading_test), throwable);
-                                    } else {
-                                        mTestStateSubject.onNext(testStateOptional);
-                                    }
-                                }));
-        mRxDisposer
-                .add("createView_onStartTest",
-                        mTestChangeNotifier.getStartTestEventFlow()
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(testEvent ->
-                                        mTestStateSubject.onNext(Optional.of(testEvent.getTestState())))
-                );
-        mRxDisposer
-                .add("createView_onStopTest",
-                        mTestChangeNotifier.getStopTestEventFlow()
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(testEvent -> mTestStateSubject.onNext(Optional.empty()))
-                );
-        mRxDisposer
-                .add("createView_onTestStateChanged",
-                        mTestChangeNotifier.getTestStateChangeFlow()
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(testState -> mTestStateSubject.onNext(Optional.of(testState)))
-                );
+
         mRxDisposer
                 .add("createView_onSuggestedCardChanged",
                         mSuggestedCardChangeNotifier
@@ -282,196 +222,23 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                     })
                     );
         } else if (id == R.id.button_start_test) {
-            mRxDisposer
-                    .add("onClick_startTest",
-                            mTestStateModifier.getActiveTest()
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((testStateOpt, throwable) -> {
-                                        if (throwable != null) {
-                                            String title = mSvProvider.getContext().getString(R.string.title_error);
-                                            mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    mCommonNavConfig.args_commonMessageDialog(title, throwable.getMessage()));
-                                            mLogger.e(TAG, throwable.getMessage(), throwable);
-                                        } else {
-                                            if (testStateOpt.isPresent()) {
-                                                Context svContext = mSvProvider.getContext();
-                                                String title = svContext.getString(R.string.title_confirm);
-                                                String content = svContext.getString(R.string.test_session_exist_confirm_start_new);
-                                                mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                                                        mCommonNavConfig.args_commonBooleanDialog(title, content),
-                                                        (navigator, navRoute, activity, currentView) -> {
-                                                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                                                            CommonNavConfig commonNavConfig1 = provider.get(CommonNavConfig.class);
-                                                            if (commonNavConfig1.result_commonBooleanDialog(navRoute)) {
-                                                                CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                                                compositeDisposable.add(provider.get(TestStateModifier.class).stopActiveTest()
-                                                                        .observeOn(AndroidSchedulers.mainThread())
-                                                                        .subscribe((testState, throwable1) -> {
-                                                                            if (throwable1 != null) {
-                                                                                String title1 = provider.getContext().getString(R.string.title_error);
-                                                                                navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                                                        commonNavConfig1.args_commonMessageDialog(title1, throwable1.getMessage()));
-                                                                                provider.get(ILogger.class).e(TAG, throwable1.getMessage(), throwable1);
-                                                                            } else {
-                                                                                startTestWorkflow(navigator);
-                                                                            }
-                                                                            compositeDisposable.dispose();
-                                                                        })
-                                                                );
-                                                            }
-                                                        });
-                                            } else {
-                                                startTestWorkflow(mNavigator);
-                                            }
-                                        }
-                                    })
-                    );
-
+            mTestWorkflowCoordinator.startTestFlow(mNavigator);
         } else if (id == R.id.button_add_notification) {
             NotificationTimerListPage.addNewNotificationTimerWorkflow(mNavigator);
         } else if (id == R.id.button_export_deck) {
-            handleExportClick(false, "File exported: ");
+            mExportImportCoordinator.exportFlow(mNavigator, false);
         } else if (id == R.id.button_export_anki) {
-            handleExportClick(true, "Anki file exported: ");
+            mExportImportCoordinator.exportFlow(mNavigator, true);
         } else if (id == R.id.button_import_deck) {
-            Activity activity = mNavigator.getActivity();
-            String chooserMessage = activity.getString(R.string.title_import_deck);
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
-            intent.setType("*/*");
-            String[] mimeTypes = {"application/zip", "application/octet-stream", "application/vnd.anki.apkg"};
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-            intent = Intent.createChooser(intent, chooserMessage);
-            activity.startActivityForResult(intent, REQUEST_CODE_IMPORT_DECK);
+            mExportImportCoordinator.importFlow(mNavigator.getActivity());
         } else if (id == R.id.button_generate_deck_ai) {
-            GeminiService geminiService = mSvProvider.get(GeminiService.class);
-            if (geminiService.isConfigured()) {
-                mNavigator.push(Routes.AI_GENERATE_DECK_PAGE);
-            } else {
-                String title = mSvProvider.getContext().getString(R.string.title_error);
-                String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
-                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                        mCommonNavConfig.args_commonMessageDialog(title, content));
-            }
+            pushAiRouteIfConfigured(Routes.AI_GENERATE_DECK_PAGE);
         } else if (id == R.id.button_generate_deck_from_existing_ai) {
-            GeminiService geminiService = mSvProvider.get(GeminiService.class);
-            if (geminiService.isConfigured()) {
-                mNavigator.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
-                        (navigator, navRoute, activity, currentView) -> {
-                            DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute.getRouteResult());
-                            if (result != null && !result.getSelectedDeck().isEmpty()) {
-                                ArrayList<Long> selectedDeckIds = new ArrayList<>();
-                                for (Deck deck : result.getSelectedDeck()) {
-                                    selectedDeckIds.add(deck.id);
-                                }
-                                navigator.push(Routes.AI_GENERATE_DECK_FROM_EXISTING_PAGE,
-                                        GenerateDeckFromExistingPage.Args.with(selectedDeckIds));
-                            }
-                        });
-            } else {
-                String title = mSvProvider.getContext().getString(R.string.title_error);
-                String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
-                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                        mCommonNavConfig.args_commonMessageDialog(title, content));
-            }
+            pushAiRouteIfConfiguredWithDeckSelect();
         } else if (id == R.id.button_generate_deck_from_image_ai) {
-            GeminiService geminiService = mSvProvider.get(GeminiService.class);
-            if (geminiService.isConfigured()) {
-                mNavigator.push(Routes.AI_GENERATE_DECK_FROM_IMAGE_PAGE);
-            } else {
-                String title = mSvProvider.getContext().getString(R.string.title_error);
-                String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
-                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                        mCommonNavConfig.args_commonMessageDialog(title, content));
-            }
+            pushAiRouteIfConfigured(Routes.AI_GENERATE_DECK_FROM_IMAGE_PAGE);
         } else if (id == R.id.button_flash_bot_accept) {
-            mRxDisposer
-                    .add("onClick_flashBot_startTest",
-                            mTestStateModifier.getActiveTest()
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((testStateOpt, throwable) -> {
-                                        if (throwable != null) {
-                                            String title = mSvProvider.getContext().getString(R.string.title_error);
-                                            mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    mCommonNavConfig.args_commonMessageDialog(title, throwable.getMessage()));
-                                            mLogger.e(TAG, throwable.getMessage(), throwable);
-                                        } else {
-                                            if (testStateOpt.isPresent()) {
-                                                Context svContext = mSvProvider.getContext();
-                                                String title = svContext.getString(R.string.title_confirm);
-                                                String content = svContext.getString(R.string.test_session_exist_confirm_start_new);
-                                                mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
-                                                        mCommonNavConfig.args_commonBooleanDialog(title, content),
-                                                        (navigator, navRoute, activity, currentView) -> {
-                                                            Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                                                            CommonNavConfig commonNavConfig1 = provider.get(CommonNavConfig.class);
-                                                            if (commonNavConfig1.result_commonBooleanDialog(navRoute)) {
-                                                                Context context = provider.getContext();
-                                                                CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                                                 ExecutorService executorService = provider.get(ExecutorService.class);
-                                                                 compositeDisposable.add(
-                                                                         provider.get(TestStateModifier.class).stopActiveTest()
-                                                                                 .subscribeOn(Schedulers.from(executorService))
-                                                                                 .flatMap(testState1 -> {
-                                                                                     List<SuggestedCard> suggestedCardList = provider.get(SuggestedCardChangeNotifier.class)
-                                                                                             .getSuggestedCard();
-                                                                                     List<Long> cardIds = new ArrayList<>();
-                                                                                     if (!suggestedCardList.isEmpty()) {
-                                                                                         for (SuggestedCard suggestedCard : suggestedCardList) {
-                                                                                             cardIds.add(suggestedCard.cardId);
-                                                                                         }
-                                                                                     }
-                                                                                     return provider.get(TestStateModifier.class).startTestWithCardIds(cardIds);
-                                                                                 })
-                                                                                 .observeOn(AndroidSchedulers.mainThread()).subscribe((testState, throwable1) -> {
-                                                                            if (throwable1 != null) {
-                                                                                Throwable cause1 = throwable1.getCause();
-                                                                                if (cause1 == null)
-                                                                                    cause1 = throwable1;
-                                                                                provider.get(ILogger.class).e(TAG,
-                                                                                        context.getString(R.string.error_starting_test), cause1);
-                                                                            } else {
-                                                                                navigator.push(Routes.TEST);
-                                                                                provider.get(DeleteSuggestedCardCmd.class)
-                                                                                        .executeDeleteAll();
-                                                                            }
-                                                                            compositeDisposable.dispose();
-                                                                        })
-                                                                );
-                                                            }
-                                                        });
-                                            } else {
-                                                List<SuggestedCard> suggestedCardList = mSuggestedCardChangeNotifier
-                                                        .getSuggestedCard();
-                                                List<Long> cardIds = new ArrayList<>();
-                                                if (!suggestedCardList.isEmpty()) {
-                                                    for (SuggestedCard suggestedCard : suggestedCardList) {
-                                                        cardIds.add(suggestedCard.cardId);
-                                                    }
-                                                }
-                                                mRxDisposer
-                                                        .add("onClick_flashBot_startTest_withCardIds",
-                                                                mTestStateModifier.startTestWithCardIds(cardIds)
-                                                                        .observeOn(AndroidSchedulers.mainThread())
-                                                                        .subscribe((testState, throwable1) -> {
-                                                                            if (throwable1 != null) {
-                                                                                Throwable cause1 = throwable1.getCause();
-                                                                                if (cause1 == null)
-                                                                                    cause1 = throwable1;
-                                                                                mLogger.e(TAG,
-                                                                                        mSvProvider.getContext()
-                                                                                                .getString(R.string.error_starting_test), cause1);
-                                                                            } else {
-                                                                                mNavigator.push(Routes.TEST);
-                                                                                mDeleteSuggestedCardCmd
-                                                                                        .executeDeleteAll();
-                                                                            }
-                                                                        })
-                                                        );
-                                            }
-                                        }
-                                    })
-                    );
+            mTestWorkflowCoordinator.startTestWithSuggestionsFlow(mNavigator);
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
         } else if (id == R.id.menu_donations) {
@@ -482,8 +249,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             mNavigator.push(Routes.CARDS);
         } else if (id == R.id.menu_notification_timers) {
             mNavigator.push(Routes.NOTIFICATION_TIMERS);
-        } else if (id == R.id.container_card_ongoing_test) {
-            mNavigator.push(Routes.TEST);
         } else {
             // if not match other ids, this is toolbar internal button id onclick: mAppBarSV.setNavigationOnClick(this);
             if (!mDrawerLayout.isOpen()) {
@@ -492,75 +257,46 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         }
     }
 
-    private void handleExportClick(boolean exportAnki, String logPrefix) {
-        mNavigator.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
-                (navigator, navRoute, activity, currentView) -> {
-                    DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute);
-                    if (result != null) {
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                        Context context = provider.getContext();
-                        CompositeDisposable compositeDisposable = new CompositeDisposable();
-                        Single<File> exportSingle = exportAnki ?
-                                provider.get(ExportImportCmd.class).exportFileAnki(result.getSelectedDeck()) :
-                                provider.get(ExportImportCmd.class).exportFile(result.getSelectedDeck());
-                        compositeDisposable.add(exportSingle
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((file, throwable) -> {
-                                    if (throwable != null) {
-                                        if (throwable.getCause() instanceof ValidationException) {
-                                            String title = context.getString(R.string.error);
-                                            navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    provider.get(CommonNavConfig.class).args_commonMessageDialog(title,
-                                                            throwable.getCause().getMessage()));
-                                        } else {
-                                            provider.get(ILogger.class)
-                                                    .e(TAG, throwable.getMessage(), throwable);
-                                        }
-                                    } else {
-                                        provider.get(ILogger.class)
-                                                .d(TAG, logPrefix + file.getAbsolutePath());
-                                        UiUtils.shareFile(context, file, file.getName());
-                                    }
-                                    compositeDisposable.dispose();
-                                })
-                        );
-                    }
-                });
+    /**
+     * AI gating helper method that checks if Gemini API is configured before pushing a route.
+     */
+    private void pushAiRouteIfConfigured(String routeId) {
+        GeminiService geminiService = mSvProvider.get(GeminiService.class);
+        if (geminiService.isConfigured()) {
+            mNavigator.push(routeId);
+        } else {
+            String title = mSvProvider.getContext().getString(R.string.title_error);
+            String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
+            mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                    mCommonNavConfig.args_commonMessageDialog(title, content));
+        }
     }
 
-    private void startTestWorkflow(INavigator navigatorInstance) {
-        navigatorInstance.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
-                (navigator, navRoute, activity, currentView) -> {
-                    DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute.getRouteResult());
-                    if (result != null) {
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                        ArrayList<Deck> deckArrayList = result.getSelectedDeck();
-                        CompositeDisposable compositeDisposable = new CompositeDisposable();
-                        compositeDisposable.add(provider.get(TestStateModifier.class)
-                                .startTest(deckArrayList)
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((testState, throwable) -> {
-                                    if (throwable != null) {
-                                        Context context = provider.getContext();
-                                        if (throwable.getCause() instanceof ValidationException) {
-                                            String title = context.getString(R.string.title_error);
-                                            CommonNavConfig commonNavConfig = provider.get(CommonNavConfig.class);
-                                            navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                    commonNavConfig.args_commonMessageDialog(title,
-                                                            throwable.getCause().getMessage()),
-                                                    (navigator1, navRoute1, activity1, currentView1) -> startTestWorkflow(navigator1));
-                                        } else {
-                                            provider.get(ILogger.class).e(TAG,
-                                                    context.getString(R.string.error_starting_test), throwable);
-                                        }
-                                    } else {
-                                        navigator.push(Routes.TEST);
-                                    }
-                                    compositeDisposable.dispose();
-                                })
-                        );
-                    }
-                });
+    /**
+     * AI gating helper for generate deck from existing AI.
+     * Checks configuration BEFORE pushing DECK_SELECT_PAGE, preserving exact behavior.
+     */
+    private void pushAiRouteIfConfiguredWithDeckSelect() {
+        GeminiService geminiService = mSvProvider.get(GeminiService.class);
+        if (geminiService.isConfigured()) {
+            mNavigator.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
+                    (navigator, navRoute, activity, currentView) -> {
+                        DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute.getRouteResult());
+                        if (result != null && !result.getSelectedDeck().isEmpty()) {
+                            ArrayList<Long> selectedDeckIds = new ArrayList<>();
+                            for (Deck deck : result.getSelectedDeck()) {
+                                selectedDeckIds.add(deck.id);
+                            }
+                            navigator.push(Routes.AI_GENERATE_DECK_FROM_EXISTING_PAGE,
+                                    GenerateDeckFromExistingPage.Args.with(selectedDeckIds));
+                        }
+                    });
+        } else {
+            String title = mSvProvider.getContext().getString(R.string.title_error);
+            String content = mSvProvider.getContext().getString(R.string.error_api_key_not_configured);
+            mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                    mCommonNavConfig.args_commonMessageDialog(title, content));
+        }
     }
 
     @Override
@@ -569,6 +305,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         if (mAppBarSV != null) {
             mAppBarSV.dispose(activity);
             mAppBarSV = null;
+        }
+        if (mOngoingTestBannerSV != null) {
+            mOngoingTestBannerSV.dispose(activity);
+            mOngoingTestBannerSV = null;
         }
         if (mSvProvider != null) {
             mSvProvider.dispose();
@@ -615,22 +355,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     @Override
     public void onActivityResult(View currentView, Activity activity, INavigator INavigator, int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE_IMPORT_DECK) {
+        if (requestCode == ExportImportCoordinator.REQUEST_CODE_IMPORT_DECK) {
             if (resultCode == Activity.RESULT_OK) {
-                Context context = activity.getApplicationContext();
-                mRxDisposer.add("onActivityResult_importFile"
-                        , mExportImportCmd.importFile(data.getData())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((deckModels, throwable) -> {
-                                    if (throwable != null) {
-                                        mLogger
-                                                .e(TAG, context.getString(R.string.error_failed_to_open_file)
-                                                        , throwable);
-                                    } else {
-                                        mLogger.i(TAG,
-                                                context.getString(R.string.success_import_file, deckModels.size()));
-                                    }
-                                }));
+                mExportImportCoordinator.onImportResult(data.getData());
             }
         }
     }
