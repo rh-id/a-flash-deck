@@ -428,14 +428,9 @@
   copyrightHolder: JetBrains s.r.o. and Kotlin Programming Language contributors
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://www.jetbrains.org- artifact: com.atlassian.commonmark:commonmark:+
+  url: http://www.jetbrains.org
+- artifact: com.atlassian.commonmark:commonmark:+
   name: commonmark-java core
-  copyrightHolder: Atlassian
-  license: BSD 2-Clause License
-  licenseUrl: https://opensource.org/licenses/BSD-2-Clause
-  url: https://github.com/commonmark/commonmark.java
-- artifact: com.atlassian.commonmark:commonmark-ext-gfm-tables:+
-  name: commonmark-java extension for tables
   copyrightHolder: Atlassian
   license: BSD 2-Clause License
   licenseUrl: https://opensource.org/licenses/BSD-2-Clause
@@ -446,3 +441,21 @@
   license: BSD 2-Clause License
   licenseUrl: https://opensource.org/licenses/BSD-2-Clause
   url: https://github.com/commonmark/commonmark.java
+- artifact: com.atlassian.commonmark:commonmark-ext-gfm-tables:+
+  name: commonmark-java extension for tables
+  copyrightHolder: Atlassian
+  license: BSD 2-Clause License
+  licenseUrl: https://opensource.org/licenses/BSD-2-Clause
+  url: https://github.com/commonmark/commonmark.java
+- artifact: com.android.tools:desugar_jdk_libs:+
+  name: desugar_jdk_libs
+  copyrightHolder: Google LLC
+  license: GNU General Public License, version 2, with the Classpath Exception
+  licenseUrl: https://openjdk.org/legal/gplv2+ce.html
+  url: https://github.com/google/desugar_jdk_libs
+- artifact: ru.noties:jlatexmath-android:+
+  name: jlatexmath-android
+  copyrightHolder: DENIZET Calixte, Kris Coolsaet, Nico Van Cleemput, Kurt Vermeulen, Universiteit Gent
+  license: GNU General Public License, version 2, with linking exception
+  licenseUrl: https://github.com/noties/jlatexmath-android/blob/master/LICENSE
+  url: https://github.com/noties/jlatexmath-android
