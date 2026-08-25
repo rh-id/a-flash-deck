@@ -290,6 +290,7 @@ Navigation is managed by the `a-navigator` library:
 The app uses Room Persistence Library with two databases:
 
 #### AppDatabase (base module)
+- **Version**: 14 (includes auto-migration from 12→13 that removed persisted `isReversed` column from CARD table; `isReversed` is now a runtime-only `@Ignore` field, with reversible behavior using persisted `is_reversible_qa` flag only)
 - **Entities**:
   - `Deck`: Collection of flash cards
   - `Card`: Individual flash card with question/answer content, optional image and voice attachments, and a reversible-QA flag
@@ -495,11 +496,15 @@ app/src/main/java/m/co/rh/id/a_flash_deck/app/
 │   ├── StatefulViewProvider.java
 │   ├── StatefulViewProviderModule.java
 │   ├── command/
-│   ├── component/ (AnkiExporter, AnkiImporter, AppNotificationHandler, AppShortcutHandler)
+│   ├── component/ (AnkiExporter, AnkiImporter, AppNotificationHandler, AppShortcutHandler, ExportImportCoordinator, TestWorkflowCoordinator)
 │   └── modifier/
 ├── ui/
 │   ├── page/ (StatefulView pages)
-│   └── component/ (UI components)
+│   └── component/ (UI components organized into sub-packages)
+│       ├── OngoingTestBannerSV.java
+│       ├── card/ (CardItemSV, CardListSV, CardRecyclerViewAdapter, MarkdownEditField, CardMediaField)
+│       ├── deck/ (DeckItemSV, DeckListSV, DeckRecyclerViewAdapter)
+│       └── settings/ (LicensesMenuSV, LicensesPage, LogLineRecyclerViewAdapter, LogMenuSV, LogPage, NotificationTimeMenuSV, ThemeMenuSV, VersionMenuSV)
 └── receiver/ (NotificationDeleteReceiver, NotificationPlayVoiceReceiver)
 
 base/src/main/java/m/co/rh/id/a_flash_deck/base/
@@ -621,7 +626,7 @@ The project has three GitHub Actions workflows:
 
 ### Fastlane
 
-The project uses Fastlane to manage the app's metadata for the Google Play Store. This includes the app's title, description, screenshots, and changelogs. The metadata is stored in the `fastlane/metadata/android` directory and is localized for multiple languages (including en-US, id, de-DE, fr-FR, it-IT, rm, is-IS, et, nb-NO, nn-NO).
+The project uses Fastlane to manage the app's metadata for the Google Play Store. This includes the app's title, description, screenshots, and changelogs. The metadata is stored in the `fastlane/metadata/android` directory and is localized for multiple languages (including en-US, id, de-DE, fr-FR, it-IT, rm, is-IS, et, nb-NO, nn-NO, zh-CN).
 
 ## How to Build
 
@@ -639,6 +644,8 @@ The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as na
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
+
+All source files include GPL v3 headers, and the build process regenerates the open-source-licenses page via a custom Gradle task (`gradle/license-html-generator.gradle`) applied in `app/build.gradle`.
 
 ## Support this project
 Consider donation to support this project
