@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="name_is_required">名称不能为空</string>
+    <string name="error_no_deck_selected">未选择牌组</string>
+    <string name="title_add_notification_timer">添加通知定时器</string>
+    <string name="save">保存</string>
+    <string name="form_name">名称</string>
+    <string name="notification_period_in_minutes">通知间隔（分钟）</string>
+    <string name="title_error">错误</string>
+    <string name="success_adding_new_notification_timer">通知定时器 %s 已成功添加</string>
+    <string name="error_no_card_from_deck">所选牌组中没有卡片</string>
+    <string name="error_loading_decks">加载牌组时出错</string>
+    <string name="title_confirm">确认</string>
+    <string name="confirm_delete_notification_timer">删除通知定时器 %s ？</string>
+    <string name="error_deleting_notification_timer">删除通知定时器时出错</string>
+    <string name="success_deleting_notification_timer">通知定时器 %s 已成功删除</string>
+    <string name="search_desc">搜索： </string>
+    <string name="hint_type_to_search">在此输入搜索内容</string>
+    <string name="title_notification_timer_list">通知定时器列表</string>
+    <string name="notification_period_every_x_minutes">每 %d 分钟</string>
+    <string name="success_updating_new_notification_timer">通知定时器 %s 已成功更新</string>
+</resources>

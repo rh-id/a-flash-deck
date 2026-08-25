@@ -1,0 +1,10 @@
+Release 1.11.1+54
+
+Fixes:
+* Fix thread safety for RxJava subjects across all notifier classes
+* Fix race conditions in TestStateModifier database operations
+* Fix memory leak from nested RxJava subscriptions in CardItemSV and NotificationTimerItemSV
+* Fix CompositeDisposable leak in DeckItemSV, HomePage, and timer detail dialog
+
+Feature:
+* Add translations for German, French, Italian, Romansh, Icelandic, Estonian, Norwegian Bokmål, and Norwegian Nynorsk

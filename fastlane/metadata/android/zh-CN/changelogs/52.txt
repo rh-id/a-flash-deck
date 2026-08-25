@@ -1,0 +1,9 @@
+Release 1.10.0+52
+
+Fixes:
+* Remove duplicate isReversed column to prevent startup crash
+* Use x-goog-api-key header instead of query param for Gemini API auth
+
+Feature:
+* Generate Deck from Existing Decks via Gemini AI
+* Navigate to deck card list when tapping AI deck generation notification

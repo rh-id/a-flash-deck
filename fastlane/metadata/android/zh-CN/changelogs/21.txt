@@ -1,0 +1,9 @@
+Release 1.4.0+21
+
+Feature:
+* You can now record your voice and add it as question material
+
+Fixes:
+* Test page unable to click image
+* Test page & card show page landscape display
+* Various fixes on the image file and export/import

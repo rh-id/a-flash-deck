@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flash_bot">Flash 机器人</string>
+    <string name="flash_bot_message">您好，我准备了一个测试来帮助您学习，想要试试吗？</string>
+</resources>

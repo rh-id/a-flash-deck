@@ -1,0 +1,11 @@
+Release 1.6.7+38
+
+IMPORTANT Fixes:
+* Deadlock issue
+
+
+Release 1.6.6+37
+
+Fixes:
+* Android SDK memory leak
+* Optimize app

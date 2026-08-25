@@ -1,0 +1,15 @@
+Release 1.5.1+27
+
+Features:
+* Add back and share button when viewing image
+
+Fixes:
+* Reduce image size when using "Add photo"
+
+
+Release 1.5.0+26
+
+Features:
+* For Android 8 and above, create a shortcut to show random card from deck
+* Add menu to copy and move card when showing a card
+* Update card list UI

@@ -1,0 +1,11 @@
+Release 1.12.0+55
+
+Fixes:
+* Fix LogPage freezing by switching to a RecyclerView
+* Fix LaTeX backslash corruption in Gemini-generated card content
+
+Feature:
+* Render card questions and answers as Markdown with LaTeX math support
+* Tap anywhere on a card row to open the edit page
+* Toggle between rendered and editable text when editing a card's question or answer
+* Target Android 17 (SDK 37) and exclude sensitive data (API key, database) from backups

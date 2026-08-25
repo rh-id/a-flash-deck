@@ -1,0 +1,9 @@
+Release 1.3.3+19
+
+Fix:
+* App sometimes crash for no reason
+
+------ 1.3.2+18 Highlights ------
+
+Fix:
+* Optimize memory usage

@@ -1,0 +1,4 @@
+Release 1.2.2+15
+
+Fix:
+* Notification inconsistent with opened card

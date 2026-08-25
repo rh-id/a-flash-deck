@@ -1,0 +1,16 @@
+Release 1.11.0+53
+
+Fixes:
+* Fix potential API key leakage in Gemini API error responses
+* Fix crash when timer is deleted between scheduling and execution
+* Fix deadlock and memory leak in notification handler
+* Fix TOCTOU race condition in AudioPlayer
+* Fix file corruption in copyFile writing full buffer instead of bytes read
+* Fix pagination bug and answer voice data loss
+* Fix off-by-one substring in media import filename extraction
+* Fix temp file not cleaned up on AudioRecorder initialization failure
+* Enable core library desugaring for AI module
+
+Feature:
+* Add answer voice recording support to card detail page
+* Add Save & Add Another button for streamlined card creation

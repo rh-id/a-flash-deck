@@ -1,0 +1,9 @@
+Release 1.3.0+16
+
+Fix:
+* Start test not shuffle the cards
+* Removed some unused data
+
+Feature:
+* Add and remove image for question and answer
+* Export & import decks and images

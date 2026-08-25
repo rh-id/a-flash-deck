@@ -1,0 +1,7 @@
+Release 1.1.0+12
+
+Fix:
+* Notification open other flash card and not showing
+
+Feature:
+* Allow update notification timer

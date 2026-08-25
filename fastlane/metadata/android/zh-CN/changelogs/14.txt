@@ -1,0 +1,4 @@
+Release 1.2.1+14
+
+Fix:
+* Notification disapear

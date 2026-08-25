@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_topic_is_required">主题不能为空</string>
+    <string name="ai_card_count_range">卡片数量必须至少为 1</string>
+    <string name="title_ai_api_key">API 密钥</string>
+    <string name="hint_api_key">输入您的 Gemini API 密钥</string>
+    <string name="ai_settings">Gemini API 设置</string>
+    <string name="ai_not_configured">AI 未配置。点击以设置。</string>
+    <string name="ai_configured">AI 已配置</string>
+    <string name="title_generate_deck">使用 Gemini 生成牌组</string>
+    <string name="hint_topic">输入主题（例如：第二次世界大战）</string>
+    <string name="hint_card_count">卡片数量</string>
+    <string name="generate">生成</string>
+    <string name="generating_deck">正在生成牌组。</string>
+    <string name="error_generating_deck">生成牌组时出错</string>
+    <string name="success_generating_deck">牌组已生成：%1$s（%2$d 张卡片）</string>
+    <string name="topic_is_required">主题不能为空</string>
+    <string name="remove">移除</string>
+    <string name="select_model">选择模型</string>
+    <string name="title_select_model">选择 AI 模型</string>
+    <string name="model_selected">模型：%s</string>
+    <string name="api_key_saved">API 密钥已保存</string>
+    <string name="api_key_removed">API 密钥已移除</string>
+    <string name="error_saving_api_key">保存 API 密钥时出错</string>
+    <string name="error_api_key_not_configured">请先在设置中配置您的 API 密钥</string>
+    <string name="error_fetching_models">获取模型时出错</string>
+    <string name="error_no_models_available">没有可用的模型</string>
+    <string name="current_model">当前模型：%s</string>
+    <string name="api_key_set">API 密钥已设置。移除后可输入新的密钥。</string>
+    <string name="validating_api_key">正在验证 API 密钥…</string>
+    <string name="error_invalid_api_key">无效的 API 密钥。请检查后重试。</string>
+    <string name="ai_notification_title">AI 牌组生成器</string>
+    <string name="ai_generation_started">正在为 \"%s\" 生成牌组…</string>
+    <string name="ai_generation_success" formatted="false">牌组 \"%s\" 已创建，包含 %s 张卡片</string>
+    <string name="ai_generation_failed" formatted="false">为 \"%s\" 生成牌组失败：%s</string>
+    <string name="title_generate_deck_from_existing">使用 Gemini 从现有牌组生成牌组</string>
+    <string name="summary_selected_decks">%1$d 个牌组，共 %2$d 张卡片</string>
+    <string name="hint_prompt_instructions">如何处理这些卡片？</string>
+    <string name="hint_prompt_instructions_image">提示指令（可选）</string>
+    <string name="hint_max_cards">最多生成卡片数</string>
+    <string name="ai_prompt_is_required">提示不能为空</string>
+    <string name="ai_max_cards_range">最多卡片数必须至少为 1</string>
+    <string name="ai_generation_from_existing_started">正在从现有牌组生成牌组…</string>
+    <string name="ai_generation_from_existing_success" formatted="false">牌组 \"%s\" 已创建，包含 %s 张卡片</string>
+    <string name="ai_generation_from_existing_failed" formatted="false">生成牌组失败：%s</string>
+    <string name="title_generate_deck_from_image">使用 Gemini 从图片生成牌组</string>
+    <string name="hint_add_images">图片（点击下方按钮添加）：</string>
+    <string name="ai_images_required">至少需要一张图片</string>
+    <string name="ai_generate_from_image_started">正在从图片生成牌组…</string>
+    <string name="ai_generate_from_image_success" formatted="false">牌组 \"%s\" 已创建，包含 %s 张卡片</string>
+    <string name="ai_generate_from_image_failed" formatted="false">从图片生成牌组失败：%s</string>
+    <string name="take_photo">拍照</string>
+    <string name="pick_from_gallery">相册</string>
+    <string name="no_images_added">尚未添加图片。最多可添加 10 张图片。</string>
+    <string name="title_generate_deck_from_card">使用 Gemini 从卡片生成牌组</string>
+    <string name="ai_card_preview_question">问：%s</string>
+    <string name="ai_card_preview_answer">答：%s</string>
+    <string name="ai_generation_from_card_started">正在从卡片生成牌组…</string>
+    <string name="ai_generation_from_card_success" formatted="false">牌组 \"%s\" 已创建，包含 %s 张卡片</string>
+    <string name="ai_generation_from_card_failed" formatted="false">从卡片生成牌组失败：%s</string>
+
+    <string-array name="ai_prompt_suggestions">
+        <item>将所有卡片翻译成简体中文</item>
+        <item>为这些问题创建更难的版本</item>
+        <item>使用不同的例子生成相似的卡片</item>
+        <item>将问题转换为填空格式</item>
+        <item>从这些问题创建判断题卡片</item>
+        <item>将答案总结为更短的版本</item>
+        <item>扩展更多高级问题</item>
+        <item>创建学习笔记风格的卡片</item>
+    </string-array>
+
+    <string-array name="ai_image_prompt_suggestions">
+        <item>创建填空题卡片</item>
+        <item>根据问题创建判断题卡片</item>
+        <item>将问题格式化为没有选项的简单问答</item>
+        <item>在答案中包含详细解释</item>
+        <item>根据材料创建更难的问题</item>
+        <item>只关注关键术语和定义</item>
+    </string-array>
+
+    <string-array name="ai_card_prompt_suggestions">
+        <item>创建关于相同主题的相似问题</item>
+        <item>为这张卡片创建更难的版本</item>
+        <item>为这张卡片创建更简单的版本</item>
+        <item>生成相关的后续问题</item>
+        <item>将这张卡片翻译成简体中文</item>
+        <item>将这个问题转换为填空格式</item>
+        <item>从这个问题创建判断题卡片</item>
+        <item>扩展更多关于此主题的高级问题</item>
+    </string-array>
+</resources>

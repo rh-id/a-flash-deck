@@ -1,0 +1,7 @@
+Release 1.15.0+58
+
+Feature:
+* Add a "Generate deck from card" action in the card list to create a new deck from an existing card using Gemini AI, with model selection, prompt suggestions, and max cards setting
+
+Fixes:
+* Fix crashes when tapping, deleting, or playing voice from a timer notification after its timer or card has been deleted
