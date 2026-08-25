@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Uuendus:
+* Lisatud rakenduse liidese tõlge lihtsustatud hiina keeles
+
+Parandused:
+* Täiendatud avatud lähtekoodiga litsentsiteateid; litsentside leht taasluuakse nüüd iga buildi korral

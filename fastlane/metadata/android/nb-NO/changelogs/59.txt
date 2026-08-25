@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Ny funksjon:
+* Lagt til oversettelse på kinesisk (forenklet) for appgrensesnittet
+
+Feilrettinger:
+* Fullførte lisensnotiser for åpen kildekode; lisenssiden genereres nå på nytt ved hver bygging

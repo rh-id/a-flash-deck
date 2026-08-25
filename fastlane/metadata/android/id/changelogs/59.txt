@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Fitur:
+* Menambahkan terjemahan bahasa Mandarin Sederhana untuk antarmuka aplikasi
+
+Perbaikan:
+* Melengkapi pemberitahuan lisensi sumber terbuka; halaman lisensi kini dibuat ulang pada setiap build

@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Nouveauté :
+* Ajout de la traduction en chinois simplifié pour l'interface de l'application
+
+Corrections :
+* Complètement des mentions de licence open source ; la page des licences est désormais régénérée à chaque build

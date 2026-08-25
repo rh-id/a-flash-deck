@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Nova funcziun:
+* Agiuntà la translaziun en chinais simpel per l'interfatscha da l'app
+
+Corecziuns:
+* Cumpletà las notizias da licenza open source; la pagina da licenzas vegn uss generada dad nov a cada compilaziun

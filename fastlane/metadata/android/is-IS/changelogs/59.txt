@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Nýtt:
+* Bætt við þýðingu á einfölduðu kínversku fyrir viðmót appsins
+
+Villuleiðréttingar:
+* Kláraðar leyfisyfirlýsingar opins hugbúnaðar; leyfissíðan er nú búin til aftur í hverri smíð

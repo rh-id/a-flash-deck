@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Neu:
+* Vereinfachte chinesische Übersetzung für die App-Oberfläche hinzugefügt
+
+Fehlerbehebungen:
+* Open-Source-Lizenzhinweise vervollständigt; die Lizenzseite wird nun bei jedem Build neu generiert

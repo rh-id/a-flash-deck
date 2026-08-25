@@ -1,0 +1,7 @@
+Release 1.15.1+59
+
+Feature:
+* Add Simplified Chinese translation for the app interface
+
+Fixes:
+* Complete open-source license notices; the licenses page is now regenerated on every build
