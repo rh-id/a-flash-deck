@@ -58,6 +58,7 @@ import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.ImageHelper;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
 import m.co.rh.id.alogger.AndroidLogger;
 import m.co.rh.id.alogger.ILogger;
@@ -85,6 +86,7 @@ public class ExportImportCmdTest {
                 providerRegistry.registerModule(new TestDatabaseProviderModule(DBNAME));
                 providerRegistry.register(ExecutorService.class, Executors::newSingleThreadExecutor);
                 providerRegistry.register(ILogger.class, () -> new AndroidLogger(ILogger.VERBOSE));
+                providerRegistry.registerLazy(DeckChangeNotifier.class, DeckChangeNotifier::new);
                 providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
                 providerRegistry.registerLazy(ImageHelper.class, () -> new ImageHelper(provider));
                 providerRegistry.registerLazy(CardMediaStore.class, () -> new CardMediaStore(provider));

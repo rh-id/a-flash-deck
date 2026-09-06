@@ -60,6 +60,7 @@ import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -79,6 +80,7 @@ public class ExportImportCmd {
     protected ILogger mLogger;
     protected CardDao mCardDao;
     protected DeckCardRepository mDeckCardRepo;
+    protected DeckChangeNotifier mDeckChangeNotifier;
     protected FileHelper mFileHelper;
     protected CardMediaStore mCardMediaStore;
 
@@ -88,6 +90,7 @@ public class ExportImportCmd {
         mLogger = provider.get(ILogger.class);
         mCardDao = provider.get(CardDao.class);
         mDeckCardRepo = provider.get(DeckCardRepository.class);
+        mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
         mFileHelper = provider.get(FileHelper.class);
         mCardMediaStore = provider.get(CardMediaStore.class);
         mAnkiImporter = provider.get(AnkiImporter.class);
@@ -207,6 +210,7 @@ public class ExportImportCmd {
                         List<DeckModel> result = mAnkiImporter.importApkg(file);
                         if (!result.isEmpty()) {
                             mDeckCardRepo.importDecks(result);
+                            notifyImportedDecks(result);
                         }
                         return result;
                     })
@@ -266,6 +270,7 @@ public class ExportImportCmd {
 
                         if (!deckModelList.isEmpty()) {
                             mDeckCardRepo.importDecks(deckModelList);
+                            notifyImportedDecks(deckModelList);
                         }
                         return deckModelList;
                     } catch (ZipException e) {
@@ -275,6 +280,7 @@ public class ExportImportCmd {
                             List<DeckModel> deckModelList = getDeckModelsFromJson(fis);
                             if (!deckModelList.isEmpty()) {
                                 mDeckCardRepo.importDecks(deckModelList);
+                                notifyImportedDecks(deckModelList);
                             }
                             return deckModelList;
                         } catch (Exception exception) {
@@ -290,6 +296,25 @@ public class ExportImportCmd {
                     }
                 })
                 .subscribeOn(Schedulers.from(mExecutorService));
+    }
+
+    /**
+     * Notify subscribers (e.g. home study due button, deck list) that
+     * decks and cards have been imported, mirroring the AI deck generation
+     * worker behavior in BaseGenerateDeckWorker.
+     * Must be called after {@link DeckCardRepository#importDecks} has committed.
+     */
+    private void notifyImportedDecks(List<DeckModel> deckModels) {
+        for (DeckModel deckModel : deckModels) {
+            Deck deck = deckModel.getDeck();
+            mDeckChangeNotifier.deckAdded(deck);
+            List<Card> cardList = deckModel.getCardList();
+            if (cardList != null) {
+                for (Card card : cardList) {
+                    mDeckChangeNotifier.cardAdded(card);
+                }
+            }
+        }
     }
 
     @NonNull
