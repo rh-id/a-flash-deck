@@ -18,6 +18,7 @@
 package m.co.rh.id.a_flash_deck.app.provider.component;
 
 import android.content.Context;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,6 +109,62 @@ public class TestWorkflowCoordinator {
                                     });
                         } else {
                             startDeckSelectTestFlow(navigator);
+                        }
+                    }
+                })
+        );
+    }
+
+    /**
+     * Starts a new test with all due (and new) cards across all decks, without deck selection.
+     */
+    public void startDueTestFlow(INavigator navigator) {
+        mRxDisposer.add("onClick_startDueTest",
+                mProvider.get(TestStateModifier.class)
+                        .getActiveTest()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((testStateOpt, throwable) -> {
+                    if (throwable != null) {
+                        String title = mProvider.getContext().getString(R.string.title_error);
+                        navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                mCommonNavConfig.args_commonMessageDialog(title, throwable.getMessage()));
+                        mProvider.get(ILogger.class).e(
+                                TAG,
+                                throwable.getMessage(), throwable);
+                    } else {
+                        if (testStateOpt.isPresent()) {
+                            Context svContext = mProvider.getContext();
+                            String title = svContext.getString(R.string.title_confirm);
+                            String content = svContext.getString(R.string.test_session_exist_confirm_start_new);
+                            navigator.push(Routes.COMMON_BOOLEAN_DIALOG,
+                                    mCommonNavConfig.args_commonBooleanDialog(title, content),
+                                    (navigator1, navRoute, activity, currentView) -> {
+                                        Provider provider = (Provider) navigator1.getNavConfiguration().getRequiredComponent();
+                                        CommonNavConfig commonNavConfig1 = provider.get(CommonNavConfig.class);
+                                        if (commonNavConfig1.result_commonBooleanDialog(navRoute)) {
+                                            CompositeDisposable compositeDisposable = new CompositeDisposable();
+                                            compositeDisposable.add(
+                                                    provider.get(TestStateModifier.class)
+                                                            .stopActiveTest()
+                                                            .observeOn(AndroidSchedulers.mainThread())
+                                                            .subscribe((testState, throwable1) -> {
+                                                                if (throwable1 != null) {
+                                                                    String title1 = provider.getContext().getString(R.string.title_error);
+                                                                    navigator1.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                                            commonNavConfig1.args_commonMessageDialog(title1, throwable1.getMessage()));
+                                                                    provider.get(ILogger.class).e(
+                                                                            TAG,
+                                                                            throwable1.getMessage(), throwable1);
+                                                                } else {
+                                                                    startDirectDueTestFlow(navigator1);
+                                                                }
+                                                                compositeDisposable.dispose();
+                                                            })
+                                            );
+                                        }
+                                    });
+                        } else {
+                            startDirectDueTestFlow(navigator);
                         }
                     }
                 })
@@ -226,19 +283,23 @@ public class TestWorkflowCoordinator {
                         Provider provider = (Provider) navigator1.getNavConfiguration().getRequiredComponent();
                         ArrayList<Deck> deckArrayList = result.getSelectedDeck();
                         CompositeDisposable compositeDisposable = new CompositeDisposable();
+                        TestStateModifier testStateModifier = provider.get(TestStateModifier.class);
                         compositeDisposable.add(
-                                provider.get(TestStateModifier.class)
-                                        .startTest(deckArrayList)
+                                testStateModifier.startTest(deckArrayList)
                                         .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe((testState, throwable) -> {
+                                        .subscribe((startTestResult, throwable) -> {
                                             if (throwable != null) {
                                                 Context context = provider.getContext();
-                                                if (throwable.getCause() instanceof ValidationException) {
+                                                Throwable cause = throwable.getCause();
+                                                if (cause == null) {
+                                                    cause = throwable;
+                                                }
+                                                if (cause instanceof ValidationException) {
                                                     String title = context.getString(R.string.title_error);
                                                     CommonNavConfig commonNavConfig = provider.get(CommonNavConfig.class);
                                                     navigator1.push(Routes.COMMON_MESSAGE_DIALOG,
                                                             commonNavConfig.args_commonMessageDialog(title,
-                                                                    throwable.getCause().getMessage()),
+                                                                    cause.getMessage()),
                                                             (navigator2, navRoute1, activity1, currentView1) ->
                                                                     startDeckSelectTestFlow(navigator2));
                                                 } else {
@@ -247,6 +308,12 @@ public class TestWorkflowCoordinator {
                                                             context.getString(R.string.error_starting_test), throwable);
                                                 }
                                             } else {
+                                                if (startTestResult.skippedSuspendedCount > 0) {
+                                                    Context context = provider.getContext();
+                                                    Toast.makeText(context.getApplicationContext(),
+                                                            context.getString(R.string.test_suspended_cards_skipped, startTestResult.skippedSuspendedCount),
+                                                            Toast.LENGTH_SHORT).show();
+                                                }
                                                 navigator1.push(Routes.TEST);
                                             }
                                             compositeDisposable.dispose();
@@ -254,5 +321,39 @@ public class TestWorkflowCoordinator {
                         );
                     }
                 });
+    }
+
+    /**
+     * Starts a new test directly with all due (and new) cards across all decks, without deck selection.
+     */
+    private void startDirectDueTestFlow(INavigator navigator) {
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        TestStateModifier testStateModifier = mProvider.get(TestStateModifier.class);
+        compositeDisposable.add(
+                testStateModifier.startAllDueTest()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((testState, throwable) -> {
+                            if (throwable != null) {
+                                Context context = mProvider.getContext();
+                                Throwable cause = throwable.getCause();
+                                if (cause == null) {
+                                    cause = throwable;
+                                }
+                                if (cause instanceof ValidationException) {
+                                    String title = context.getString(R.string.title_error);
+                                    navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                            mCommonNavConfig.args_commonMessageDialog(title,
+                                                    cause.getMessage()));
+                                } else {
+                                    mProvider.get(ILogger.class).e(
+                                            TAG,
+                                            context.getString(R.string.error_starting_test), throwable);
+                                }
+                            } else {
+                                navigator.push(Routes.TEST);
+                            }
+                            compositeDisposable.dispose();
+                        })
+        );
     }
 }

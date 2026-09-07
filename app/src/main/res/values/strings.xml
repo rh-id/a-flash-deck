@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Failed to get next card</string>
     <string name="test_session_exist_confirm_start_new">There is a test currently running, would you like to stop and start new test?</string>
     <string name="confirm_exit_test">Do you want to stop test ?</string>
-    <string name="on_going_test">On going test</string>
+    <string name="resume_test">Resume test</string>
     <string name="theme_setting">Theme Setting</string>
     <string name="follow_system">Follow System</string>
     <string name="light_mode">Light Mode</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Generate Deck from Existing with Gemini</string>
     <string name="title_generate_deck_from_image">Generate Deck from Images with Gemini</string>
     <string name="save_and_add_another">Save &amp; Add Another</string>
+    <string name="study_due_cards">Study Due Cards</string>
+    <string name="study_due_cards_with_count">Study due (%1$d)</string>
+    <string name="grade_again">Again</string>
+    <string name="grade_hard">Hard</string>
+    <string name="grade_good">Good</string>
+    <string name="grade_easy">Easy</string>
+    <string name="grade_hint">How well did you know it?</string>
+    <string name="test_complete">Test complete!</string>
+    <string name="test_complete_content">You have gone through all cards in this test.</string>
+    <string name="test_suspended_cards_skipped">Suspended cards skipped (%1$d)</string>
+    <string name="error_no_due_cards">No cards are due for study right now. New cards are always included.</string>
+    <string name="error_saving_card_grade">Failed to save grade</string>
+    <string name="suspend_card">Suspend</string>
+    <string name="unsuspend_card">Unsuspend</string>
+    <string name="card_suspended">Suspended</string>
+    <string name="error_suspending_card">Error suspending card</string>
+    <string name="success_suspending_card">Success suspending card %s</string>
+    <string name="success_unsuspending_card">Success unsuspending card %s</string>
 </resources>

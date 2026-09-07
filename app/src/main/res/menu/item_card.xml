@@ -6,6 +6,10 @@
 
     <group>
         <item
+            android:id="@+id/menu_suspend_card"
+            android:title="@string/suspend_card"
+            app:showAsAction="ifRoom|withText" />
+        <item
             android:id="@+id/menu_move_card"
             android:title="@string/move_card"
             app:showAsAction="ifRoom|withText" />

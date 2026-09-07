@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Betg reussì d\'obtegnair la proxim carta</string>
     <string name="test_session_exist_confirm_start_new">In test curr actualmain, vuls ti fermar e cumenzar in nov test?</string>
     <string name="confirm_exit_test">Vuls ti fermar il test ?</string>
-    <string name="on_going_test">Test en curs</string>
+    <string name="resume_test">Reprendair il test</string>
     <string name="theme_setting">Parameters dal tema</string>
     <string name="follow_system">Suandar il sistem</string>
     <string name="light_mode">Modus clers</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Generar pachet d\'existents cun Gemini</string>
     <string name="title_generate_deck_from_image">Generar in pachet da cartas da figuras cun Gemini</string>
     <string name="save_and_add_another">Memorisar &amp; Agiuntar in auter</string>
+    <string name="study_due_cards">Repetir chartas da scadenza</string>
+    <string name="study_due_cards_with_count">Repetir chartas da scadenza (%1$d)</string>
+    <string name="grade_again">Anc</string>
+    <string name="grade_hard">Difficil</string>
+    <string name="grade_good">Bain</string>
+    <string name="grade_easy">Facil</string>
+    <string name="grade_hint">Co bain has ti savì quai?</string>
+    <string name="test_complete">Test terminà!</string>
+    <string name="test_complete_content">Ti has repassà tut las chartas da quest test.</string>
+    <string name="test_suspended_cards_skipped">Chartas suspendidas ignoradas (%1$d)</string>
+    <string name="error_no_due_cards">Naginas chartas da scadenza per repetir actualmain. Chartas novas èn adina includidas.</string>
+    <string name="error_saving_card_grade">Impussibel da salvar la valutaziun</string>
+    <string name="suspend_card">Suspendere</string>
+    <string name="unsuspend_card">Reactivar</string>
+    <string name="card_suspended">Suspendì</string>
+    <string name="error_suspending_card">Errur suspendend la carta</string>
+    <string name="success_suspending_card">Success suspendend la carta %s</string>
+    <string name="success_unsuspending_card">Success reactivand la carta %s</string>
 </resources>

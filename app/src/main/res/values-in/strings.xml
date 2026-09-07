@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Gagal untuk mengambil kartu selanjutnya</string>
     <string name="test_session_exist_confirm_start_new">Ada tes yang sedang berjalan, apakah kamu mau berhenti dan mulai tes yang baru?</string>
     <string name="confirm_exit_test">Apakah kamu mau memberhentikan tes?</string>
-    <string name="on_going_test">Tes yang sedang berjalan</string>
+    <string name="resume_test">Lanjutkan tes</string>
     <string name="theme_setting">Pengaturan Tema</string>
     <string name="follow_system">Ikuti sistem</string>
     <string name="light_mode">Mode Terang</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Buat Dek dari yang Ada dengan Gemini</string>
     <string name="title_generate_deck_from_image">Buat Dek dari Gambar dengan Gemini</string>
     <string name="save_and_add_another">Simpan &amp; Tambah Lagi</string>
+    <string name="study_due_cards">Pelajari Kartu Jatuh Tempo</string>
+    <string name="study_due_cards_with_count">Pelajari Kartu Jatuh Tempo (%1$d)</string>
+    <string name="grade_again">Ulangi</string>
+    <string name="grade_hard">Sulit</string>
+    <string name="grade_good">Baik</string>
+    <string name="grade_easy">Mudah</string>
+    <string name="grade_hint">Seberapa baik kamu mengingatnya?</string>
+    <string name="test_complete">Tes selesai!</string>
+    <string name="test_complete_content">Kamu telah menyelesaikan semua kartu dalam tes ini.</string>
+    <string name="test_suspended_cards_skipped">Kartu ditangguhkan dilewati (%1$d)</string>
+    <string name="error_no_due_cards">Tidak ada kartu yang jatuh tempo untuk dipelajari saat ini. Kartu baru selalu disertakan.</string>
+    <string name="error_saving_card_grade">Gagal menyimpan penilaian</string>
+    <string name="suspend_card">Tangguhkan</string>
+    <string name="unsuspend_card">Batalkan penangguhan</string>
+    <string name="card_suspended">Ditangguhkan</string>
+    <string name="error_suspending_card">Error menangguhkan kartu</string>
+    <string name="success_suspending_card">Sukses menangguhkan kartu %s</string>
+    <string name="success_unsuspending_card">Sukses membatalkan penangguhan kartu %s</string>
 </resources>

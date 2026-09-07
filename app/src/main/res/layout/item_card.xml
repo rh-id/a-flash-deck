@@ -52,13 +52,14 @@
             app:layout_constraintTop_toBottomOf="@id/text_question"
             tools:text="A: 42" />
 
-        <FrameLayout
+        <LinearLayout
             android:id="@+id/container_deck_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/text_margin"
             android:layout_marginEnd="@dimen/text_margin"
             android:layout_marginBottom="@dimen/text_margin"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/text_question"
             app:layout_constraintTop_toBottomOf="@id/text_answer">
@@ -76,7 +77,24 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="General Deck" />
-        </FrameLayout>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text_suspended"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/label_text_padding"
+                android:background="@color/daynight_gray_300_gray_600"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingStart="@dimen/label_text_padding"
+                android:paddingEnd="@dimen/label_text_padding"
+                android:text="@string/card_suspended"
+                android:textColor="@color/daynight_gray_700_white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="Suspended" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"

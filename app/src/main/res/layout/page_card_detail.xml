@@ -275,6 +275,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/card_answer" />
 
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/checkbox_suspended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/text_margin"
+                android:text="@string/card_suspended"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/checkbox_reversible" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_save_and_add"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -288,7 +299,7 @@
                 app:iconGravity="textStart"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/checkbox_reversible" />
+                app:layout_constraintTop_toBottomOf="@id/checkbox_suspended" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 

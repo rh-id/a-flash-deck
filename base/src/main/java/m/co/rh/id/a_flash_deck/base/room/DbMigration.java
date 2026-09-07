@@ -27,7 +27,8 @@ public class DbMigration {
         return new Migration[]{MIGRATION_1_2, MIGRATION_2_3,
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
-                MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14};
+                MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14,
+                MIGRATION_14_15};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -157,6 +158,24 @@ public class DbMigration {
                     "FROM `notification_timer`");
             database.execSQL("DROP TABLE `notification_timer`");
             database.execSQL("ALTER TABLE `_new_notification_timer` RENAME TO `notification_timer`");
+        }
+    };
+
+    public static final Migration MIGRATION_14_15 = new Migration(14, 15) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // create spaced-repetition review state, one row per card; absent row = new card.
+            // includes the Anki-style suspended flag, defaulting to not suspended
+            database.execSQL("CREATE TABLE IF NOT EXISTS `card_review_state` " +
+                    "(`card_id` INTEGER NOT NULL, " +
+                    "`due_date_time` INTEGER, " +
+                    "`interval_days` REAL NOT NULL, " +
+                    "`ease_factor` REAL NOT NULL, " +
+                    "`repetitions` INTEGER NOT NULL, " +
+                    "`lapses` INTEGER NOT NULL, " +
+                    "`last_review_date_time` INTEGER, " +
+                    "`suspended` INTEGER NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY(`card_id`))");
         }
     };
 }

@@ -40,11 +40,13 @@ import m.co.rh.id.a_flash_deck.app.provider.command.CopyCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.MoveCardCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.SuspendCardCmd;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardDetailPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectPage;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.entity.CardReviewState;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.model.CopyCardEvent;
 import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
@@ -73,8 +75,11 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     private transient DeckChangeNotifier mDeckChangeNotifier;
     private transient RxDisposer mRxDisposer;
     private transient DeckQueryCmd mDeckQueryCmd;
+    private transient SuspendCardCmd mSuspendCardCmd;
 
     private SerialBehaviorSubject<Card> mCardSubject;
+    private transient TextView mTextSuspended;
+    private transient boolean mSuspended;
 
     public CardItemSV() {
         mCardSubject = new SerialBehaviorSubject<>();
@@ -95,6 +100,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mDeckQueryCmd = mSvProvider.get(DeckQueryCmd.class);
+        mSuspendCardCmd = mSvProvider.get(SuspendCardCmd.class);
     }
 
     @Override
@@ -113,6 +119,7 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         TextView textQuestion = rootLayout.findViewById(R.id.text_question);
         TextView textAnswer = rootLayout.findViewById(R.id.text_answer);
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
+        mTextSuspended = rootLayout.findViewById(R.id.text_suspended);
         // Image visibility is cheap and synchronous — update it immediately on
         // the main thread so there is no flicker.
         mRxDisposer.add("createView_onCardImage",
@@ -160,6 +167,17 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                 }, throwable -> {
                     mLogger.e(TAG, mSvProvider.getContext().getString(R.string.error_loading_deck), throwable);
                 }));
+        mRxDisposer.add("createView_onChangeCard_getReviewState",
+                mCardSubject.getSubject().switchMapSingle(card ->
+                        mDeckQueryCmd.getReviewStateByCardId(card.id)
+                                .observeOn(AndroidSchedulers.mainThread())
+                ).subscribe(reviewStateOptional -> {
+                    // absent review state = new/never studied card, not suspended
+                    updateSuspendedState(reviewStateOptional.isPresent()
+                            && reviewStateOptional.get().suspended);
+                }, throwable -> {
+                    mLogger.e(TAG, mSvProvider.getContext().getString(R.string.error_loading_deck), throwable);
+                }));
         mRxDisposer.add("createView_onMoveCard",
                 mDeckChangeNotifier
                         .getMovedCardFlow()
@@ -190,6 +208,16 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
                         }, throwable -> {
                             mLogger.e(TAG, mSvProvider.getContext().getString(R.string.error_loading_deck), throwable);
                         }));
+        // Live update of the suspended chip when this card is suspended/
+        // unsuspended from anywhere (same card-id guard as the moved-card flow)
+        mRxDisposer.add("createView_onCardSuspendStateChanged",
+                mDeckChangeNotifier
+                        .getSuspendStateChangedFlow()
+                        .filter(event -> event.getCard().id.equals(getCard().id))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(event -> updateSuspendedState(event.isSuspended()),
+                                throwable -> mLogger.e(TAG,
+                                        mSvProvider.getContext().getString(R.string.error_loading_deck), throwable)));
         return rootLayout;
     }
 
@@ -200,6 +228,18 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
             mSvProvider.dispose();
         }
         mNavigator = null;
+        mTextSuspended = null;
+    }
+
+    /**
+     * Updates the row's suspended chip and the remembered suspend state used
+     * to label the popup menu item.
+     */
+    private void updateSuspendedState(boolean suspended) {
+        mSuspended = suspended;
+        if (mTextSuspended != null) {
+            mTextSuspended.setVisibility(suspended ? View.VISIBLE : View.GONE);
+        }
     }
 
     public void setCard(Card card) {
@@ -261,6 +301,12 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
         } else if (id == R.id.button_more_action) {
             PopupMenu popup = new PopupMenu(view.getContext(), view);
             popup.getMenuInflater().inflate(R.menu.item_card, popup.getMenu());
+            // label the suspend item based on the card's current state
+            MenuItem suspendItem = popup.getMenu().findItem(R.id.menu_suspend_card);
+            if (suspendItem != null) {
+                suspendItem.setTitle(mSuspended
+                        ? R.string.unsuspend_card : R.string.suspend_card);
+            }
             popup.setOnMenuItemClickListener(this);
             popup.show();
         } else if (id == R.id.image_question) {
@@ -276,7 +322,10 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.menu_move_card) {
+        if (id == R.id.menu_suspend_card) {
+            suspendCardAction(getCard(), !mSuspended);
+            return true;
+        } else if (id == R.id.menu_move_card) {
             moveCardAction(mNavigator, getCard().clone());
             return true;
         } else if (id == R.id.menu_copy_card) {
@@ -287,6 +336,31 @@ public class CardItemSV extends StatefulView<Activity> implements RequireNavigat
             return true;
         }
         return false;
+    }
+
+    /**
+     * Suspends/unsuspends this card and updates the row chip.
+     * The chip refresh also arrives via the suspend-state-changed flow.
+     */
+    private void suspendCardAction(Card card, boolean suspend) {
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        compositeDisposable.add(mSuspendCardCmd.execute(card, suspend)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((suspendedCard, throwable) -> {
+                    Context context = mSvProvider.getContext();
+                    if (throwable != null) {
+                        mLogger.e(TAG,
+                                context.getString(R.string.error_suspending_card), throwable);
+                    } else {
+                        mLogger.i(TAG,
+                                context.getString(suspend
+                                        ? R.string.success_suspending_card
+                                        : R.string.success_unsuspending_card,
+                                        mMarkdownRenderer.toPlainText(suspendedCard.question)));
+                        updateSuspendedState(suspend);
+                    }
+                    compositeDisposable.dispose();
+                }));
     }
 
     public static void copyCardAction(INavigator mainNavigator, Card card) {

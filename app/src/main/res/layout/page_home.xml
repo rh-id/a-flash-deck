@@ -21,6 +21,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <FrameLayout
+                android:id="@+id/container_card_ongoing_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_study_due_cards"
+                style="@style/Theme.Aflashdeck.HomeMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/study_due_cards"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                app:backgroundTint="@color/teal_custom"
+                app:icon="@drawable/ic_assignment_black"
+                app:iconTint="@color/white"
+                app:strokeColor="@color/teal_custom" />
+
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -139,11 +158,6 @@
                     app:icon="@drawable/ic_gemini"
                     app:iconTint="@null" />
             </GridLayout>
-
-            <FrameLayout
-                android:id="@+id/container_card_ongoing_test"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/container_card_flash_bot"

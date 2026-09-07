@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Impossibile ottenere la scheda successiva</string>
     <string name="test_session_exist_confirm_start_new">C\'è un test in corso, vuoi fermarlo e avviarne uno nuovo?</string>
     <string name="confirm_exit_test">Vuoi fermare il test?</string>
-    <string name="on_going_test">Test in corso</string>
+    <string name="resume_test">Riprendi il test</string>
     <string name="theme_setting">Impostazioni tema</string>
     <string name="follow_system">Segui sistema</string>
     <string name="light_mode">Modalità chiara</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Genera mazzo da esistente con Gemini</string>
     <string name="title_generate_deck_from_image">Genera mazzo da immagini con Gemini</string>
     <string name="save_and_add_another">Salva &amp; Aggiungi altro</string>
+    <string name="study_due_cards">Studia le schede scadute</string>
+    <string name="study_due_cards_with_count">Studia le schede scadute (%1$d)</string>
+    <string name="grade_again">Di nuovo</string>
+    <string name="grade_hard">Difficile</string>
+    <string name="grade_good">Bene</string>
+    <string name="grade_easy">Facile</string>
+    <string name="grade_hint">Quanto bene lo sapevi?</string>
+    <string name="test_complete">Test completato!</string>
+    <string name="test_complete_content">Hai ripassato tutte le schede di questo test.</string>
+    <string name="test_suspended_cards_skipped">Schede sospese saltate (%1$d)</string>
+    <string name="error_no_due_cards">Nessuna scheda da studiare al momento. Le nuove schede sono sempre incluse.</string>
+    <string name="error_saving_card_grade">Salvataggio della valutazione non riuscito</string>
+    <string name="suspend_card">Sospendi</string>
+    <string name="unsuspend_card">Riattiva</string>
+    <string name="card_suspended">Sospesa</string>
+    <string name="error_suspending_card">Errore nella sospensione della scheda</string>
+    <string name="success_suspending_card">Successo nella sospensione della scheda %s</string>
+    <string name="success_unsuspending_card">Successo nella riattivazione della scheda %s</string>
 </resources>

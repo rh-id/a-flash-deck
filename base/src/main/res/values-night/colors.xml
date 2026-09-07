@@ -4,4 +4,10 @@
     <color name="daynight_gray_300_gray_600">@color/gray_600</color>
     <color name="daynight_black_white">@color/white</color>
     <color name="daynight_white_black">@color/black</color>
+    <color name="daynight_teal_custom_teal_200">@color/teal_200</color>
+    <!-- lighter variants: the night theme renders black button text on grade colors -->
+    <color name="grade_hard">#FFE65100</color>
+    <color name="grade_good">#FF388E3C</color>
+    <color name="grade_easy">#FF1E88E5</color>
+    <color name="grade_again">#FFEF5350</color>
 </resources>

@@ -1,0 +1,93 @@
+/*
+ *     Copyright (C) 2021-present Ruby Hartono
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package m.co.rh.id.a_flash_deck.base.entity;
+
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import m.co.rh.id.a_flash_deck.base.room.converter.Converter;
+
+/**
+ * SM-2-lite spaced-repetition review state of a card, one row per card.
+ * Absent row means the card is new/never studied.
+ */
+@Entity(tableName = "card_review_state")
+public class CardReviewState implements Serializable {
+
+    /**
+     * Card ID that refers to Card.id
+     */
+    @NonNull
+    @PrimaryKey
+    @ColumnInfo(name = "card_id")
+    public Long cardId;
+
+    /**
+     * Next due date time of the card review
+     */
+    @TypeConverters({Converter.class})
+    @ColumnInfo(name = "due_date_time")
+    public Date dueDateTime;
+
+    /**
+     * Current review interval in days
+     */
+    @ColumnInfo(name = "interval_days")
+    public double intervalDays;
+
+    /**
+     * SM-2 ease factor
+     */
+    @ColumnInfo(name = "ease_factor")
+    public double easeFactor;
+
+    /**
+     * Number of consecutive successful reviews
+     */
+    @ColumnInfo(name = "repetitions")
+    public int repetitions;
+
+    /**
+     * Number of times the card was failed
+     */
+    @ColumnInfo(name = "lapses")
+    public int lapses;
+
+    /**
+     * Last review date time, null if the card is new/never studied
+     */
+    @TypeConverters({Converter.class})
+    @ColumnInfo(name = "last_review_date_time")
+    public Date lastReviewDateTime;
+
+    /**
+     * Anki-style suspend flag: when true the card is excluded from due-card
+     * selection and from the study due count, but remains browsable, editable
+     * and exportable.
+     * Note: suspending a never-studied card lazily creates its row (with
+     * dueDateTime still null until the first grade).
+     */
+    @ColumnInfo(name = "suspended")
+    public boolean suspended = false;
+}

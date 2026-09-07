@@ -23,11 +23,14 @@ import androidx.annotation.NonNull;
 import androidx.room.Room;
 
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
+import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepository;
 import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
+import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
 import m.co.rh.id.a_flash_deck.base.room.AppDatabase;
 import m.co.rh.id.a_flash_deck.base.room.DbMigration;
 import m.co.rh.id.aprovider.Provider;
@@ -49,15 +52,23 @@ public class DatabaseProviderModule implements ProviderModule {
                 provider.get(AppDatabase.class).deckDao());
         providerRegistry.registerAsync(CardDao.class, () ->
                 provider.get(AppDatabase.class).cardDao());
+        providerRegistry.registerAsync(CardReviewStateDao.class, () ->
+                provider.get(AppDatabase.class).cardReviewStateDao());
         providerRegistry.registerAsync(TestDao.class, () ->
                 provider.get(AppDatabase.class).testDao());
+        providerRegistry.registerAsync(StudyDao.class, () ->
+                provider.get(AppDatabase.class).studyDao());
         providerRegistry.registerAsync(AndroidNotificationRepository.class, () ->
                 new AndroidNotificationRepository(provider.getContext(),
                         provider.get(AppDatabase.class).androidNotificationDao())
         );
         providerRegistry.registerAsync(DeckCardRepository.class, () -> {
             AppDatabase db = provider.get(AppDatabase.class);
-            return new DeckCardRepository(db, db.deckDao(), db.cardDao());
+            return new DeckCardRepository(db, db.deckDao(), db.cardDao(), db.cardReviewStateDao());
+        });
+        providerRegistry.registerAsync(StudyRepository.class, () -> {
+            AppDatabase db = provider.get(AppDatabase.class);
+            return new StudyRepository(db, db.studyDao(), db.cardReviewStateDao());
         });
         providerRegistry.registerLazy(NotificationTimerDao.class, () ->
                 provider.get(AppDatabase.class).timerNotificationDao());

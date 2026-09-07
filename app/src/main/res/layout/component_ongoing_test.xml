@@ -1,24 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:layout_marginLeft="@dimen/text_margin"
     android:layout_marginRight="@dimen/text_margin"
-    android:contentDescription="@string/on_going_test"
-    android:visibility="gone">
+    android:layout_marginTop="@dimen/text_margin"
+    android:contentDescription="@string/resume_test"
+    android:foreground="?attr/selectableItemBackground"
+    android:visibility="gone"
+    app:cardBackgroundColor="@color/teal_custom"
+    app:cardCornerRadius="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
 
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_play_arrow_black"
+            app:tint="@color/white" />
+
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/on_going_test"
+            android:text="@string/resume_test"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -28,6 +43,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
             tool:text="12/23" />

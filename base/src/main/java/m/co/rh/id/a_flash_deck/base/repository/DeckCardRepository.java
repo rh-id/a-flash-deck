@@ -17,9 +17,11 @@
 
 package m.co.rh.id.a_flash_deck.base.repository;
 
+import java.util.Collections;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -34,11 +36,14 @@ public class DeckCardRepository {
     private AppDatabase mAppDatabase;
     private DeckDao mDeckDao;
     private CardDao mCardDao;
+    private CardReviewStateDao mReviewStateDao;
 
-    public DeckCardRepository(AppDatabase appDatabase, DeckDao deckDao, CardDao cardDao) {
+    public DeckCardRepository(AppDatabase appDatabase, DeckDao deckDao, CardDao cardDao,
+                              CardReviewStateDao reviewStateDao) {
         mAppDatabase = appDatabase;
         mDeckDao = deckDao;
         mCardDao = cardDao;
+        mReviewStateDao = reviewStateDao;
     }
 
     /**
@@ -49,8 +54,25 @@ public class DeckCardRepository {
             return;
         }
         mAppDatabase.runInTransaction(() -> {
+            // must be deleted before the cards, it looks up card ids by deck id
+            mReviewStateDao.deleteByDeckIds(Collections.singletonList(deck.id));
             mDeckDao.delete(deck);
             mCardDao.deleteCardsByDeckId(deck.id);
+        });
+    }
+
+    /**
+     * Delete a card and its review state atomically
+     */
+    public void deleteCard(Card card) {
+        if (card == null) {
+            return;
+        }
+        mAppDatabase.runInTransaction(() -> {
+            if (card.id != null) {
+                mReviewStateDao.deleteByCardId(card.id);
+            }
+            mCardDao.deleteCard(card);
         });
     }
 

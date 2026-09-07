@@ -23,6 +23,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.model.CardSuspendStateChangedEvent;
 import m.co.rh.id.a_flash_deck.base.model.MoveCardEvent;
 
 /**
@@ -36,6 +37,7 @@ public class DeckChangeNotifier {
     private Subject<Card> mUpdatedCardSubject;
     private Subject<Card> mDeletedCardSubject;
     private Subject<MoveCardEvent> mMovedCardSubject;
+    private Subject<CardSuspendStateChangedEvent> mSuspendStateChangedSubject;
 
     public DeckChangeNotifier() {
         mAddedDeckSubject = PublishSubject.<Deck>create().toSerialized();
@@ -45,6 +47,7 @@ public class DeckChangeNotifier {
         mUpdatedCardSubject = PublishSubject.<Card>create().toSerialized();
         mDeletedCardSubject = PublishSubject.<Card>create().toSerialized();
         mMovedCardSubject = PublishSubject.<MoveCardEvent>create().toSerialized();
+        mSuspendStateChangedSubject = PublishSubject.<CardSuspendStateChangedEvent>create().toSerialized();
     }
 
     public void deckAdded(Deck deck) {
@@ -89,6 +92,12 @@ public class DeckChangeNotifier {
         }
     }
 
+    public void cardSuspendStateChanged(CardSuspendStateChangedEvent event) {
+        if (event != null) {
+            mSuspendStateChangedSubject.onNext(event);
+        }
+    }
+
     public Flowable<Deck> getAddedDeckFlow() {
         return Flowable.fromObservable(mAddedDeckSubject, BackpressureStrategy.BUFFER);
     }
@@ -115,5 +124,9 @@ public class DeckChangeNotifier {
 
     public Flowable<MoveCardEvent> getMovedCardFlow() {
         return Flowable.fromObservable(mMovedCardSubject, BackpressureStrategy.BUFFER);
+    }
+
+    public Flowable<CardSuspendStateChangedEvent> getSuspendStateChangedFlow() {
+        return Flowable.fromObservable(mSuspendStateChangedSubject, BackpressureStrategy.BUFFER);
     }
 }

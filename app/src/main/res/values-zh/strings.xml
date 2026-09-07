@@ -80,7 +80,7 @@
     <string name="error_failed_to_get_next_card">获取下一张卡片时出错</string>
     <string name="test_session_exist_confirm_start_new">当前有正在进行的测试，是否停止并开始新测试？</string>
     <string name="confirm_exit_test">确定要停止测试吗？</string>
-    <string name="on_going_test">正在进行的测试</string>
+    <string name="resume_test">继续测试</string>
     <string name="theme_setting">主题设置</string>
     <string name="follow_system">跟随系统</string>
     <string name="light_mode">浅色模式</string>
@@ -127,4 +127,22 @@
     <string name="title_generate_deck_from_existing">使用 Gemini 从现有牌组生成牌组</string>
     <string name="title_generate_deck_from_image">使用 Gemini 从图片生成牌组</string>
     <string name="save_and_add_another">保存并继续添加</string>
+    <string name="study_due_cards">学习到期卡片</string>
+    <string name="study_due_cards_with_count">学习到期卡片（%1$d）</string>
+    <string name="grade_again">忘记</string>
+    <string name="grade_hard">困难</string>
+    <string name="grade_good">良好</string>
+    <string name="grade_easy">简单</string>
+    <string name="grade_hint">你记住了多少？</string>
+    <string name="test_complete">测试完成！</string>
+    <string name="test_complete_content">你已完成本测试中的所有卡片。</string>
+    <string name="test_suspended_cards_skipped">已跳过暂停的卡片（%1$d）</string>
+    <string name="error_no_due_cards">当前没有待学习的到期卡片。新卡片始终包含在内。</string>
+    <string name="error_saving_card_grade">保存评分失败</string>
+    <string name="suspend_card">暂停</string>
+    <string name="unsuspend_card">取消暂停</string>
+    <string name="card_suspended">已暂停</string>
+    <string name="error_suspending_card">暂停卡片时出错</string>
+    <string name="success_suspending_card">卡片 %s 已成功暂停</string>
+    <string name="success_unsuspending_card">卡片 %s 已成功取消暂停</string>
 </resources>

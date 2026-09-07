@@ -17,10 +17,14 @@
 
 package m.co.rh.id.a_flash_deck.app.ui.page;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Intent;
+import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -28,9 +32,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.ai.service.GeminiService;
 import m.co.rh.id.a_flash_deck.ai.ui.page.GenerateDeckFromExistingPage;
@@ -43,6 +50,9 @@ import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
+import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
 import m.co.rh.id.a_flash_deck.bot.provider.notifier.SuggestedCardChangeNotifier;
@@ -76,6 +86,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient TestWorkflowCoordinator mTestWorkflowCoordinator;
     private transient ExportImportCoordinator mExportImportCoordinator;
     private transient SuggestedCardChangeNotifier mSuggestedCardChangeNotifier;
+    private transient ExecutorService mExecutorService;
+    private transient StudyRepository mStudyRepository;
+    private transient DeckChangeNotifier mDeckChangeNotifier;
+    private transient TestChangeNotifier mTestChangeNotifier;
+    private transient Button mStudyDueCardsButton;
+    private transient boolean mStudyDueCardsShown;
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
@@ -91,6 +107,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mNewCardCmd = mSvProvider.get(NewCardCmd.class);
         mAppNotificationHandler = mSvProvider.get(IAppNotificationHandler.class);
         mSuggestedCardChangeNotifier = mSvProvider.get(SuggestedCardChangeNotifier.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
+        mStudyRepository = mSvProvider.get(StudyRepository.class);
+        mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
+        mTestChangeNotifier = mSvProvider.get(TestChangeNotifier.class);
         mTestWorkflowCoordinator = new TestWorkflowCoordinator(mSvProvider, mRxDisposer);
         mExportImportCoordinator = new ExportImportCoordinator(mSvProvider, mRxDisposer);
     }
@@ -120,6 +140,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         Button addDeckButton = rootLayout.findViewById(R.id.button_add_deck);
         Button addCardButton = rootLayout.findViewById(R.id.button_add_card);
         Button startTestButton = rootLayout.findViewById(R.id.button_start_test);
+        Button studyDueCardsButton = rootLayout.findViewById(R.id.button_study_due_cards);
+        studyDueCardsButton.setVisibility(View.GONE);
+        mStudyDueCardsButton = studyDueCardsButton;
+        mStudyDueCardsShown = false;
         Button addNotificationButton = rootLayout.findViewById(R.id.button_add_notification);
         Button exportDeckButton = rootLayout.findViewById(R.id.button_export_deck);
         Button exportAnkiButton = rootLayout.findViewById(R.id.button_export_anki);
@@ -130,6 +154,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         addDeckButton.setOnClickListener(this);
         addCardButton.setOnClickListener(this);
         startTestButton.setOnClickListener(this);
+        studyDueCardsButton.setOnClickListener(this);
         addNotificationButton.setOnClickListener(this);
         exportDeckButton.setOnClickListener(this);
         exportAnkiButton.setOnClickListener(this);
@@ -163,6 +188,40 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         .subscribe(deck ->
                                 mNavigator.push(Routes.CARDS, CardListPage.Args.withDeck(deck))
                         ));
+
+        refreshDueCardCount(activity);
+        mRxDisposer.add("createView_dueCardCount_cardAdded",
+                mDeckChangeNotifier.getAddedCardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(card -> refreshDueCardCount(activity)));
+        mRxDisposer.add("createView_dueCardCount_cardUpdated",
+                mDeckChangeNotifier.getUpdatedCardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(card -> refreshDueCardCount(activity)));
+        mRxDisposer.add("createView_dueCardCount_cardDeleted",
+                mDeckChangeNotifier.getDeletedCardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(card -> refreshDueCardCount(activity)));
+        mRxDisposer.add("createView_dueCardCount_cardMoved",
+                mDeckChangeNotifier.getMovedCardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(moveCardEvent -> refreshDueCardCount(activity)));
+        mRxDisposer.add("createView_dueCardCount_cardSuspendStateChanged",
+                mDeckChangeNotifier.getSuspendStateChangedFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(cardSuspendStateChangedEvent -> refreshDueCardCount(activity)));
+        mRxDisposer.add("createView_dueCardCount_deckAdded",
+                mDeckChangeNotifier.getAddedDeckFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(deck -> refreshDueCardCount(activity)));
+        mRxDisposer.add("createView_dueCardCount_deckDeleted",
+                mDeckChangeNotifier.getDeletedDeckFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(deck -> refreshDueCardCount(activity)));
+        mRxDisposer.add("createView_dueCardCount_testStopped",
+                mTestChangeNotifier.getStopTestEventFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(testEvent -> refreshDueCardCount(activity)));
         return rootLayout;
     }
 
@@ -223,6 +282,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                     );
         } else if (id == R.id.button_start_test) {
             mTestWorkflowCoordinator.startTestFlow(mNavigator);
+        } else if (id == R.id.button_study_due_cards) {
+            mTestWorkflowCoordinator.startDueTestFlow(mNavigator);
         } else if (id == R.id.button_add_notification) {
             NotificationTimerListPage.addNewNotificationTimerWorkflow(mNavigator);
         } else if (id == R.id.button_export_deck) {
@@ -255,6 +316,60 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 mDrawerLayout.open();
             }
         }
+    }
+
+    /**
+     * Re-fetches the due/new card count and updates the study due cards button.
+     * Reusing the same RxDisposer tag cancels any previous in-flight count request.
+     */
+    private void refreshDueCardCount(Activity activity) {
+        mRxDisposer.add("createView_dueCardCount",
+                Single.fromCallable(() -> mStudyRepository.getDueCardCount())
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(integer ->
+                                        updateDueCardCount(activity, integer),
+                                throwable ->
+                                        mLogger.e(TAG, "Failed to count due and new cards", throwable)));
+    }
+
+    private void updateDueCardCount(Activity activity, int count) {
+        if (mStudyDueCardsButton == null) {
+            return;
+        }
+        if (count > 0) {
+            mStudyDueCardsButton.setText(activity.getString(R.string.study_due_cards_with_count, count));
+            if (!mStudyDueCardsShown) {
+                mStudyDueCardsShown = true;
+                mStudyDueCardsButton.setVisibility(View.VISIBLE);
+                playPopAnimation(mStudyDueCardsButton);
+            }
+        } else {
+            mStudyDueCardsButton.setVisibility(View.GONE);
+            mStudyDueCardsShown = false;
+        }
+    }
+
+    /**
+     * One-shot scale pop animation when the study due cards button appears.
+     * The fade-in comes from the parent LinearLayout's layout transition
+     * (animateLayoutChanges), so only scale is animated here.
+     * Skipped when the system reduced motion setting (animator duration scale) is off.
+     */
+    private void playPopAnimation(Button button) {
+        float animatorDurationScale = Settings.Global.getFloat(
+                button.getContext().getContentResolver(),
+                Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f);
+        if (animatorDurationScale == 0.0f) {
+            return;
+        }
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(
+                ObjectAnimator.ofFloat(button, View.SCALE_X, 0.85f, 1.0f),
+                ObjectAnimator.ofFloat(button, View.SCALE_Y, 0.85f, 1.0f));
+        animatorSet.setDuration(220);
+        animatorSet.setInterpolator(new DecelerateInterpolator());
+        animatorSet.start();
     }
 
     /**
@@ -315,6 +430,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             mSvProvider = null;
         }
         mDrawerLayout = null;
+        mStudyDueCardsButton = null;
     }
 
     @Override

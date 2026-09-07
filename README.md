@@ -35,7 +35,10 @@ A simple and easy to use flash card app to help you study.
 * Import and export decks in Anki `.apkg` format (supports Basic cards with images and audio)
 * Record voices and attach images for the cards
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
-* Test state persistence — resume your test after app restart
+* Test state persistence — resume your test after app restart, with a home-screen banner showing the ongoing test and its progress
+* Spaced repetition study — SM-2-lite scheduling with a Study Due button showing how many cards are due or new across all decks
+* Grade your recall during tests (Again / Hard / Good / Easy) to schedule each card's next review
+* Suspend cards to set them aside — suspended cards are excluded from study and test flows (Study Due, Start Test, bot suggestions)
 * Flash bot to smartly suggest list of card to test you
 * AI-powered deck generation using Google Gemini API — generate from a topic, transform existing decks (translate, expand, create harder versions), generate from captured camera photos and gallery images, or generate a new deck from a single card
 * AI model selection — choose from available Gemini models dynamically
@@ -290,13 +293,14 @@ Navigation is managed by the `a-navigator` library:
 The app uses Room Persistence Library with two databases:
 
 #### AppDatabase (base module)
-- **Version**: 14 (includes auto-migration from 12→13 that removed persisted `isReversed` column from CARD table; `isReversed` is now a runtime-only `@Ignore` field, with reversible behavior using persisted `is_reversible_qa` flag only)
+- **Version**: 15 (includes auto-migration from 12→13 that removed persisted `isReversed` column from CARD table; `isReversed` is now a runtime-only `@Ignore` field, with reversible behavior using persisted `is_reversible_qa` flag only; migration 14→15 creates the `card_review_state` table — SM-2-lite spaced-repetition review state, one row per card, absent row = new card, with a `suspended` flag defaulting to 0)
 - **Entities**:
   - `Deck`: Collection of flash cards
   - `Card`: Individual flash card with question/answer content, optional image and voice attachments, and a reversible-QA flag
   - `Test`: Test session tracking
   - `AndroidNotification`: Notification history
   - `NotificationTimer`: Scheduled notification timers
+  - `CardReviewState`: Per-card spaced-repetition review state (SM-2-lite scheduling with an Anki-style `suspended` flag; suspended cards are excluded from study and test flows (Study Due, Start Test, bot suggestions))
 
 #### BotDatabase (bot module)
 - **Entities**:
@@ -312,6 +316,7 @@ erDiagram
     DECK ||--o{ CARD : contains
     DECK ||--o{ TEST : uses
     DECK ||--o{ NOTIFICATION_TIMER : schedules
+    CARD ||--o| CARD_REVIEW_STATE : "review state for"
 
     CARD {
         long id PK
@@ -346,6 +351,17 @@ erDiagram
         text selected_deck_ids
         text displayed_card_ids
         long current_card_id
+    }
+
+    CARD_REVIEW_STATE {
+        long card_id PK
+        date due_date_time
+        double interval_days
+        double ease_factor
+        int repetitions
+        int lapses
+        date last_review_date_time
+        boolean suspended
     }
 
     CARD_LOG {
@@ -396,6 +412,7 @@ Business logic is encapsulated in command classes following the Command pattern:
 - `NewDeckCmd` / `UpdateDeckCmd` / `DeleteDeckCmd` / `DeckQueryCmd`: Deck management and queries
 - `NewCardCmd` / `UpdateCardCmd` / `DeleteCardCmd`: Card management
 - `CopyCardCmd` / `MoveCardCmd`: Card operations
+- `SuspendCardCmd`: Anki-style card suspend/resume
 - `ExportImportCmd`: Deck import/export
 - `PagedDeckItemsCmd` / `PagedCardItemsCmd`: Pagination
 - `DeleteSuggestedCardCmd`: Bot suggestion management
@@ -413,7 +430,7 @@ Business logic is encapsulated in command classes following the Command pattern:
 
 Notifiers act as event hubs for data changes:
 
-- **DeckChangeNotifier**: Emits events for deck/card CRUD operations
+- **DeckChangeNotifier**: Emits events for deck/card CRUD operations and card suspend state changes
 - **TestChangeNotifier**: Emits test session events (start, stop, state change)
 - **NotificationTimerChangeNotifier**: Emits timer configuration changes
 - **NotificationTimeChangeNotifier**: Emits notification time settings changes
@@ -525,8 +542,8 @@ base/src/main/java/m/co/rh/id/a_flash_deck/base/
 ├── component/ (Shared components: AppSharedPreferences, AudioPlayer, AudioRecorder, MarkdownRenderer, ...)
 ├── constants/ (Constants, routes, intent keys, shortcuts, WorkManager keys/tags)
 ├── exception/ (ValidationException)
-├── model/ (Event models, DeckModel, TestState)
-├── repository/ (AndroidNotificationRepository, DeckCardRepository)
+├── model/ (Event models, DeckModel, TestState, ReviewScheduler, CardSuspendStateChangedEvent)
+├── repository/ (AndroidNotificationRepository, DeckCardRepository, StudyRepository)
 ├── rx/ (RxDisposer)
 ├── ui/
 │   ├── component/common/ (Common UI components)
@@ -603,9 +620,10 @@ stateDiagram-v2
 
 ### Testing
 
-The project has instrumentation tests across modules:
+The project has tests across modules:
 - `app/androidTest`: tests covering Anki `.apkg` parsing, import, export, round-trip testing, and `ExportImportCmd` (plus helper modules for test DB provisioning and Anki test data)
 - `base/androidTest`: tests covering JSON model serialization, database migrations (`DbMigrationTest`), and Markdown/LaTeX rendering (`MarkdownRendererTest`)
+- `base/test`: JVM unit tests covering the SM-2-lite scheduler (`ReviewSchedulerTest`)
 - `bot`, `timer-notification`, `ai`: no test sources currently
 
 Tests use isolated in-memory databases and mock dependencies for hermetic testing.

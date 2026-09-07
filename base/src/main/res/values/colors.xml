@@ -9,6 +9,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="red">#FFFF0000</color>
+    <color name="grade_hard">#FFB45309</color>
+    <color name="grade_good">#FF2E7D32</color>
+    <color name="grade_easy">#FF1976D2</color>
+    <color name="grade_again">#FFD32F2F</color>
     <color name="gray_300">#E0E0E0</color>
     <color name="gray_400">#BDBDBD</color>
     <color name="gray_600">#757575</color>
@@ -17,4 +21,5 @@
     <color name="daynight_gray_300_gray_600">@color/gray_300</color>
     <color name="daynight_black_white">@color/black</color>
     <color name="daynight_white_black">@color/white</color>
+    <color name="daynight_teal_custom_teal_200">@color/teal_custom</color>
 </resources>

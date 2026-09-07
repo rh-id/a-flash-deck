@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Mistókst að fá næsta spjald</string>
     <string name="test_session_exist_confirm_start_new">Það er próf í gangi, viltu hæta því og byrja nýtt próf?</string>
     <string name="confirm_exit_test">Viltu hætta prófi ?</string>
-    <string name="on_going_test">Próf í gangi</string>
+    <string name="resume_test">Halda áfram prófi</string>
     <string name="theme_setting">Þemastilling</string>
     <string name="follow_system">Fylgja kerfi</string>
     <string name="light_mode">Ljóshamur</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Búa til spjöld úr tilvist með Gemini</string>
     <string name="title_generate_deck_from_image">Búa til spilastokk úr myndum með Gemini</string>
     <string name="save_and_add_another">Vista &amp; Bæta við öðru</string>
+    <string name="study_due_cards">Æfa spjöld sem fallið er á</string>
+    <string name="study_due_cards_with_count">Æfa spjöld sem fallið er á (%1$d)</string>
+    <string name="grade_again">Aftur</string>
+    <string name="grade_hard">Erfitt</string>
+    <string name="grade_good">Gott</string>
+    <string name="grade_easy">Auðvelt</string>
+    <string name="grade_hint">Hversu vel vissir þú það?</string>
+    <string name="test_complete">Prófi lokið!</string>
+    <string name="test_complete_content">Þú hefur farið yfir öll spjöld í þessu prófi.</string>
+    <string name="test_suspended_cards_skipped">Spjöld í bið sleppt (%1$d)</string>
+    <string name="error_no_due_cards">Engin spjöld eru á falldagi núna. Ný spjöld eru alltaf innifalin.</string>
+    <string name="error_saving_card_grade">Tókst ekki að vista einkunn</string>
+    <string name="suspend_card">Setja í bið</string>
+    <string name="unsuspend_card">Taka úr bið</string>
+    <string name="card_suspended">Í bið</string>
+    <string name="error_suspending_card">Villa við að setja spjald í bið</string>
+    <string name="success_suspending_card">Tókst að setja spjaldið %s í bið</string>
+    <string name="success_unsuspending_card">Tókst að taka spjaldið %s úr bið</string>
 </resources>

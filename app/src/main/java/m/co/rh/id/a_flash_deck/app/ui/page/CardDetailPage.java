@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -41,7 +42,9 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.SuspendCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateCardCmd;
+import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.ui.component.card.CardMediaField;
 import m.co.rh.id.a_flash_deck.app.ui.component.card.MarkdownEditField;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
@@ -84,6 +87,11 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
     private transient AudioPlayer mAudioPlayer;
     private transient CommonNavConfig mCommonNavConfig;
     private transient NewCardCmd mNewCardCmd;
+    private transient DeckQueryCmd mDeckQueryCmd;
+    private transient SuspendCardCmd mSuspendCardCmd;
+    private transient MaterialCheckBox mSuspendCheckBox;
+    private transient boolean mSuspended;
+    private transient boolean mOriginalSuspended;
     // New component instances - transient and recreated in provideComponent()
     private transient MarkdownEditField mQuestionField;
     private transient MarkdownEditField mAnswerField;
@@ -118,6 +126,8 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mAudioPlayer = mSvProvider.get(AudioPlayer.class);
         if (isUpdate()) {
             mNewCardCmd = mSvProvider.get(UpdateCardCmd.class);
+            mDeckQueryCmd = mSvProvider.get(DeckQueryCmd.class);
+            mSuspendCardCmd = mSvProvider.get(SuspendCardCmd.class);
         } else {
             mNewCardCmd = mSvProvider.get(NewCardCmd.class);
         }
@@ -233,6 +243,12 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         textRenderedQuestion.setOnClickListener(this);
         textRenderedAnswer.setOnClickListener(this);
         mReversibleCheckBox = rootLayout.findViewById(R.id.checkbox_reversible);
+        mSuspendCheckBox = rootLayout.findViewById(R.id.checkbox_suspended);
+        // suspend only makes sense for an existing card
+        mSuspendCheckBox.setVisibility(isUpdate() ? View.VISIBLE : View.GONE);
+        // enabled once the current suspend state is loaded - a save before that could mis-diff the flag
+        mSuspendCheckBox.setEnabled(false);
+        mSuspendCheckBox.setOnCheckedChangeListener(this::onSuspendCheckedChange);
 
         // Set initial text BEFORE binding watchers to avoid spurious initial validation
         if (mCard != null) {
@@ -270,6 +286,21 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mAnswerField.render();
 
         mReversibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCard.isReversibleQA = isChecked);
+
+        // Load the card's suspend state (review-state rows are created lazily,
+        // so an absent row simply means a new/never-studied, not suspended card)
+        if (isUpdate()) {
+            mRxDisposer.add("createView_reviewState",
+                    mDeckQueryCmd.getReviewStateByCardId(mCard.id)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(reviewStateOptional -> {
+                                updateSuspendedState(reviewStateOptional.isPresent()
+                                        && reviewStateOptional.get().suspended);
+                            },
+                                    throwable -> mLogger.e(TAG,
+                                            mSvProvider.getContext()
+                                                    .getString(R.string.error_loading_deck), throwable)));
+        }
 
         // Setup validation subscriptions
         mRxDisposer
@@ -390,6 +421,9 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
         mNavRoute = null;
         mCard = null;
         mNewCardCmd = null;
+        mDeckQueryCmd = null;
+        mSuspendCardCmd = null;
+        mSuspendCheckBox = null;
         mReversibleCheckBox = null;
         mContainerImageQuestion = null;
         mContainerImageAnswer = null;
@@ -562,13 +596,70 @@ public class CardDetailPage extends StatefulView<Activity> implements RequireNav
                                                     compositeDisposable.dispose();
                                                 })
                                 );
-                                if (resetAfter) {
-                                    resetForm();
-                                } else {
-                                    mNavigator.pop(Result.withCard(card));
-                                }
+                                persistSuspendIfNeeded(resetAfter, card);
                             }
                         }));
+    }
+
+    /**
+     * Persists a changed suspend flag after the card itself was saved. Runs
+     * before the page finishes (pop or reset) so the list refreshes with the
+     * final state; on suspend failure the card save is kept and the error is
+     * only logged.
+     */
+    private void persistSuspendIfNeeded(boolean resetAfter, Card card) {
+        if (!isUpdate() || mSuspendCardCmd == null || mSuspended == mOriginalSuspended) {
+            finishSave(resetAfter, card);
+            return;
+        }
+        boolean suspend = mSuspended;
+        mRxDisposer.add("onClick_save_suspendCard",
+                mSuspendCardCmd.execute(card, suspend)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((card1, throwable) -> {
+                            if (throwable != null) {
+                                mLogger.e(TAG,
+                                        mSvProvider.getContext()
+                                                .getString(R.string.error_suspending_card), throwable);
+                            } else {
+                                mLogger.i(TAG,
+                                        mSvProvider.getContext()
+                                                .getString(suspend
+                                                        ? R.string.success_suspending_card
+                                                        : R.string.success_unsuspending_card,
+                                                        card1.question));
+                            }
+                            finishSave(resetAfter, card);
+                        }));
+    }
+
+    private void finishSave(boolean resetAfter, Card card) {
+        if (resetAfter) {
+            resetForm();
+        } else {
+            mNavigator.pop(Result.withCard(card));
+        }
+    }
+
+    /**
+     * Form-field edit only; the suspend flag is persisted when the user saves.
+     */
+    private void onSuspendCheckedChange(CompoundButton buttonView, boolean isChecked) {
+        mSuspended = isChecked;
+    }
+
+    /**
+     * Syncs the checkbox and the tracked suspend fields from the database state.
+     * The listener is detached during the programmatic set so the sync never
+     * registers as a form edit.
+     */
+    private void updateSuspendedState(boolean suspended) {
+        mOriginalSuspended = suspended;
+        mSuspended = suspended;
+        mSuspendCheckBox.setEnabled(true);
+        mSuspendCheckBox.setOnCheckedChangeListener(null);
+        mSuspendCheckBox.setChecked(suspended);
+        mSuspendCheckBox.setOnCheckedChangeListener(this::onSuspendCheckedChange);
     }
 
     @Override

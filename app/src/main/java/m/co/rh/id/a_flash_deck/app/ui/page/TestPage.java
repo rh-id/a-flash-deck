@@ -40,6 +40,7 @@ import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.model.ReviewScheduler;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
@@ -93,6 +94,15 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         buttonPrev.setOnClickListener(this);
         buttonExit.setOnClickListener(this);
         buttonNext.setOnClickListener(this);
+        Button buttonGradeAgain = rootLayout.findViewById(R.id.button_grade_again);
+        Button buttonGradeHard = rootLayout.findViewById(R.id.button_grade_hard);
+        Button buttonGradeGood = rootLayout.findViewById(R.id.button_grade_good);
+        Button buttonGradeEasy = rootLayout.findViewById(R.id.button_grade_easy);
+        buttonGradeAgain.setOnClickListener(this);
+        buttonGradeHard.setOnClickListener(this);
+        buttonGradeGood.setOnClickListener(this);
+        buttonGradeEasy.setOnClickListener(this);
+        ViewGroup containerGradeButtons = rootLayout.findViewById(R.id.container_grade_buttons);
         ImageView questionImageView = rootLayout.findViewById(R.id.image_question);
         questionImageView.setOnClickListener(this);
         ImageView answerImageView = rootLayout.findViewById(R.id.image_answer);
@@ -147,6 +157,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     answerImageView.setVisibility(View.GONE);
                                     answerImageView.setImageURI(null);
                                     buttonAnswerVoice.setVisibility(View.GONE);
+                                    containerGradeButtons.setVisibility(View.GONE);
 
                                     textProgress.setText(progress);
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
@@ -233,6 +244,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             ImageView answerImageView = rootView.findViewById(R.id.image_answer);
             TextView textAnswer = rootView.findViewById(R.id.text_answer);
             Button buttonAnswerVoice = rootView.findViewById(R.id.button_answer_voice);
+            ViewGroup containerGradeButtons = rootView.findViewById(R.id.container_grade_buttons);
             final String answerText;
             if (card.isReversed) {
                 answerText = card.question;
@@ -264,6 +276,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                 }
             }
             textAnswer.setOnClickListener(null);
+            containerGradeButtons.setVisibility(View.VISIBLE);
             // Parse the answer markdown off the main thread. Keyed so a second
             // tap (or navigation) disposes any in-flight parse.
             mRxDisposer
@@ -327,6 +340,55 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                         }
                                     })
                     );
+        } else if (id == R.id.button_grade_again || id == R.id.button_grade_hard
+                || id == R.id.button_grade_good || id == R.id.button_grade_easy) {
+            // hide immediately to prevent double-taps
+            View rootView = view.getRootView();
+            ViewGroup containerGradeButtons = rootView.findViewById(R.id.container_grade_buttons);
+            containerGradeButtons.setVisibility(View.GONE);
+            // disable nav buttons while the grade is in flight,
+            // a concurrent next/previous would double-advance the test
+            Button buttonPrev = rootView.findViewById(R.id.button_previous);
+            Button buttonNext = rootView.findViewById(R.id.button_next);
+            buttonPrev.setEnabled(false);
+            buttonNext.setEnabled(false);
+            int grade = (id == R.id.button_grade_again) ? ReviewScheduler.GRADE_AGAIN
+                    : (id == R.id.button_grade_hard) ? ReviewScheduler.GRADE_HARD
+                    : (id == R.id.button_grade_good) ? ReviewScheduler.GRADE_GOOD
+                    : ReviewScheduler.GRADE_EASY;
+            boolean isLastCard = testState.getCurrentCardIndex() == testState.getTotalCards() - 1;
+            mRxDisposer.add("onClick_grade",
+                    mTestStateModifier.gradeCurrentCard(testState, grade)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((testState1, throwable) -> {
+                                if (throwable != null) {
+                                    iLogger.e(TAG, context.getString(R.string.error_saving_card_grade), throwable);
+                                    containerGradeButtons.setVisibility(View.VISIBLE);
+                                    // position-aware restore, Next must stay disabled on the last card
+                                    buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
+                                    buttonNext.setEnabled(testState.getCurrentCardIndex() != testState.getTotalCards() - 1);
+                                } else if (isLastCard) {
+                                    // test complete: stop test, pop this page, then show completion dialog
+                                    CompositeDisposable compositeDisposable = new CompositeDisposable();
+                                    compositeDisposable.add(mTestStateModifier.stopTest(testState)
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe((testState2, throwable1) -> {
+                                                if (throwable1 != null) {
+                                                    iLogger.e(TAG, context.getString(R.string.error_failed_to_exit_test), throwable1);
+                                                }
+                                                mNavigator.pop();
+                                                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                        commonNavConfig.args_commonMessageDialog(
+                                                                context.getString(R.string.test_complete),
+                                                                context.getString(R.string.test_complete_content)));
+                                                compositeDisposable.dispose();
+                                            }));
+                                } else {
+                                    buttonPrev.setEnabled(true);
+                                    buttonNext.setEnabled(true);
+                                    mTestStateSubject.onNext(testState1);
+                                }
+                            }));
         } else if (id == R.id.image_question) {
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     commonNavConfig.args_commonImageView(

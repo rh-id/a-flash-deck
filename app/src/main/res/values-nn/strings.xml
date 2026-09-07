@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Klarte ikkje få neste kort</string>
     <string name="test_session_exist_confirm_start_new">Ein test køyrer, vil du stoppe og starte ny test?</string>
     <string name="confirm_exit_test">Vil du stoppe testen ?</string>
-    <string name="on_going_test">Pågåande test</string>
+    <string name="resume_test">Hald fram med testen</string>
     <string name="theme_setting">Draktinnstilling</string>
     <string name="follow_system">Følg systemet</string>
     <string name="light_mode">Lys modus</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Lag kortstokk frå eksisterande med Gemini</string>
     <string name="title_generate_deck_from_image">Generer kortstokk frå bilete med Gemini</string>
     <string name="save_and_add_another">Lagre &amp; legg til nytt</string>
+    <string name="study_due_cards">Øv på forfallne kort</string>
+    <string name="study_due_cards_with_count">Øv på forfallne kort (%1$d)</string>
+    <string name="grade_again">Igjen</string>
+    <string name="grade_hard">Vanskeleg</string>
+    <string name="grade_good">Bra</string>
+    <string name="grade_easy">Enkel</string>
+    <string name="grade_hint">Kor godt kjente du det igjen?</string>
+    <string name="test_complete">Testen er fullført!</string>
+    <string name="test_complete_content">Du har gått gjennom alle korta i denne testen.</string>
+    <string name="test_suspended_cards_skipped">Kort på pause vart hoppa over (%1$d)</string>
+    <string name="error_no_due_cards">Ingen kort står for tur til øving akkurat no. Nye kort er alltid inkluderte.</string>
+    <string name="error_saving_card_grade">Klarte ikkje å lagra vurderinga</string>
+    <string name="suspend_card">Sett på pause</string>
+    <string name="unsuspend_card">Gjenoppta</string>
+    <string name="card_suspended">Pausa</string>
+    <string name="error_suspending_card">Feil ved pausing av kort</string>
+    <string name="success_suspending_card">Kort satt på pause %s</string>
+    <string name="success_unsuspending_card">Kort gjenopptatt %s</string>
 </resources>

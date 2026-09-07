@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Fehler beim Abrufen der nächsten Karte</string>
     <string name="test_session_exist_confirm_start_new">Es läuft derzeit ein Test. Möchten Sie ihn beenden und einen neuen Test starten?</string>
     <string name="confirm_exit_test">Möchten Sie den Test beenden?</string>
-    <string name="on_going_test">Laufender Test</string>
+    <string name="resume_test">Test fortsetzen</string>
     <string name="theme_setting">Design-Einstellung</string>
     <string name="follow_system">Systemeinstellung folgen</string>
     <string name="light_mode">Heller Modus</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Kartensatz aus vorhandenem mit Gemini generieren</string>
     <string name="title_generate_deck_from_image">Kartenset aus Bildern mit Gemini erstellen</string>
     <string name="save_and_add_another">Speichern &amp; Weitere hinzufügen</string>
+    <string name="study_due_cards">Fällige Karten lernen</string>
+    <string name="study_due_cards_with_count">Fällige Karten lernen (%1$d)</string>
+    <string name="grade_again">Nochmal</string>
+    <string name="grade_hard">Schwer</string>
+    <string name="grade_good">Gut</string>
+    <string name="grade_easy">Leicht</string>
+    <string name="grade_hint">Wie gut wussten Sie es?</string>
+    <string name="test_complete">Test abgeschlossen!</string>
+    <string name="test_complete_content">Sie haben alle Karten in diesem Test durchgearbeitet.</string>
+    <string name="test_suspended_cards_skipped">Ausgesetzte Karten übersprungen (%1$d)</string>
+    <string name="error_no_due_cards">Für das Lernen sind derzeit keine Karten fällig. Neue Karten werden immer einbezogen.</string>
+    <string name="error_saving_card_grade">Fehler beim Speichern der Bewertung</string>
+    <string name="suspend_card">Aussetzen</string>
+    <string name="unsuspend_card">Wieder einsetzen</string>
+    <string name="card_suspended">Ausgesetzt</string>
+    <string name="error_suspending_card">Fehler beim Aussetzen der Karte</string>
+    <string name="success_suspending_card">Karte %s erfolgreich ausgesetzt</string>
+    <string name="success_unsuspending_card">Karte %s erfolgreich wieder eingesetzt</string>
 </resources>

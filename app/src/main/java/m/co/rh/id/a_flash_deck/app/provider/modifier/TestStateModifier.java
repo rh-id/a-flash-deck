@@ -28,7 +28,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -39,6 +41,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
+import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -47,6 +50,7 @@ import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.TestEvent;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
+import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -59,6 +63,8 @@ public class TestStateModifier {
     private ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<TestChangeNotifier> mTestChangeNotifier;
     protected ProviderValue<CardDao> mCardDao;
+    private ProviderValue<StudyDao> mStudyDao;
+    private ProviderValue<StudyRepository> mStudyRepository;
     private ProviderValue<TestDao> mTestDao;
     private ProviderValue<ILogger> mLogger;
 
@@ -67,6 +73,8 @@ public class TestStateModifier {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mTestChangeNotifier = provider.lazyGet(TestChangeNotifier.class);
         mCardDao = provider.lazyGet(CardDao.class);
+        mStudyDao = provider.lazyGet(StudyDao.class);
+        mStudyRepository = provider.lazyGet(StudyRepository.class);
         mTestDao = provider.lazyGet(TestDao.class);
         mLogger = provider.lazyGet(ILogger.class);
     }
@@ -90,6 +98,24 @@ public class TestStateModifier {
                 testState.nextCard();
                 serializeTest(testState, test);
                 mTestChangeNotifier.get().testStateChange(testState);
+                return testState;
+            }
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
+    }
+
+    public Single<TestState> gradeCurrentCard(TestState testState, int grade) {
+        return Single.fromCallable(() -> {
+            synchronized (mLock) {
+                Card card = testState.currentCard();
+                mStudyRepository.get().applyGrade(card.id, grade, new Date());
+                // check BEFORE nextCard(): TestState.nextCard() increments past the end on the last card
+                boolean isLastCard = testState.getCurrentCardIndex() == testState.getTotalCards() - 1;
+                if (!isLastCard) {
+                    Test test = mTestDao.get().getTestById(testState.getTestId());
+                    testState.nextCard();
+                    serializeTest(testState, test);
+                    mTestChangeNotifier.get().testStateChange(testState);
+                }
                 return testState;
             }
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
@@ -147,11 +173,26 @@ public class TestStateModifier {
         return testState;
     }
 
-    public Single<TestState> startTest(List<Deck> deckList) {
+    /**
+     * Starts a new test with the cards of the given decks.
+     * Suspended cards are excluded from the test and the number of excluded
+     * cards is reported via {@link StartTestResult#skippedSuspendedCount}.
+     *
+     * @return the newly started test state with the excluded suspended count
+     * @throws ValidationException when the deck list is empty or no selectable cards remain
+     */
+    public Single<StartTestResult> startTest(List<Deck> deckList) {
         return Single.fromCallable(() -> {
                     synchronized (mLock) {
                         if (deckList != null && !deckList.isEmpty()) {
-                            return prepareTest(mCardDao.get().getCardsByDecks(deckList));
+                            List<Long> deckIds = new ArrayList<>();
+                            for (Deck deck : deckList) {
+                                deckIds.add(deck.id);
+                            }
+                            List<Card> allCards = mCardDao.get().findCardByDeckIds(deckIds);
+                            List<Card> selectableCards = mStudyDao.get().findNonSuspendedCardsByDeckIds(deckIds);
+                            int skippedSuspended = allCards.size() - selectableCards.size();
+                            return new StartTestResult(prepareTest(selectableCards), skippedSuspended);
                         } else {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }
@@ -160,11 +201,39 @@ public class TestStateModifier {
                 .subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
+    /**
+     * Starts a new test with all due or new cards across all decks.
+     *
+     * @return the newly started test state
+     * @throws ValidationException if no cards are due for study
+     */
+    public Single<TestState> startAllDueTest() {
+        return Single.fromCallable(() -> {
+                    synchronized (mLock) {
+                        List<Card> cardList = mStudyRepository.get()
+                                .findDueCards(System.currentTimeMillis());
+                        if (cardList.isEmpty()) {
+                            throw new ValidationException(mAppContext.getString(R.string.error_no_due_cards));
+                        }
+                        return prepareTest(cardList);
+                    }
+                })
+                .subscribeOn(Schedulers.from(mExecutorService.get()));
+    }
+
+    /**
+     * Starts a new test with the cards of the given ids.
+     * Suspended cards are silently excluded from the test.
+     *
+     * @return the newly started test state
+     * @throws ValidationException when the id list is empty or no selectable cards remain
+     */
     public Single<TestState> startTestWithCardIds(List<Long> cardIds) {
         return Single.fromCallable(() -> {
                     synchronized (mLock) {
                         if (cardIds != null && !cardIds.isEmpty()) {
-                            return prepareTest(mCardDao.get().findCardsByCardIds(cardIds));
+                            List<Card> selectableCards = mStudyDao.get().findNonSuspendedCardsByCardIds(cardIds);
+                            return prepareTest(selectableCards);
                         } else {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }

@@ -79,7 +79,7 @@
     <string name="error_failed_to_get_next_card">Järgmise kaardi hankimine ebaõnnestus</string>
     <string name="test_session_exist_confirm_start_new">Hetkel test töötab, kas soovite katkestada ja alustada uut testi?</string>
     <string name="confirm_exit_test">Kas soovite testi katkestada?</string>
-    <string name="on_going_test">Töötav test</string>
+    <string name="resume_test">Jätka testi</string>
     <string name="theme_setting">Teemaseaded</string>
     <string name="follow_system">Järgi süsteemi</string>
     <string name="light_mode">Hele režiim</string>
@@ -126,4 +126,22 @@
     <string name="title_generate_deck_from_existing">Loo kaardipakk olemasolevast Gemini abil</string>
     <string name="title_generate_deck_from_image">Loo kaardipakk piltidest Geminiga</string>
     <string name="save_and_add_another">Salvesta &amp; Lisa veel üks</string>
+    <string name="study_due_cards">Õpi tähtaegseid kaarte</string>
+    <string name="study_due_cards_with_count">Õpi tähtaegseid kaarte (%1$d)</string>
+    <string name="grade_again">Uuesti</string>
+    <string name="grade_hard">Raske</string>
+    <string name="grade_good">Hea</string>
+    <string name="grade_easy">Lihtne</string>
+    <string name="grade_hint">Kui hästi sa seda teadsid?</string>
+    <string name="test_complete">Test on lõpetatud!</string>
+    <string name="test_complete_content">Oled selle testi kõik kaardid läbi teinud.</string>
+    <string name="test_suspended_cards_skipped">Peatatud kaardid jäeti vahele (%1$d)</string>
+    <string name="error_no_due_cards">Hetkel pole ühtegi õppimiseks tähtaega saanud kaarti. Uued kaardid on alati kaasatud.</string>
+    <string name="error_saving_card_grade">Hinnangu salvestamine ebaõnnestus</string>
+    <string name="suspend_card">Peata</string>
+    <string name="unsuspend_card">Taasta</string>
+    <string name="card_suspended">Peatatud</string>
+    <string name="error_suspending_card">Viga kaardi peatamisel</string>
+    <string name="success_suspending_card">Kaart %s peatatud edukalt</string>
+    <string name="success_unsuspending_card">Kaart %s taastatud edukalt</string>
 </resources>

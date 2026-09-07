@@ -22,25 +22,41 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.model.CardSuspendStateChangedEvent;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
-import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
+import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
 import m.co.rh.id.aprovider.Provider;
 
-public class DeleteCardCmd {
+/**
+ * Suspends or unsuspends a card (Anki-style): a suspended card is excluded
+ * from due-card selection and from the study due count, but remains
+ * browsable, editable and exportable.
+ */
+public class SuspendCardCmd {
     private ExecutorService mExecutorService;
-    private DeckCardRepository mDeckCardRepo;
+    private StudyRepository mStudyRepository;
     private DeckChangeNotifier mDeckChangeNotifier;
 
-    public DeleteCardCmd(Provider provider) {
+    public SuspendCardCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
-        mDeckCardRepo = provider.get(DeckCardRepository.class);
+        mStudyRepository = provider.get(StudyRepository.class);
         mDeckChangeNotifier = provider.get(DeckChangeNotifier.class);
     }
 
-    public Single<Card> execute(Card card) {
+    /**
+     * Sets the suspended flag of the card's review state.
+     * Review-state rows are created lazily (on first grade or first suspend),
+     * so suspending a never-studied card creates its row here with
+     * dueDateTime still null until the first grade; the study queries treat a
+     * null dueDateTime as new/due again after unsuspend.
+     * The find-or-create runs in a transaction so a concurrent grade cannot
+     * interleave between the read and the upsert.
+     */
+    public Single<Card> execute(Card card, boolean suspend) {
         return Single.fromCallable(() -> {
-            mDeckCardRepo.deleteCard(card);
-            mDeckChangeNotifier.cardDeleted(card);
+            mStudyRepository.suspendCard(card.id, suspend);
+            mDeckChangeNotifier.cardSuspendStateChanged(
+                    new CardSuspendStateChangedEvent(card, suspend));
             return card;
         }).subscribeOn(Schedulers.from(mExecutorService));
     }
