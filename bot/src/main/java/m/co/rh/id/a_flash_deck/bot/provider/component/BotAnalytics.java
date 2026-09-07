@@ -103,6 +103,10 @@ public class BotAnalytics implements ProviderDisposable {
                         mSuggestedCardChangeNotifier.reloadSuggestedCard();
                     });
                 }));
+        mCompositeDisposable.add(mDeckChangeNotifier.getSuspendStateChangedFlow()
+                .observeOn(Schedulers.from(mExecutorService))
+                .subscribe(cardSuspendStateChangedEvent ->
+                        mSuggestedCardChangeNotifier.reloadSuggestedCard()));
         mExecutorService.execute(() -> {
             PeriodicWorkRequest logCleanerWorkerRequest = new PeriodicWorkRequest.Builder(BotLogCleanerWorker.class,
                     30, TimeUnit.DAYS)

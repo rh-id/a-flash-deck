@@ -36,6 +36,7 @@ import java.util.concurrent.Future;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
+import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.bot.R;
 import m.co.rh.id.a_flash_deck.bot.dao.CardLogDao;
 import m.co.rh.id.a_flash_deck.bot.dao.SuggestedCardDao;
@@ -61,6 +62,7 @@ public class BotAnalyzeWorker extends Worker {
         IAppNotificationHandler appNotificationHandler = provider.get(IAppNotificationHandler.class);
         SuggestedCardChangeNotifier suggestedCardChangeNotifier = provider.get(SuggestedCardChangeNotifier.class);
         CardDao cardDao = provider.get(CardDao.class);
+        CardReviewStateDao cardReviewStateDao = provider.get(CardReviewStateDao.class);
         CardLogDao cardLogDao = provider.get(CardLogDao.class);
         SuggestedCardDao suggestedCardDao = provider.get(SuggestedCardDao.class);
         int countCards = suggestedCardDao.countSuggestedCard();
@@ -79,7 +81,11 @@ public class BotAnalyzeWorker extends Worker {
         List<Long> cardIds = cardLogDao.findCardLogCardIdByCreatedDateFromTo(_2dayCreatedFrom, todayCreatedTo);
         // check if the card actually still exist
         List<Long> existingCardIds = cardDao.findCardIdsByCardIds(cardIds);
+        // suspended cards keep their logs but must not be counted or suggested
+        Set<Long> suspendedCardIds = new LinkedHashSet<>(
+                cardReviewStateDao.findSuspendedCardIdsByCardIds(existingCardIds));
         Set<Long> selectedCardIds = new LinkedHashSet<>(existingCardIds);
+        selectedCardIds.removeAll(suspendedCardIds);
         List<Future<CardIdScore>> cardFutureList = new ArrayList<>();
         for (Long cardId : selectedCardIds) {
             cardFutureList.add(executorService.submit(() -> {

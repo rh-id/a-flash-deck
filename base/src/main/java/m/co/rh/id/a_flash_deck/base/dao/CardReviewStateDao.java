@@ -47,6 +47,17 @@ public abstract class CardReviewStateDao {
     @Query("DELETE FROM card_review_state WHERE card_id = :cardId")
     public abstract int deleteByCardId(long cardId);
 
+    /**
+     * Returns the card ids among the given ones that are currently suspended
+     * (queried in batches; tolerates null/empty input).
+     */
+    public List<Long> findSuspendedCardIdsByCardIds(List<Long> cardIds) {
+        return DaoBatchQueryUtil.queryInBatches(cardIds, this::getSuspendedCardIds);
+    }
+
+    @Query("SELECT card_id FROM card_review_state WHERE card_id IN (:cardIds) AND suspended = 1")
+    abstract List<Long> getSuspendedCardIds(List<Long> cardIds);
+
     @Query("DELETE FROM card_review_state WHERE card_id IN " +
             "(SELECT id FROM card WHERE deck_id IN (:deckIds))")
     public abstract int deleteByDeckIds(List<Long> deckIds);

@@ -18,12 +18,15 @@
 package m.co.rh.id.a_flash_deck.bot.provider.notifier;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.bot.dao.SuggestedCardDao;
 import m.co.rh.id.a_flash_deck.bot.entity.SuggestedCard;
 import m.co.rh.id.aprovider.Provider;
@@ -33,11 +36,13 @@ public class SuggestedCardChangeNotifier {
     private final Object mLock = new Object();
     private ExecutorService mExecutorService;
     private ProviderValue<SuggestedCardDao> mSuggestedCardDao;
+    private ProviderValue<CardReviewStateDao> mCardReviewStateDao;
     private BehaviorSubject<List<SuggestedCard>> mSuggestedCardSubject;
 
     public SuggestedCardChangeNotifier(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mSuggestedCardDao = provider.lazyGet(SuggestedCardDao.class);
+        mCardReviewStateDao = provider.lazyGet(CardReviewStateDao.class);
         mSuggestedCardSubject = BehaviorSubject.createDefault(new ArrayList<>());
         init();
     }
@@ -49,6 +54,25 @@ public class SuggestedCardChangeNotifier {
     public void reloadSuggestedCard() {
         mExecutorService.execute(() -> {
             List<SuggestedCard> suggestedCardList = mSuggestedCardDao.get().findAllSuggestedCards();
+            // suspended cards keep their suggestion rows but are hidden until
+            // they are unsuspended
+            if (!suggestedCardList.isEmpty()) {
+                List<Long> cardIds = new ArrayList<>(suggestedCardList.size());
+                for (SuggestedCard suggestedCard : suggestedCardList) {
+                    cardIds.add(suggestedCard.cardId);
+                }
+                Set<Long> suspendedCardIds = new LinkedHashSet<>(
+                        mCardReviewStateDao.get().findSuspendedCardIdsByCardIds(cardIds));
+                if (!suspendedCardIds.isEmpty()) {
+                    List<SuggestedCard> filteredList = new ArrayList<>(suggestedCardList.size());
+                    for (SuggestedCard suggestedCard : suggestedCardList) {
+                        if (!suspendedCardIds.contains(suggestedCard.cardId)) {
+                            filteredList.add(suggestedCard);
+                        }
+                    }
+                    suggestedCardList = filteredList;
+                }
+            }
             synchronized (mLock) {
                 mSuggestedCardSubject.onNext(suggestedCardList);
             }
