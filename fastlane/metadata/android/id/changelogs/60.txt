@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Fitur:
+* Studi berulang berjarak (spaced repetition) — nilai ingatan Anda saat tes (Lagi / Sulit / Baik / Mudah) untuk menjadwalkan ulasan berikutnya setiap kartu secara otomatis
+* Tombol Belajar Jatuh Tempo baru yang menampilkan jumlah kartu yang jatuh tempo atau baru di semua dek
+* Tangguhkan kartu untuk menyisihkannya; kartu yang ditangguhkan dikecualikan dari Belajar Jatuh Tempo, tes, dan saran flash bot
+
+Perbaikan:
+* Daftar dek dan kartu kini diperbarui setelah mengimpor dek (.apkg / zip / json)
+* Kartu yang ditangguhkan dikecualikan dari analisis dan saran flash bot

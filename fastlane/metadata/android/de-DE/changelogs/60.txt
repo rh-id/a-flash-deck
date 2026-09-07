@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Neu:
+* Spaced-Repetition-Lernen — bewerten Sie während des Tests Ihren Abruf (Nochmal / Schwer / Gut / Leicht), um die nächste Wiederholung jeder Karte automatisch zu planen
+* Neuer „Fällig lernen“-Button, der anzeigt, wie viele Karten über alle Stapel hinweg fällig oder neu sind
+* Karten zum Beiseitelegen pausieren; pausierte Karten werden bei „Fällig lernen“, Tests und Flash-Bot-Vorschlägen ausgeschlossen
+
+Fehlerbehebungen:
+* Stapel- und Kartenlisten werden nach dem Import von Stapeln (.apkg / zip / json) jetzt aktualisiert
+* Pausierte Karten werden von der Flash-Bot-Analyse und den Vorschlägen ausgeschlossen

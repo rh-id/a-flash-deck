@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Nýtt:
+* Endurtekning með millibili — metið minnið ykkar í prófum (Aftur / Erfitt / Gott / Auðvelt) til að áætla næsta endurskoðun hvers spjalds sjálfkrafa
+* Nýr „Til að læra“ hnappur sem sýnir hve mörg spjöld eru komin á dagskrá eða ný í öllum kortastöflum
+* Setjið spjöld í bið til að hliðra þeim; spjöld í bið eru undanskild úr „Til að læra“, prófum og tillögum flash-botsins
+
+Villuleiðréttingar:
+* Listar yfir kortastokka og spjöld uppfærast nú eftir innflutning á kortastöflum (.apkg / zip / json)
+* Spjöld í bið eru undanskild úr greiningu og tillögum flash-botsins

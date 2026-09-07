@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Features:
+* Spaced repetition study — grade your recall during tests (Again / Hard / Good / Easy) to schedule each card's next review automatically
+* New Study Due button showing how many cards are due or new across all decks
+* Suspend cards to set them aside; suspended cards are excluded from Study Due, tests, and flash bot suggestions
+
+Fixes:
+* Deck and card lists now refresh after importing decks (.apkg / zip / json)
+* Suspended cards are excluded from flash bot analysis and suggestions

@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Nouveauté :
+* Répétition espacée — évaluez votre rappel pendant les tests (À revoir / Difficile / Bien / Facile) pour planifier automatiquement la prochaine révision de chaque carte
+* Nouveau bouton « À réviser » indiquant le nombre de cartes à réviser ou nouvelles dans tous les paquets
+* Suspendez les cartes pour les mettre de côté ; les cartes suspendues sont exclues d'« À réviser », des tests et des suggestions du flash bot
+
+Corrections :
+* Les listes de paquets et de cartes s'actualisent désormais après l'importation de paquets (.apkg / zip / json)
+* Les cartes suspendues sont exclues de l'analyse et des suggestions du flash bot

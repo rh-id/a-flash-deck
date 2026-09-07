@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Novità:
+* Ripetizione dilazionata — valuta il tuo ricordo durante i test (Di nuovo / Difficile / Bene / Facile) per pianificare automaticamente il prossimo ripasso di ogni carta
+* Nuovo pulsante «Da ripassare» che mostra quante carte sono da ripassare o nuove in tutti i mazzi
+* Sospendi le carte per metterle da parte; le carte sospese sono escluse da «Da ripassare», dai test e dai suggerimenti del flash bot
+
+Correzioni:
+* Gli elenchi di mazzi e carte si aggiornano ora dopo l'importazione dei mazzi (.apkg / zip / json)
+* Le carte sospese sono escluse dall'analisi e dai suggerimenti del flash bot

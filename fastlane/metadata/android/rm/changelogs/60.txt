@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Nova funcziun:
+* Repetiziun sparpagliada — valitai durant il test co che vus regurdais (Anc / Difficil / Bain / Sempel) per planisar automaticamain la proxima repetiziun da cada charta
+* Nov buttun «Da repetir» che mussa quantas chartas che èn da repetir u novas en tut ils stacks
+* Suspendai chartas per las deponer; chartas suspendidas vegnan excludidas da «Da repetir», dals tests e da las propostas dal flash bot
+
+Corecziuns:
+* Las glistas da stacks e chartas vegnan uss actualisadas suenter l'import da stacks (.apkg / zip / json)
+* Chartas suspendidas vegnan excludidas da l'analisa e da las propostas dal flash bot

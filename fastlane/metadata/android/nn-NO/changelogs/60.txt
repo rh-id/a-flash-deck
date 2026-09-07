@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Ny funksjon:
+* Intervallrepetisjon — vurder hukommelsen din i testar (Igjen / Vanskeleg / Bra / Lett) slik at neste gjennomgang av kvart kort blir planlagd automatisk
+* Ny «Skal repeterast»-knapp som viser kor mange kort som skal repeterast eller er nye i alle kortstokkar
+* Set kort på pause for å ta dei ut av bruk; kort på pause er utelate frå «Skal repeterast», testar og flash-bot-forslag
+
+Feilrettingar:
+* Lister over kortstokkar og kort blir no oppdaterte etter import av kortstokkar (.apkg / zip / json)
+* Kort på pause er utelate frå flash-bot-analyse og forslag

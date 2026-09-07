@@ -1,0 +1,10 @@
+Release 2.0.0+60
+
+Uuendus:
+* Ajastatud kordus — hinda testides oma meenutamist (Uuesti / Raske / Hea / Lihtne), et iga kaardi järgmine kordus planeeritaks automaatselt
+* Uus nupp „Kordamiseks“, mis näitab, mitu kaarti on kõigis kaardipakkides kordamisele või uued
+* Peata kaarte, et need kõrvale panna; peatatud kaardid on välistatud „Kordamisest“, testidest ja välkroboti soovitustest
+
+Parandused:
+* Kaardipakkide ja kaartide loendid värskenduvad nüüd pärast pakkide importimist (.apkg / zip / json)
+* Peatatud kaardid on välistatud välkroboti analüüsist ja soovitustest
