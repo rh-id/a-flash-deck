@@ -4,12 +4,15 @@
 Author flashcard decks on a computer (CSV/TSV or JSON) and package them into
 the app's native import format: a ZIP containing an entry named exactly
 ``Decks.json`` (the app scans all entries; the name match is case-sensitive)
-with a JSON array of deck objects on a single line.
+with a JSON array of deck objects on a single line (single line is only
+required for app releases up to and including 2.0.0, which parse only the
+first line; the script keeps producing single-line output for maximum
+compatibility with all versions).
 
 Subcommands:
   build  Create an importable deck file from a CSV/TSV file or a JSON file.
-  fix    Rewrite a pretty-printed / multi-line deck JSON as the required
-         single line (or package it into a ZIP).
+  fix    Rewrite a pretty-printed / multi-line deck JSON as a single line
+         (or package it into a ZIP).
 
 Python 3.9+, standard library only. Cross-platform.
 
@@ -543,7 +546,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         prog="build_deck.py",
         description="Build and fix importable deck files for the Flash Deck "
                     "Android app (a ZIP containing an entry named exactly "
-                    "Decks.json with a single-line JSON array of decks).",
+                    "Decks.json with a minified single-line JSON array of decks).",
         epilog="Examples:\n"
                "  python build_deck.py build --input cards.csv --name Spanish --output Decks.zip\n"
                "  python build_deck.py build --input decks.json --output Decks.zip\n"
@@ -578,8 +581,10 @@ def main(argv: Optional[List[str]] = None) -> None:
 
     parser_fix = subparsers.add_parser(
         "fix", parents=[common],
-        help="rewrite a pretty-printed / multi-line deck JSON as the single "
-             "line the importer requires")
+        help="rewrite a pretty-printed / multi-line deck JSON as a single "
+             "line (only required for app releases up to and including 2.0.0, "
+             "which parse only the first line; kept for maximum compatibility "
+             "with all versions)")
     parser_fix.add_argument(
         "--input", required=True,
         help="deck-format JSON file (any whitespace is fine) or a ZIP containing "
