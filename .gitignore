@@ -19,3 +19,5 @@
 *.env
 nul
 secrets.properties
+__pycache__/
+*.pyc
