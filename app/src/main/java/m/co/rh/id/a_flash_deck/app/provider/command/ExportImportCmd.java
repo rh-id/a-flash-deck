@@ -319,8 +319,18 @@ public class ExportImportCmd {
 
     @NonNull
     private List<DeckModel> getDeckModelsFromJson(InputStream is) throws IOException, JSONException {
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is))) {
-            String jsonString = bufferedReader.readLine();
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            // read the whole stream, hand-authored files can contain pretty-printed (multi-line) JSON
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line).append('\n');
+            }
+            String jsonString = stringBuilder.toString();
+            // strip UTF-8 BOM if present, desktop editors may save the file with one
+            if (jsonString.startsWith("\uFEFF")) {
+                jsonString = jsonString.substring(1);
+            }
             JSONArray jsonArray = new JSONArray(jsonString);
             int size = jsonArray.length();
             List<DeckModel> deckModelsFromJson = new ArrayList<>();

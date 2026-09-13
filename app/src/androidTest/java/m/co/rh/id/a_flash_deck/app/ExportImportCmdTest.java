@@ -39,12 +39,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
@@ -477,6 +480,139 @@ public class ExportImportCmdTest {
 
         List<Card> cardList = cardDao.getCardByDeckId(dbDeck.id);
         assertEquals(0, cardList.size());
+    }
+
+    /**
+     * Tests that importing a ZIP whose Decks.json entry is pretty-printed
+     * (multi-line) JSON works. Regression test for GitHub issue #36 where
+     * only the first line of the entry was parsed.
+     */
+    @Test
+    public void importFile_prettyPrintedDecksJsonZip() throws Exception {
+        ExportImportCmd cmd = new ExportImportCmd(testProvider);
+        File tempZip = createDecksZip(buildPrettyDecksJson());
+        try {
+            List<DeckModel> deckModelList = cmd.importFile(tempZip).blockingGet();
+            assertSingleTestDeckImported(deckModelList);
+        } finally {
+            tempZip.delete();
+        }
+    }
+
+    /**
+     * Tests that importing a plain (non-ZIP) .json file containing
+     * pretty-printed (multi-line) JSON works, same as the ZIP entry case.
+     */
+    @Test
+    public void importFile_prettyPrintedJsonFile() throws Exception {
+        ExportImportCmd cmd = new ExportImportCmd(testProvider);
+        File tempJson = File.createTempFile("test_deck_import_", ".json");
+        try {
+            try (FileOutputStream fos = new FileOutputStream(tempJson)) {
+                fos.write(buildPrettyDecksJson().getBytes(StandardCharsets.UTF_8));
+            }
+            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet();
+            assertSingleTestDeckImported(deckModelList);
+        } finally {
+            tempJson.delete();
+        }
+    }
+
+    /**
+     * Tests that a single-line JSON file (the format the app itself exports)
+     * still imports correctly after full-stream parsing was introduced.
+     */
+    @Test
+    public void importFile_singleLineJsonFile() throws Exception {
+        ExportImportCmd cmd = new ExportImportCmd(testProvider);
+        File tempJson = File.createTempFile("test_deck_import_", ".json");
+        try {
+            try (FileOutputStream fos = new FileOutputStream(tempJson)) {
+                fos.write(buildSingleLineDecksJson().getBytes(StandardCharsets.UTF_8));
+            }
+            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet();
+            assertSingleTestDeckImported(deckModelList);
+        } finally {
+            tempJson.delete();
+        }
+    }
+
+    /**
+     * Tests that a leading UTF-8 BOM is stripped before parsing, desktop
+     * editors may save the file with one.
+     */
+    @Test
+    public void importFile_jsonWithUtf8Bom() throws Exception {
+        ExportImportCmd cmd = new ExportImportCmd(testProvider);
+        File tempJson = File.createTempFile("test_deck_import_", ".json");
+        try {
+            try (FileOutputStream fos = new FileOutputStream(tempJson)) {
+                fos.write(('\uFEFF' + buildSingleLineDecksJson()).getBytes(StandardCharsets.UTF_8));
+            }
+            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet();
+            assertSingleTestDeckImported(deckModelList);
+        } finally {
+            tempJson.delete();
+        }
+    }
+
+    /**
+     * Hand-authored Decks.json content, pretty-printed with 2-space indentation.
+     */
+    private String buildPrettyDecksJson() {
+        return "[\n" +
+                "  {\n" +
+                "    \"serialVersionUID\": -8121772616636312403,\n" +
+                "    \"deck\": {\n" +
+                "      \"id\": 1,\n" +
+                "      \"name\": \"test deck\",\n" +
+                "      \"createdDateTime\": \"1789240551008\",\n" +
+                "      \"updatedDateTime\": \"1789240551008\"\n" +
+                "    },\n" +
+                "    \"cardList\": [\n" +
+                "      {\n" +
+                "        \"id\": 1,\n" +
+                "        \"deckId\": 1,\n" +
+                "        \"ordinal\": 0,\n" +
+                "        \"question\": \"this is question\",\n" +
+                "        \"questionImage\": \"\",\n" +
+                "        \"questionVoice\": \"\",\n" +
+                "        \"answer\": \"this is answer\",\n" +
+                "        \"answerImage\": \"\",\n" +
+                "        \"answerVoice\": \"\",\n" +
+                "        \"isReversibleQA\": false,\n" +
+                "        \"isReversed\": false\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "]";
+    }
+
+    private String buildSingleLineDecksJson() {
+        return "[{\"serialVersionUID\":-8121772616636312403,\"deck\":{\"id\":1,\"name\":\"test deck\",\"createdDateTime\":\"1789240551008\",\"updatedDateTime\":\"1789240551008\"},\"cardList\":[{\"id\":1,\"deckId\":1,\"ordinal\":0,\"question\":\"this is question\",\"questionImage\":\"\",\"questionVoice\":\"\",\"answer\":\"this is answer\",\"answerImage\":\"\",\"answerVoice\":\"\",\"isReversibleQA\":false,\"isReversed\":false}]}]";
+    }
+
+    private File createDecksZip(String decksJsonContent) throws Exception {
+        File zipFile = File.createTempFile("test_deck_import_", ".zip");
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
+            zipOutputStream.putNextEntry(new ZipEntry("Decks.json"));
+            zipOutputStream.write(decksJsonContent.getBytes(StandardCharsets.UTF_8));
+            zipOutputStream.closeEntry();
+        }
+        return zipFile;
+    }
+
+    private void assertSingleTestDeckImported(List<DeckModel> deckModelList) {
+        assertEquals(1, deckModelList.size());
+        Deck deckResult = deckModelList.get(0).getDeck();
+        assertNotNull(deckResult);
+        assertEquals("test deck", deckResult.name);
+        ArrayList<Card> cardArrayListResult = deckModelList.get(0).getCardList();
+        assertEquals(1, cardArrayListResult.size());
+        Card resultCard = cardArrayListResult.get(0);
+        assertEquals(0, resultCard.ordinal);
+        assertEquals("this is question", resultCard.question);
+        assertEquals("this is answer", resultCard.answer);
     }
 
     private byte[] readFileBytes(File file) throws Exception {

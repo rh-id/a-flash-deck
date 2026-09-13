@@ -33,13 +33,13 @@ Decks.zip
 
 A JSON **array of deck objects**, written as UTF-8.
 
-> **Critical gotcha:** the JSON must be on a **single line** (a single trailing
-> newline after `]` is fine). The current importer reads only the first line of
-> the entry: `getDeckModelsFromJson` uses
-> `new BufferedReader(...).readLine()` (`ExportImportCmd.java`, line 323), so
-> any pretty-printing / newline inside the JSON breaks the import with
-> `Unterminated array at character 1 of [`. This will no longer be required
-> once that bug is fixed.
+> **Version note:** releases up to and including 2.0.0 parse only the **first
+> line** of the JSON (`getDeckModelsFromJson` used
+> `new BufferedReader(...).readLine()`), so any pretty-printing / newline inside
+> the JSON breaks the import there with `Unterminated array at character 1 of [`.
+> For those versions the JSON must be on a **single line** (a single trailing
+> newline after `]` is fine) or built with the helper script. The fix relaxing
+> this lands in the next release.
 
 ### Deck object
 
@@ -79,8 +79,8 @@ sibling ZIP entries under the matching `media/...` directory listed above.
 
 ## Complete minimal example
 
-Readable form (for humans — **do not** import it pretty-printed, see the
-single-line gotcha above):
+Readable form (for humans — releases up to and including 2.0.0 cannot import
+it pretty-printed, see the version note above):
 
 ```json
 [
@@ -111,7 +111,7 @@ single-line gotcha above):
 ]
 ```
 
-What actually goes into the ZIP entry — exactly one line:
+What actually goes into the ZIP entry — minified form (maximum compatibility):
 
 ```
 [{"serialVersionUID":-8121772616636312403,"deck":{"id":1,"name":"test deck","createdDateTime":"1789240551008","updatedDateTime":"1789240551008"},"cardList":[{"id":1,"deckId":1,"ordinal":0,"question":"What is the capital of France?","questionImage":"","questionVoice":"","answer":"Paris","answerImage":"","answerVoice":"","isReversibleQA":false,"isReversed":false}]}]
@@ -119,10 +119,12 @@ What actually goes into the ZIP entry — exactly one line:
 
 ## Gotchas checklist
 
-1. **One line only.** The importer parses only the first line of `Decks.json`
-   (`ExportImportCmd.java`, `getDeckModelsFromJson`, `readLine()` at line 323).
-   Pretty-printed JSON fails with `Unterminated array at character 1 of [`.
-   Use `scripts/build_deck.py fix` to collapse a pretty-printed file.
+1. **Single line for old releases.** Releases up to and including 2.0.0 parse
+   only the first line of `Decks.json` (`ExportImportCmd.java`,
+   `getDeckModelsFromJson`, `readLine()`), so pretty-printed JSON fails there
+   with `Unterminated array at character 1 of [`. Use `scripts/build_deck.py fix`
+   to collapse a pretty-printed file for those versions (the fix relaxing this
+   lands in the next release).
 2. **Entry name is exact and case-sensitive.** `Decks.json`, at the ZIP root.
    If it is missing (or mis-cased), the importer does not error — it silently
    imports 0 decks.

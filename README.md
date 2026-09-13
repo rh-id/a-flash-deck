@@ -68,7 +68,7 @@ The app supports bidirectional import/export with Anki `.apkg` format:
 
 ### Authoring Decks on a Computer
 
-Decks can also be authored as the native JSON format (a ZIP containing an entry named exactly `Decks.json` — the app scans all entries and the name match is case-sensitive — with a single-line JSON array of deck objects). Field reference, media layout, and format gotchas: [docs/deck-json-schema.md](docs/deck-json-schema.md). A standard-library-only helper script builds import files from CSV/TSV or JSON and fixes pretty-printed ones:
+Decks can also be authored as the native JSON format (a ZIP containing an entry named exactly `Decks.json` — the app scans all entries and the name match is case-sensitive — with a JSON array of deck objects). Releases up to and including 2.0.0 parse only the first line of the JSON, so keep it on a single line (or use the helper script) for those versions; the fix relaxing this lands in the next release. Field reference, media layout, and format gotchas: [docs/deck-json-schema.md](docs/deck-json-schema.md). A standard-library-only helper script builds import files from CSV/TSV or JSON and fixes pretty-printed ones:
 
 ```
 python scripts/build_deck.py build --input cards.csv --name "Spanish vocab" --output Decks.zip
