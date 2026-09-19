@@ -39,6 +39,7 @@ A simple and easy to use flash card app to help you study.
 * Spaced repetition study — SM-2-lite scheduling with a Study Due button showing how many cards are due or new across all decks
 * Grade your recall during tests (Again / Hard / Good / Easy) to schedule each card's next review
 * Suspend cards to set them aside — suspended cards are excluded from study and test flows (Study Due, Start Test, bot suggestions)
+* Statistics page — daily review counts, day streak, retention (last 30 days), due forecast for the next 14 days, and per-deck due/new progress (history starts from when this feature shipped)
 * Flash bot to smartly suggest list of card to test you
 * AI-powered deck generation using Google Gemini API — generate from a topic, transform existing decks (translate, expand, create harder versions), generate from captured camera photos and gallery images, or generate a new deck from a single card
 * AI model selection — choose from available Gemini models dynamically
@@ -302,7 +303,7 @@ Navigation is managed by the `a-navigator` library:
 The app uses Room Persistence Library with two databases:
 
 #### AppDatabase (base module)
-- **Version**: 15 (includes auto-migration from 12→13 that removed persisted `isReversed` column from CARD table; `isReversed` is now a runtime-only `@Ignore` field, with reversible behavior using persisted `is_reversible_qa` flag only; migration 14→15 creates the `card_review_state` table — SM-2-lite spaced-repetition review state, one row per card, absent row = new card, with a `suspended` flag defaulting to 0)
+- **Version**: 15 (includes auto-migration from 12→13 that removed persisted `isReversed` column from CARD table; `isReversed` is now a runtime-only `@Ignore` field, with reversible behavior using persisted `is_reversible_qa` flag only; migration 14→15 creates the `card_review_state` table — SM-2-lite spaced-repetition review state, one row per card, absent row = new card, with a `suspended` flag defaulting to 0) → **16** (migration 15→16 creates the append-only `review_log` table — one row per graded review, powering the statistics page; starts empty on upgrade, no backfill of earlier grading history)
 - **Entities**:
   - `Deck`: Collection of flash cards
   - `Card`: Individual flash card with question/answer content, optional image and voice attachments, and a reversible-QA flag
@@ -310,6 +311,7 @@ The app uses Room Persistence Library with two databases:
   - `AndroidNotification`: Notification history
   - `NotificationTimer`: Scheduled notification timers
   - `CardReviewState`: Per-card spaced-repetition review state (SM-2-lite scheduling with an Anki-style `suspended` flag; suspended cards are excluded from study and test flows (Study Due, Start Test, bot suggestions))
+  - `ReviewLog`: Append-only history of every graded review (card, deck, grade, timestamp) powering the statistics page
 
 #### BotDatabase (bot module)
 - **Entities**:
@@ -326,6 +328,7 @@ erDiagram
     DECK ||--o{ TEST : uses
     DECK ||--o{ NOTIFICATION_TIMER : schedules
     CARD ||--o| CARD_REVIEW_STATE : "review state for"
+    CARD ||--o{ REVIEW_LOG : "review history of"
 
     CARD {
         long id PK
@@ -371,6 +374,14 @@ erDiagram
         int lapses
         date last_review_date_time
         boolean suspended
+    }
+
+    REVIEW_LOG {
+        long id PK
+        long card_id
+        long deck_id
+        int grade
+        date created_date_time
     }
 
     CARD_LOG {

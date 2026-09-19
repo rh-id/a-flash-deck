@@ -25,6 +25,7 @@ import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.CardReviewState;
+import m.co.rh.id.a_flash_deck.base.entity.ReviewLog;
 import m.co.rh.id.a_flash_deck.base.model.ReviewScheduler;
 import m.co.rh.id.a_flash_deck.base.room.AppDatabase;
 
@@ -49,10 +50,12 @@ public class StudyRepository {
      * Applies a study grade to the card's review state and schedules the next
      * due date time. Review-state rows are created lazily (on first grade or
      * first suspend), so grading a never-studied card creates its row here.
+     * Also appends a ReviewLog entry so the statistics page can report daily
+     * review counts, streak and retention.
      * The find-or-create-and-schedule runs in a transaction so a concurrent
      * suspend cannot interleave between the read and the upsert.
      */
-    public void applyGrade(long cardId, int grade, Date now) {
+    public void applyGrade(long cardId, long deckId, int grade, Date now) {
         mAppDatabase.runInTransaction(() -> {
             CardReviewState cardReviewState = mReviewStateDao.findByCardId(cardId);
             if (cardReviewState == null) {
@@ -60,6 +63,12 @@ public class StudyRepository {
             }
             ReviewScheduler.schedule(cardReviewState, grade, now);
             mReviewStateDao.insertReviewState(cardReviewState);
+            ReviewLog reviewLog = new ReviewLog();
+            reviewLog.cardId = cardId;
+            reviewLog.deckId = deckId;
+            reviewLog.grade = grade;
+            reviewLog.createdDateTime = new Date(now.getTime());
+            mAppDatabase.reviewLogDao().insertReviewLog(reviewLog);
         });
     }
 

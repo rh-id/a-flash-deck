@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Erreur lors de la suspension de la carte</string>
     <string name="success_suspending_card">Carte %s suspendue avec succès</string>
     <string name="success_unsuspending_card">Carte %s réactivée avec succès</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistiques</string>
+    <string name="stats_reviews_today">Révisions aujourd\'hui</string>
+    <string name="stats_streak">Jours d\'affilée</string>
+    <string name="stats_due_now">Dues maintenant</string>
+    <string name="stats_reviews_last_30_days">Révisions (30 derniers jours)</string>
+    <string name="stats_retention">Rétention (30 derniers jours)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d révisions)</string>
+    <string name="stats_today_grades">Notes du jour</string>
+    <string name="stats_due_forecast">Prévision des échéances (14 prochains jours)</string>
+    <string name="stats_due_forecast_summary">%1$d nouvelles · %2$d dues plus tard</string>
+    <string name="stats_by_deck">Par paquet</string>
+    <string name="stats_deck_summary">%1$d cartes · %2$d dues</string>
+    <string name="stats_empty_history">Pas encore d\'historique de révision. Notez des cartes dans un test et vos statistiques apparaîtront ici.</string>
 </resources>

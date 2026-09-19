@@ -23,6 +23,7 @@ import androidx.room.Query;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.model.DeckDueCount;
 
 /**
  * DAO that handles study selection queries
@@ -52,6 +53,32 @@ public abstract class StudyDao {
             "OR (card_review_state.suspended = 0 " +
             "AND (card_review_state.due_date_time IS NULL OR card_review_state.due_date_time <= :now)))")
     public abstract int countDueAndNewCards(long now);
+
+    /**
+     * A card is new when it has no review-state row (never studied), so the
+     * count is simply the number of cards missing a review-state row.
+     */
+    @Query("SELECT COUNT(*) FROM card LEFT JOIN card_review_state ON card.id = card_review_state.card_id " +
+            "WHERE card_review_state.card_id IS NULL")
+    public abstract int countNewCards();
+
+    /**
+     * Per-deck count of due or new cards. Same due/null handling as
+     * {@link #countDueAndNewCards(long)}: the suspended and due checks MUST
+     * stay INSIDE the due branch, because for a missing row (LEFT JOIN) every
+     * card_review_state column is NULL and both "NULL = 0" and "NULL <= :now"
+     * evaluate to NULL (not true), which would drop never-studied cards.
+     * due_date_time is also NULL for a row lazily created by suspending a
+     * never-studied card, so the explicit IS NULL check keeps such cards
+     * counted after unsuspend.
+     */
+    @Query("SELECT card.deck_id AS deckId, COUNT(*) AS count " +
+            "FROM card LEFT JOIN card_review_state ON card.id = card_review_state.card_id " +
+            "WHERE (card_review_state.card_id IS NULL " +
+            "OR (card_review_state.suspended = 0 " +
+            "AND (card_review_state.due_date_time IS NULL OR card_review_state.due_date_time <= :now))) " +
+            "GROUP BY card.deck_id")
+    public abstract List<DeckDueCount> countDueAndNewCardsByDeckId(long now);
 
     /**
      * Cards in the given decks that are not suspended. A missing review-state row

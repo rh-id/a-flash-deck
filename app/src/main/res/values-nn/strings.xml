@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Feil ved pausing av kort</string>
     <string name="success_suspending_card">Kort satt på pause %s</string>
     <string name="success_unsuspending_card">Kort gjenopptatt %s</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistikk</string>
+    <string name="stats_reviews_today">Øvingar i dag</string>
+    <string name="stats_streak">Dagar på rad</string>
+    <string name="stats_due_now">Forfallne no</string>
+    <string name="stats_reviews_last_30_days">Øvingar (siste 30 dagar)</string>
+    <string name="stats_retention">Hugprosent (siste 30 dagar)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d øvingar)</string>
+    <string name="stats_today_grades">Vurderingar i dag</string>
+    <string name="stats_due_forecast">Forfallprognose (komande 14 dagar)</string>
+    <string name="stats_due_forecast_summary">%1$d nye · %2$d forfallne seinare</string>
+    <string name="stats_by_deck">Etter kortstokk</string>
+    <string name="stats_deck_summary">%1$d kort · %2$d forfallne</string>
+    <string name="stats_empty_history">Ingen øvingshistorikk ennå. Vurder kort i ein test, og statistikken din vert vist her.</string>
 </resources>

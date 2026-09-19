@@ -145,4 +145,19 @@
     <string name="error_suspending_card">暂停卡片时出错</string>
     <string name="success_suspending_card">卡片 %s 已成功暂停</string>
     <string name="success_unsuspending_card">卡片 %s 已成功取消暂停</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">统计</string>
+    <string name="stats_reviews_today">今日复习</string>
+    <string name="stats_streak">连续学习天数</string>
+    <string name="stats_due_now">当前到期</string>
+    <string name="stats_reviews_last_30_days">复习（近30天）</string>
+    <string name="stats_retention">记忆保留率（近30天）</string>
+    <string name="stats_retention_value">%1$d%%（共 %2$d 次复习）</string>
+    <string name="stats_today_grades">今日评分</string>
+    <string name="stats_due_forecast">到期预测（未来14天）</string>
+    <string name="stats_due_forecast_summary">%1$d 张新卡 · %2$d 张稍后到期</string>
+    <string name="stats_by_deck">按牌组</string>
+    <string name="stats_deck_summary">%1$d 张卡片 · %2$d 张到期</string>
+    <string name="stats_empty_history">暂无复习记录。在测试中为卡片评分后，统计数据将显示在这里。</string>
 </resources>

@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Errur suspendend la carta</string>
     <string name="success_suspending_card">Success suspendend la carta %s</string>
     <string name="success_unsuspending_card">Success reactivand la carta %s</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statisticas</string>
+    <string name="stats_reviews_today">Repetiziuns oz</string>
+    <string name="stats_streak">Dis a la fila</string>
+    <string name="stats_due_now">Da scadenza ussa</string>
+    <string name="stats_reviews_last_30_days">Repetiziuns (ultims 30 dis)</string>
+    <string name="stats_retention">Rimembranza (ultims 30 dis)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d repetiziuns)</string>
+    <string name="stats_today_grades">Valitaziuns dad oz</string>
+    <string name="stats_due_forecast">Prognosa da scadenza (proxims 14 dis)</string>
+    <string name="stats_due_forecast_summary">%1$d novas · %2$d da scadenza pli tard</string>
+    <string name="stats_by_deck">Per pachet</string>
+    <string name="stats_deck_summary">%1$d cartas · %2$d da scadenza</string>
+    <string name="stats_empty_history">Anc nagina istorgia da repetiziuns. Valita chartas in in test e tias statisticas cumparan qua.</string>
 </resources>

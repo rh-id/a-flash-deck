@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Error suspending card</string>
     <string name="success_suspending_card">Success suspending card %s</string>
     <string name="success_unsuspending_card">Success unsuspending card %s</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistics</string>
+    <string name="stats_reviews_today">Reviews today</string>
+    <string name="stats_streak">Day streak</string>
+    <string name="stats_due_now">Due now</string>
+    <string name="stats_reviews_last_30_days">Reviews (last 30 days)</string>
+    <string name="stats_retention">Retention (last 30 days)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d reviews)</string>
+    <string name="stats_today_grades">Today\'s grades</string>
+    <string name="stats_due_forecast">Due forecast (next 14 days)</string>
+    <string name="stats_due_forecast_summary">%1$d new · %2$d due later</string>
+    <string name="stats_by_deck">By deck</string>
+    <string name="stats_deck_summary">%1$d cards · %2$d due</string>
+    <string name="stats_empty_history">No review history yet. Grade cards in a test and your statistics will appear here.</string>
 </resources>

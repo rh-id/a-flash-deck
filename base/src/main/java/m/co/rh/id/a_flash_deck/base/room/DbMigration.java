@@ -28,7 +28,7 @@ public class DbMigration {
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
                 MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14,
-                MIGRATION_14_15};
+                MIGRATION_14_15, MIGRATION_15_16};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -176,6 +176,23 @@ public class DbMigration {
                     "`last_review_date_time` INTEGER, " +
                     "`suspended` INTEGER NOT NULL DEFAULT 0, " +
                     "PRIMARY KEY(`card_id`))");
+        }
+    };
+
+    public static final Migration MIGRATION_15_16 = new Migration(15, 16) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // create append-only review history log, one row per graded review
+            database.execSQL("CREATE TABLE IF NOT EXISTS `review_log` " +
+                    "(`id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "`card_id` INTEGER, " +
+                    "`deck_id` INTEGER, " +
+                    "`grade` INTEGER NOT NULL, " +
+                    "`created_date_time` INTEGER)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_review_log_card_id` " +
+                    "ON `review_log` (`card_id`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_review_log_created_date_time` " +
+                    "ON `review_log` (`created_date_time`)");
         }
     };
 }

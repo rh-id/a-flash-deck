@@ -107,7 +107,7 @@ public class TestStateModifier {
         return Single.fromCallable(() -> {
             synchronized (mLock) {
                 Card card = testState.currentCard();
-                mStudyRepository.get().applyGrade(card.id, grade, new Date());
+                mStudyRepository.get().applyGrade(card.id, card.deckId, grade, new Date());
                 // check BEFORE nextCard(): TestState.nextCard() increments past the end on the last card
                 boolean isLastCard = testState.getCurrentCardIndex() == testState.getTotalCards() - 1;
                 if (!isLastCard) {

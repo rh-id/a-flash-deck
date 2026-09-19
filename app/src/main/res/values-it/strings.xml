@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Errore nella sospensione della scheda</string>
     <string name="success_suspending_card">Successo nella sospensione della scheda %s</string>
     <string name="success_unsuspending_card">Successo nella riattivazione della scheda %s</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistiche</string>
+    <string name="stats_reviews_today">Ripetizioni di oggi</string>
+    <string name="stats_streak">Giorni di fila</string>
+    <string name="stats_due_now">Scadute ora</string>
+    <string name="stats_reviews_last_30_days">Ripetizioni (ultimi 30 giorni)</string>
+    <string name="stats_retention">Ritenzione (ultimi 30 giorni)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d ripetizioni)</string>
+    <string name="stats_today_grades">Valutazioni di oggi</string>
+    <string name="stats_due_forecast">Previsione scadenze (prossimi 14 giorni)</string>
+    <string name="stats_due_forecast_summary">%1$d nuove · %2$d in scadenza più tardi</string>
+    <string name="stats_by_deck">Per mazzo</string>
+    <string name="stats_deck_summary">%1$d schede · %2$d scadute</string>
+    <string name="stats_empty_history">Ancora nessuna cronologia di ripetizioni. Valuta le schede in un test e le tue statistiche appariranno qui.</string>
 </resources>

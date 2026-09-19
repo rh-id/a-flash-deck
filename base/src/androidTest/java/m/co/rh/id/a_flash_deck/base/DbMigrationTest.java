@@ -42,6 +42,8 @@ public class DbMigrationTest {
             + "-migration-test";
     private static final String TEST_DB_14_15 = DbMigrationTest.class.getName()
             + "-migration-test-14-15";
+    private static final String TEST_DB_15_16 = DbMigrationTest.class.getName()
+            + "-migration-test-15-16";
 
     @Rule
     public MigrationTestHelper helper;
@@ -91,6 +93,40 @@ public class DbMigrationTest {
         Assert.assertTrue(cursor.moveToFirst());
         Assert.assertEquals(0, cursor.getInt(
                 cursor.getColumnIndexOrThrow("suspended")));
+        cursor.close();
+        migratedDb.close();
+    }
+
+    @Test
+    public void migrate15To16() throws IOException {
+        // Create the v15 database with an existing card and its review state
+        // (the review_log table does not exist yet).
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB_15_16, 15);
+        db.execSQL("INSERT INTO deck (name, created_date_time, updated_date_time) " +
+                "VALUES ('deck1', 100, 100)");
+        db.execSQL("INSERT INTO card (deck_id, ordinal, question, answer, " +
+                "is_reversible_qa) VALUES (1, 0, 'q', 'a', 0)");
+        db.execSQL("INSERT INTO card_review_state (card_id, due_date_time, " +
+                "interval_days, ease_factor, repetitions, lapses, " +
+                "last_review_date_time, suspended) " +
+                "VALUES (1, 100, 1.0, 2.5, 1, 0, 100, 0)");
+        db.close();
+
+        // Run MIGRATION_15_16 and validate the resulting schema against v16.
+        SupportSQLiteDatabase migratedDb = helper.runMigrationsAndValidate(
+                TEST_DB_15_16, 16, true, DbMigration.MIGRATION_15_16);
+
+        // The review log starts empty (honest empty start, no backfill) and
+        // the pre-existing rows are untouched.
+        Cursor cursor = migratedDb.query("SELECT COUNT(*) FROM review_log");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals(0, cursor.getInt(0));
+        cursor.close();
+        cursor = migratedDb.query(
+                "SELECT due_date_time FROM card_review_state WHERE card_id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals(100, cursor.getLong(
+                cursor.getColumnIndexOrThrow("due_date_time")));
         cursor.close();
         migratedDb.close();
     }

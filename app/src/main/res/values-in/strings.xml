@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Error menangguhkan kartu</string>
     <string name="success_suspending_card">Sukses menangguhkan kartu %s</string>
     <string name="success_unsuspending_card">Sukses membatalkan penangguhan kartu %s</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistik</string>
+    <string name="stats_reviews_today">Latihan hari ini</string>
+    <string name="stats_streak">Hari berturut-turut</string>
+    <string name="stats_due_now">Jatuh tempo sekarang</string>
+    <string name="stats_reviews_last_30_days">Latihan (30 hari terakhir)</string>
+    <string name="stats_retention">Retensi (30 hari terakhir)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d latihan)</string>
+    <string name="stats_today_grades">Penilaian hari ini</string>
+    <string name="stats_due_forecast">Prakiraan jatuh tempo (14 hari ke depan)</string>
+    <string name="stats_due_forecast_summary">%1$d baru · %2$d jatuh tempo nanti</string>
+    <string name="stats_by_deck">Per dek</string>
+    <string name="stats_deck_summary">%1$d kartu · %2$d jatuh tempo</string>
+    <string name="stats_empty_history">Belum ada riwayat latihan. Nilai kartu dalam tes dan statistik Anda akan muncul di sini.</string>
 </resources>

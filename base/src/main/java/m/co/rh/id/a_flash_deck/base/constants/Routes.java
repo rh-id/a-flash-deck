@@ -32,6 +32,7 @@ public class Routes {
     public static final String TEST = "/test";
     public static final String NOTIFICATION_TIMERS = "/notificationTimers";
     public static final String NOTIFICATION_TIMER_DETAIL_DIALOG = "/notificationTimer/detailDialog";
+    public static final String STATS_PAGE = "/stats";
 
     public static final String AI_API_KEY_DIALOG = "/ai/apiKeyDialog";
     public static final String AI_GENERATE_DECK_PAGE = "/ai/generateDeckPage";

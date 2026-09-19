@@ -23,6 +23,7 @@ import java.util.List;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
+import m.co.rh.id.a_flash_deck.base.dao.ReviewLogDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
@@ -37,13 +38,15 @@ public class DeckCardRepository {
     private DeckDao mDeckDao;
     private CardDao mCardDao;
     private CardReviewStateDao mReviewStateDao;
+    private ReviewLogDao mReviewLogDao;
 
     public DeckCardRepository(AppDatabase appDatabase, DeckDao deckDao, CardDao cardDao,
-                              CardReviewStateDao reviewStateDao) {
+                              CardReviewStateDao reviewStateDao, ReviewLogDao reviewLogDao) {
         mAppDatabase = appDatabase;
         mDeckDao = deckDao;
         mCardDao = cardDao;
         mReviewStateDao = reviewStateDao;
+        mReviewLogDao = reviewLogDao;
     }
 
     /**
@@ -56,6 +59,7 @@ public class DeckCardRepository {
         mAppDatabase.runInTransaction(() -> {
             // must be deleted before the cards, it looks up card ids by deck id
             mReviewStateDao.deleteByDeckIds(Collections.singletonList(deck.id));
+            mReviewLogDao.deleteByDeckIds(Collections.singletonList(deck.id));
             mDeckDao.delete(deck);
             mCardDao.deleteCardsByDeckId(deck.id);
         });
@@ -71,6 +75,7 @@ public class DeckCardRepository {
         mAppDatabase.runInTransaction(() -> {
             if (card.id != null) {
                 mReviewStateDao.deleteByCardId(card.id);
+                mReviewLogDao.deleteByCardId(card.id);
             }
             mCardDao.deleteCard(card);
         });

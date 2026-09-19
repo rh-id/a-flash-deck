@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Viga kaardi peatamisel</string>
     <string name="success_suspending_card">Kaart %s peatatud edukalt</string>
     <string name="success_unsuspending_card">Kaart %s taastatud edukalt</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistika</string>
+    <string name="stats_reviews_today">Tänased kordused</string>
+    <string name="stats_streak">Järjestikpäevad</string>
+    <string name="stats_due_now">Tähtaegu praegu</string>
+    <string name="stats_reviews_last_30_days">Kordused (viimased 30 päeva)</string>
+    <string name="stats_retention">Mäletamismäär (viimased 30 päeva)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d kordust)</string>
+    <string name="stats_today_grades">Tänased hinnangud</string>
+    <string name="stats_due_forecast">Tähtaegade prognoos (järgmised 14 päeva)</string>
+    <string name="stats_due_forecast_summary">%1$d uut · %2$d hiljem tähtaegsed</string>
+    <string name="stats_by_deck">Kaardipakiti</string>
+    <string name="stats_deck_summary">%1$d kaarti · %2$d tähtaegsed</string>
+    <string name="stats_empty_history">Ülevaatuse ajalugu puudub veel. Hinda kaarte testis ja sinu statistika ilmub siia.</string>
 </resources>

@@ -128,6 +128,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         menuDonations.setOnClickListener(this);
         View menuNotificationTimers = rootLayout.findViewById(R.id.menu_notification_timers);
         menuNotificationTimers.setOnClickListener(this);
+        View menuStats = rootLayout.findViewById(R.id.menu_stats);
+        menuStats.setOnClickListener(this);
         mDrawerLayout = rootLayout.findViewById(R.id.drawer);
         mDrawerLayout.addDrawerListener(this);
         mAppBarSV.setTitle(activity.getString(R.string.home));
@@ -310,6 +312,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             mNavigator.push(Routes.CARDS);
         } else if (id == R.id.menu_notification_timers) {
             mNavigator.push(Routes.NOTIFICATION_TIMERS);
+        } else if (id == R.id.menu_stats) {
+            mNavigator.push(Routes.STATS_PAGE);
         } else {
             // if not match other ids, this is toolbar internal button id onclick: mAppBarSV.setNavigationOnClick(this);
             if (!mDrawerLayout.isOpen()) {

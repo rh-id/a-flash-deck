@@ -21,10 +21,13 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.TypeConverters;
 
+import java.util.Date;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.CardReviewState;
+import m.co.rh.id.a_flash_deck.base.room.converter.Converter;
 
 /**
  * DAO that handles card review state entity
@@ -43,6 +46,17 @@ public abstract class CardReviewStateDao {
 
     @Query("SELECT * FROM card_review_state WHERE card_id = :cardId")
     public abstract CardReviewState findByCardId(long cardId);
+
+    /**
+     * Returns the due date time of every not suspended card that has one.
+     * Used by the statistics due forecast; rows with a null due_date_time
+     * (new/never studied cards or rows lazily created by suspending a
+     * never-studied card) have no scheduled review and are excluded.
+     */
+    @TypeConverters({Converter.class})
+    @Query("SELECT due_date_time FROM card_review_state " +
+            "WHERE suspended = 0 AND due_date_time IS NOT NULL")
+    public abstract List<Date> findDueDateTimes();
 
     @Query("DELETE FROM card_review_state WHERE card_id = :cardId")
     public abstract int deleteByCardId(long cardId);

@@ -26,6 +26,7 @@ import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
+import m.co.rh.id.a_flash_deck.base.dao.ReviewLogDao;
 import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepository;
@@ -54,6 +55,8 @@ public class DatabaseProviderModule implements ProviderModule {
                 provider.get(AppDatabase.class).cardDao());
         providerRegistry.registerAsync(CardReviewStateDao.class, () ->
                 provider.get(AppDatabase.class).cardReviewStateDao());
+        providerRegistry.registerAsync(ReviewLogDao.class, () ->
+                provider.get(AppDatabase.class).reviewLogDao());
         providerRegistry.registerAsync(TestDao.class, () ->
                 provider.get(AppDatabase.class).testDao());
         providerRegistry.registerAsync(StudyDao.class, () ->
@@ -64,7 +67,8 @@ public class DatabaseProviderModule implements ProviderModule {
         );
         providerRegistry.registerAsync(DeckCardRepository.class, () -> {
             AppDatabase db = provider.get(AppDatabase.class);
-            return new DeckCardRepository(db, db.deckDao(), db.cardDao(), db.cardReviewStateDao());
+            return new DeckCardRepository(db, db.deckDao(), db.cardDao(),
+                    db.cardReviewStateDao(), db.reviewLogDao());
         });
         providerRegistry.registerAsync(StudyRepository.class, () -> {
             AppDatabase db = provider.get(AppDatabase.class);

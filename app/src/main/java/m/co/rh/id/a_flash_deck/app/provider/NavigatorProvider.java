@@ -52,6 +52,7 @@ import m.co.rh.id.a_flash_deck.app.ui.page.HomePage;
 import m.co.rh.id.a_flash_deck.app.ui.page.NotificationTimerListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SettingsPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SplashPage;
+import m.co.rh.id.a_flash_deck.app.ui.page.StatisticsPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.TestPage;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
@@ -99,6 +100,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.TEST, (args, activity) -> new TestPage());
         navMap.put(Routes.NOTIFICATION_TIMERS, (args, activity) -> new NotificationTimerListPage());
         navMap.put(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG, (args, activity) -> new NotificationTimerDetailSVDialog());
+        navMap.put(Routes.STATS_PAGE, (args, activity) -> new StatisticsPage());
         navMap.put(Routes.AI_API_KEY_DIALOG, (args, activity) -> new ApiKeyEntrySVDialog());
         navMap.put(Routes.AI_GENERATE_DECK_PAGE, (args, activity) -> new GenerateDeckFromTopicPage());
         navMap.put(Routes.AI_GENERATE_DECK_FROM_EXISTING_PAGE, (args, activity) -> new GenerateDeckFromExistingPage());

@@ -252,6 +252,14 @@
             app:icon="@drawable/ic_alarm_black" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/menu_stats"
+            style="@style/Theme.Aflashdeck.BorderlessMenuButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_statistics"
+            app:icon="@drawable/ic_bar_chart_black" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_settings"
             style="@style/Theme.Aflashdeck.BorderlessMenuButton"
             android:layout_width="match_parent"

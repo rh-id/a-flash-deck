@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Villa við að setja spjald í bið</string>
     <string name="success_suspending_card">Tókst að setja spjaldið %s í bið</string>
     <string name="success_unsuspending_card">Tókst að taka spjaldið %s úr bið</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Tölfræði</string>
+    <string name="stats_reviews_today">Æfingar í dag</string>
+    <string name="stats_streak">Dagar í röð</string>
+    <string name="stats_due_now">Fallið á núna</string>
+    <string name="stats_reviews_last_30_days">Æfingar (síðustu 30 daga)</string>
+    <string name="stats_retention">Munaðarhlutfall (síðustu 30 daga)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d æfingar)</string>
+    <string name="stats_today_grades">Einkunnir í dag</string>
+    <string name="stats_due_forecast">Spá um fall (næstu 14 daga)</string>
+    <string name="stats_due_forecast_summary">%1$d ný · %2$d falla síðar</string>
+    <string name="stats_by_deck">Eftir pakka</string>
+    <string name="stats_deck_summary">%1$d spjöld · %2$d fallin á</string>
+    <string name="stats_empty_history">Enginn æfingaferill ennþá. Einkunnaðu spjöld í prófi og tölfræðin þín mun birtast hér.</string>
 </resources>

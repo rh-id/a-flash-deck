@@ -144,4 +144,19 @@
     <string name="error_suspending_card">Fehler beim Aussetzen der Karte</string>
     <string name="success_suspending_card">Karte %s erfolgreich ausgesetzt</string>
     <string name="success_unsuspending_card">Karte %s erfolgreich wieder eingesetzt</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistiken</string>
+    <string name="stats_reviews_today">Heutige Wiederholungen</string>
+    <string name="stats_streak">Tage in Folge</string>
+    <string name="stats_due_now">Jetzt fällig</string>
+    <string name="stats_reviews_last_30_days">Wiederholungen (letzte 30 Tage)</string>
+    <string name="stats_retention">Behaltensquote (letzte 30 Tage)</string>
+    <string name="stats_retention_value">%1$d%% (%2$d Wiederholungen)</string>
+    <string name="stats_today_grades">Heutige Bewertungen</string>
+    <string name="stats_due_forecast">Fälligkeitsprognose (nächste 14 Tage)</string>
+    <string name="stats_due_forecast_summary">%1$d neu · %2$d später fällig</string>
+    <string name="stats_by_deck">Nach Kartensatz</string>
+    <string name="stats_deck_summary">%1$d Karten · %2$d fällig</string>
+    <string name="stats_empty_history">Noch kein Wiederholungsverlauf. Bewerte Karten in einem Test und deine Statistiken erscheinen hier.</string>
 </resources>
