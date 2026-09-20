@@ -48,8 +48,36 @@ fastlane supply init
 | is-IS  | Icelandic |
 | et     | Estonian |
 | rm     | Romansh |
+| zh-CN  | Chinese (Simplified) |
 
-Each locale contains `title.txt`, `short_description.txt`, and `full_description.txt`. Screenshots and changelogs are only in `en-US`.
+Each locale contains `title.txt`, `short_description.txt`, `full_description.txt`, changelogs, and images.
+
+## Screenshots
+
+Each locale directory contains 7 phone screenshots (1080x1920), captured from
+an AOSP emulator loaded with demo data, with the system locale set so the app
+UI appears translated for that locale. The shots show, in order:
+
+1. Home menu ("Study due cards")
+2. Deck list
+3. Test question card
+4. Test answer card with grade buttons
+5. Statistics page with review history
+6. Gemini deck-generation page with a topic entered
+7. Review reminder notification (expanded, with the card's picture)
+
+When refreshing screenshots, keep the set at 7 files with stable numbering so
+existing documentation and release notes stay valid. The notification shot
+(7.png) should be checked visually — a broken capture can look structurally
+identical to a good one.
+
+## Graphics Sources
+
+`graphics/launcher.svg` is the source design of the launcher/store icon
+(export to 512x512 PNG for `icon.png`), and `graphics/featuredGraphic.svg` is
+the source of the 1024x500 feature graphic. Export them with Inkscape; the
+feature graphic embeds rasterized app screenshots, so refresh it when the
+screenshots change significantly.
 
 ## Changelogs
 

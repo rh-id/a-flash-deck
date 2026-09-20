@@ -21,3 +21,4 @@ nul
 secrets.properties
 __pycache__/
 *.pyc
+/build_demo/
