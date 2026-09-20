@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Novità:
+* Nuova pagina Statistiche — rivedi la tua cronologia di ripetizioni con un grafico dell'attività di 30 giorni, il tasso di ritenzione, la ripartizione delle valutazioni e una previsione scadenze di 14 giorni
+* Icona dell'app a tema (monocromatica) su Android 13+
+
+Correzioni:
+* Risolto il problema dell'importazione dei mazzi (.apkg / zip / json) non riuscita per i file JSON su più righe (formattati)

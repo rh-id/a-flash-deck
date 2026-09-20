@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Nova funcziun:
+* Nova pagina da statisticas — consultai vossa istorgia da repetiziuns cun in diagram d'activitad da 30 dis, la rimembranza, la repartiziun da las valitaziuns ed ina prognosa da scadenza dals proxims 14 dis
+* Icona da l'app tematisada (monocromatica) sin Android 13+
+
+Corecziuns:
+* Corregì l'import da stacks (.apkg / zip / json) ch'aveva fatg naujeta per datotecas JSON cun pliras lingias (formatadas)

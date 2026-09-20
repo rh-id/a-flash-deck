@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Uuendus:
+* Uus statistikaleht — vaata oma ülevaatuse ajalugu: 30 päeva tegevusdiagramm, mäletamismäär, hinnangute jaotus ja 14 päeva tähtaegade prognoos
+* Teemaline (monokroomne) rakenduse ikoon Android 13+ seadmetel
+
+Parandused:
+* Parandatud kaardipakkide importimise (.apkg / zip / json) tõrge mitmerealiste (ilusti vormindatud) JSON-failide puhul

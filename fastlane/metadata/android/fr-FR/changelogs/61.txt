@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Nouveauté :
+* Nouvelle page Statistiques — consultez votre historique de révision avec un graphique d'activité sur 30 jours, le taux de rétention, la répartition des notes et une prévision des échéances sur 14 jours
+* Icône d'application thématique (monochrome) sur Android 13+
+
+Corrections :
+* Correction de l'échec de l'importation de paquets (.apkg / zip / json) pour les fichiers JSON multi-lignes (formatés)

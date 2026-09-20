@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Nýtt:
+* Ný tölfræðisíða — skoðið æfingaferilinn ykkar með virkniriti fyrir 30 daga, munaðarhlutfalli, skiptingu einkunna og spá um fall fyrir næstu 14 daga
+* Þemað (einfaritt) tákn forritsins á Android 13+
+
+Villuleiðréttingar:
+* Innflutningur á kortastöflum (.apkg / zip / json) mistekst ekki lengur fyrir marglínulegar (snyrtilega sniðnar) JSON-skrár

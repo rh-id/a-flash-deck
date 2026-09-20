@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Features:
+* New statistics page — review your study history with a 30-day activity chart, retention rate, grade breakdown, and a 14-day due forecast
+* Themed (monochrome) app icon on Android 13+
+
+Fixes:
+* Fixed deck import (.apkg / zip / json) failing for multi-line (pretty-printed) JSON files

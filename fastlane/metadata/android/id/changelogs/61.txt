@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Fitur:
+* Halaman Statistik baru — tinjau riwayat latihan Anda dengan grafik aktivitas 30 hari, tingkat retensi, rincian penilaian, dan prakiraan jatuh tempo 14 hari
+* Ikon aplikasi bertema (monokrom) di Android 13+
+
+Perbaikan:
+* Memperbaiki impor dek (.apkg / zip / json) yang gagal untuk file JSON multi-baris (format rapi)

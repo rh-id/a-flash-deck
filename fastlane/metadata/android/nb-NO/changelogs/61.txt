@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Ny funksjon:
+* Ny statistikkside — se gjennom øvingshistorikken din med et 30-dagers aktivitetsdiagram, hukommelsesprosent, vurderingsfordeling og en forfallprognose for de neste 14 dagene
+* Temafarget (monokromt) appikon på Android 13+
+
+Feilrettinger:
+* Import av kortstokker (.apkg / zip / json) feiler ikke lenger for flerlinjede (pent formaterte) JSON-filer

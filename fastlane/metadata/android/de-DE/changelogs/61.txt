@@ -1,0 +1,8 @@
+Release 2.1.0+61
+
+Neu:
+* Neue Statistikseite — überblicken Sie Ihren Wiederholungsverlauf mit 30-Tage-Aktivitätsdiagramm, Behaltensquote, Aufschlüsselung der Bewertungen und 14-Tage-Fälligkeitsprognose
+* Themenfähiges (monochromes) App-Symbol ab Android 13+
+
+Fehlerbehebungen:
+* Import von Stapeln (.apkg / zip / json) schlägt bei mehrzeiligen (formatierten) JSON-Dateien nicht mehr fehl
