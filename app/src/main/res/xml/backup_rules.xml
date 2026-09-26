@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 11-and-lower backup rules (fullBackupContent), mirroring the
+    data-extraction rules. The Room database (a-flash-deck.db) IS included
+    in cloud backup. Only its SQLite shared-memory side file
+    (a-flash-deck.db-shm, regenerated when the database is opened), the
+    transient serialized in-progress test session files (test/state) and
+    the encrypted Gemini API key (ai_secure_prefs) are excluded.
+    The API key is Keystore-encrypted but the ciphertext should not be
+    restored onto another device.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="ai_secure_prefs.xml" />
+    <exclude domain="database" path="a-flash-deck.db-shm" />
+    <exclude domain="file" path="test/state" />
+</full-backup-content>
