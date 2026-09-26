@@ -107,6 +107,20 @@ public class StudyRepository {
     }
 
     /**
+     * @return count of due or new cards of the given deck
+     */
+    public int getDueCardCount(long deckId) {
+        return mStudyDao.countDueAndNewCardsBySingleDeckId(deckId, System.currentTimeMillis());
+    }
+
+    /**
+     * @return all due or new cards of the given decks
+     */
+    public List<Card> findDueCardsByDeckIds(List<Long> deckIds) {
+        return mStudyDao.findDueAndNewCardsByDeckIds(deckIds, System.currentTimeMillis());
+    }
+
+    /**
      * @return the review state of a card, or null when the card is
      * new/never studied (review-state rows are created lazily on
      * first grade or first suspend)

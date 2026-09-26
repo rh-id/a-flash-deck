@@ -48,6 +48,15 @@ public class DeckQueryCmd {
                 .subscribeOn(Schedulers.from(mExecutorService));
     }
 
+    /**
+     * @return count of due or new cards of the deck
+     */
+    public Single<Integer> countDueCards(Deck deck) {
+        return Single.fromCallable(() ->
+                mStudyRepository.getDueCardCount(deck.id))
+                .subscribeOn(Schedulers.from(mExecutorService));
+    }
+
     public Single<Deck> getDeckById(long deckId) {
         return Single.fromCallable(() ->
                 mDeckDao.getDeckById(deckId))

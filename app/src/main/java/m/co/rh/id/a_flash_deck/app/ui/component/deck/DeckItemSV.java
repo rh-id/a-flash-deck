@@ -32,6 +32,7 @@ import android.widget.TextView;
 import androidx.appcompat.widget.PopupMenu;
 
 import java.io.Serializable;
+import java.util.Collections;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -40,6 +41,7 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeckQueryCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.DeleteDeckCmd;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
+import m.co.rh.id.a_flash_deck.app.provider.component.TestWorkflowCoordinator;
 import m.co.rh.id.a_flash_deck.app.ui.page.CardListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckDetailSVDialog;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
@@ -47,6 +49,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
+import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
@@ -64,11 +67,13 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     private transient RxDisposer mRxDisposer;
     private transient CommonNavConfig mCommonNavConfig;
     private transient DeckChangeNotifier mDeckChangeNotifier;
+    private transient TestChangeNotifier mTestChangeNotifier;
     private transient AppShortcutHandler mAppShortcutHandler;
     private transient DeckQueryCmd mDeckQueryCmd;
 
     private SerialBehaviorSubject<Deck> mDeck;
     private SerialBehaviorSubject<Integer> mDeckCardCount;
+    private SerialBehaviorSubject<Integer> mDueCardCount;
     private ListMode mListMode;
     private SerialBehaviorSubject<Boolean> mIsSelected;
     private transient OnItemSelectListener mOnItemSelectListener;
@@ -80,6 +85,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mDeckChangeNotifier = mSvProvider.get(DeckChangeNotifier.class);
+        mTestChangeNotifier = mSvProvider.get(TestChangeNotifier.class);
         mAppShortcutHandler = mSvProvider.get(AppShortcutHandler.class);
         mDeckQueryCmd = mSvProvider.get(DeckQueryCmd.class);
     }
@@ -88,6 +94,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         mListMode = listMode;
         mDeck = new SerialBehaviorSubject<>();
         mDeckCardCount = new SerialBehaviorSubject<>(0);
+        mDueCardCount = new SerialBehaviorSubject<>(0);
         mIsSelected = new SerialBehaviorSubject<>(false);
     }
 
@@ -113,20 +120,14 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         } else {
             buttonEdit.setVisibility(View.VISIBLE);
             buttonDelete.setVisibility(View.VISIBLE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                ShortcutManager shortcutManager = activity.getSystemService(ShortcutManager.class);
-                if (shortcutManager.isRequestPinShortcutSupported()) {
-                    buttonMore.setVisibility(View.VISIBLE);
-                }
-            } else {
-                buttonMore.setVisibility(View.GONE);
-            }
+            buttonMore.setVisibility(View.VISIBLE);
         }
         buttonEdit.setOnClickListener(this);
         buttonDelete.setOnClickListener(this);
         buttonMore.setOnClickListener(this);
         TextView textDeckName = rootLayout.findViewById(R.id.text_deck_name);
         TextView textTotalCards = rootLayout.findViewById(R.id.text_total_cards);
+        TextView textDue = rootLayout.findViewById(R.id.text_due);
         mRxDisposer.add("createView_onChangeDeck",
                 mDeck.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(deck -> {
@@ -143,6 +144,20 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                             }
                             Context context = mSvProvider.getContext();
                             textTotalCards.setText(context.getString(R.string.total_cards, integer));
+                        }));
+        mRxDisposer.add("createView_onChangeDueCardCount",
+                mDueCardCount.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(integer -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
+                            if (integer > 0) {
+                                Context context = mSvProvider.getContext();
+                                textDue.setText(context.getString(R.string.deck_due_count, integer));
+                                textDue.setVisibility(View.VISIBLE);
+                            } else {
+                                textDue.setVisibility(View.GONE);
+                            }
                         }));
         mRxDisposer.add("createView_onIsSelectedChanged",
                 mIsSelected.getSubject().observeOn(AndroidSchedulers.mainThread())
@@ -167,6 +182,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                             }
                             if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
+                                loadDueCount();
                             }
                         }));
         mRxDisposer.add("createView_onCardDeleted",
@@ -178,6 +194,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                             }
                             if (card.deckId.equals(mDeck.getValue().id)) {
                                 loadCardCount();
+                                loadDueCount();
                             }
                         }));
         mRxDisposer.add("createView_onCardMoved",
@@ -192,7 +209,28 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                             Deck currentDeck = mDeck.getValue();
                             if (sourceDeck.id.equals(currentDeck.id) || destDeck.id.equals(currentDeck.id)) {
                                 loadCardCount();
+                                loadDueCount();
                             }
+                        }));
+        mRxDisposer.add("createView_onSuspendStateChanged",
+                mDeckChangeNotifier.getSuspendStateChangedFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(cardSuspendStateChangedEvent -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
+                            if (cardSuspendStateChangedEvent.getCard().deckId.equals(mDeck.getValue().id)) {
+                                loadDueCount();
+                            }
+                        }));
+        mRxDisposer.add("createView_onStopTest",
+                mTestChangeNotifier.getStopTestEventFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(testEvent -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
+                            loadDueCount();
                         }));
         return rootLayout;
     }
@@ -217,6 +255,26 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
                         }));
     }
 
+    private void loadDueCount() {
+        if (mSvProvider == null) {
+            return;
+        }
+        mRxDisposer.add("loadDueCount_queryDueCardCount",
+                mDeckQueryCmd.countDueCards(mDeck.getValue())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((integer, throwable) -> {
+                            if (mSvProvider == null) {
+                                return;
+                            }
+                            if (throwable != null) {
+                                Context context = mSvProvider.getContext();
+                                mLogger.e(TAG, context.getString(R.string.error_counting_due_cards), throwable);
+                            } else {
+                                mDueCardCount.onNext(integer);
+                            }
+                        }));
+    }
+
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
@@ -230,6 +288,7 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
     public void setDeck(Deck deck) {
         mDeck.onNext(deck);
         loadCardCount();
+        loadDueCount();
     }
 
     public Deck getDeck() {
@@ -315,15 +374,30 @@ public class DeckItemSV extends StatefulView<Activity> implements RequireCompone
         } else if (viewId == R.id.button_more_action) {
             PopupMenu popup = new PopupMenu(view.getContext(), view);
             popup.getMenuInflater().inflate(R.menu.item_deck, popup.getMenu());
+            if (!isPinShortcutSupported(view.getContext())) {
+                popup.getMenu().removeItem(R.id.menu_create_shuffle_shortcut);
+            }
             popup.setOnMenuItemClickListener(this);
             popup.show();//showing popup menu
         }
     }
 
+    private boolean isPinShortcutSupported(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return false;
+        }
+        ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
+        return shortcutManager != null && shortcutManager.isRequestPinShortcutSupported();
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.menu_create_shuffle_shortcut) {
+        if (id == R.id.menu_study_due) {
+            new TestWorkflowCoordinator(mSvProvider, mRxDisposer)
+                    .startDueTestForDecksFlow(mNavigator, Collections.singletonList(mDeck.getValue().clone()));
+            return true;
+        } else if (id == R.id.menu_create_shuffle_shortcut) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mAppShortcutHandler.createPinnedShortcut(mDeck.getValue());
             }

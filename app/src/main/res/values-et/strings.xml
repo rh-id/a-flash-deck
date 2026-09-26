@@ -45,6 +45,8 @@
     <string name="deselect_all">Tühista kõik</string>
     <string name="total_cards">Kaardid: %d</string>
     <string name="error_counting_cards">Viga kaartide loendamisel</string>
+    <string name="deck_due_count">Tähtaegsed: %1$d</string>
+    <string name="error_counting_due_cards">Viga tähtaegsete kaartide loendamisel</string>
     <string name="question_desc_value">K: %s</string>
     <string name="answer_desc_value">V: %s</string>
     <string name="error_deleting_card">Viga kaardi kustutamisel</string>

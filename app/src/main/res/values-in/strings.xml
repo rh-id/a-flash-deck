@@ -45,6 +45,8 @@
     <string name="deselect_all">Batal pilih semua</string>
     <string name="total_cards">Kartu: %d</string>
     <string name="error_counting_cards">Error menghitung kartu</string>
+    <string name="deck_due_count">Jatuh tempo: %1$d</string>
+    <string name="error_counting_due_cards">Gagal menghitung kartu jatuh tempo</string>
     <string name="question_desc_value">P: %s</string>
     <string name="answer_desc_value">J: %s</string>
     <string name="error_deleting_card">Error menghapus kartu</string>

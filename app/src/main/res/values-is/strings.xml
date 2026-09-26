@@ -45,6 +45,8 @@
     <string name="deselect_all">Aftengja allt</string>
     <string name="total_cards">Spjöld: %d</string>
     <string name="error_counting_cards">Villa við að telja spjöld</string>
+    <string name="deck_due_count">Fallið á: %1$d</string>
+    <string name="error_counting_due_cards">Villa við að telja spjöld sem fallið er á</string>
     <string name="question_desc_value">Sp: %s</string>
     <string name="answer_desc_value">Sv: %s</string>
     <string name="error_deleting_card">Villa við að eyða spjaldi</string>

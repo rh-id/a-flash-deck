@@ -222,6 +222,34 @@ public class TestStateModifier {
     }
 
     /**
+     * Starts a new test with the due or new cards of the given decks.
+     *
+     * @return the newly started test state
+     * @throws ValidationException when the deck list is empty or no cards are due for study
+     */
+    public Single<TestState> startDueTestForDecks(List<Deck> deckList) {
+        return Single.fromCallable(() -> {
+                    synchronized (mLock) {
+                        if (deckList != null && !deckList.isEmpty()) {
+                            List<Long> deckIds = new ArrayList<>();
+                            for (Deck deck : deckList) {
+                                deckIds.add(deck.id);
+                            }
+                            List<Card> cardList = mStudyRepository.get()
+                                    .findDueCardsByDeckIds(deckIds);
+                            if (cardList.isEmpty()) {
+                                throw new ValidationException(mAppContext.getString(R.string.error_no_due_cards));
+                            }
+                            return prepareTest(cardList);
+                        } else {
+                            throw new ValidationException(mAppContext.getString(R.string.error_no_due_cards));
+                        }
+                    }
+                })
+                .subscribeOn(Schedulers.from(mExecutorService.get()));
+    }
+
+    /**
      * Starts a new test with the cards of the given ids.
      * Suspended cards are silently excluded from the test.
      *

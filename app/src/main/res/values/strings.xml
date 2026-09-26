@@ -45,6 +45,8 @@
     <string name="deselect_all">Deselect all</string>
     <string name="total_cards">Cards: %d</string>
     <string name="error_counting_cards">Error counting cards</string>
+    <string name="deck_due_count">Due: %1$d</string>
+    <string name="error_counting_due_cards">Failed to count due cards</string>
     <string name="question_desc_value">Q: %s</string>
     <string name="answer_desc_value">A: %s</string>
     <string name="error_deleting_card">Error deleting card</string>

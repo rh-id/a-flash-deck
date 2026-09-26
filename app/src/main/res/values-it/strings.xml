@@ -45,6 +45,8 @@
     <string name="deselect_all">Deseleziona tutto</string>
     <string name="total_cards">Schede: %d</string>
     <string name="error_counting_cards">Errore nel conteggio delle schede</string>
+    <string name="deck_due_count">Scadute: %1$d</string>
+    <string name="error_counting_due_cards">Errore nel conteggio delle schede scadute</string>
     <string name="question_desc_value">D: %s</string>
     <string name="answer_desc_value">R: %s</string>
     <string name="error_deleting_card">Errore nell\'eliminazione della scheda</string>

@@ -46,6 +46,8 @@
     <string name="deselect_all">取消全选</string>
     <string name="total_cards">卡片数：%d</string>
     <string name="error_counting_cards">统计卡片时出错</string>
+    <string name="deck_due_count">到期：%1$d</string>
+    <string name="error_counting_due_cards">统计到期卡片时出错</string>
     <string name="question_desc_value">问：%s</string>
     <string name="answer_desc_value">答：%s</string>
     <string name="error_deleting_card">删除卡片时出错</string>

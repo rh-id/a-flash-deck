@@ -45,6 +45,8 @@
     <string name="deselect_all">Alle abwählen</string>
     <string name="total_cards">Karten: %d</string>
     <string name="error_counting_cards">Fehler beim Zählen der Karten</string>
+    <string name="deck_due_count">Fällig: %1$d</string>
+    <string name="error_counting_due_cards">Fehler beim Zählen der fälligen Karten</string>
     <string name="question_desc_value">F: %s</string>
     <string name="answer_desc_value">A: %s</string>
     <string name="error_deleting_card">Fehler beim Löschen der Karte</string>

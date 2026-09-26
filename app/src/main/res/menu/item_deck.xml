@@ -6,6 +6,10 @@
 
     <group>
         <item
+            android:id="@+id/menu_study_due"
+            android:title="@string/study_due_cards"
+            app:showAsAction="ifRoom|withText" />
+        <item
             android:id="@+id/menu_create_shuffle_shortcut"
             android:title="@string/create_shuffle_shortcut"
             app:showAsAction="ifRoom|withText" />

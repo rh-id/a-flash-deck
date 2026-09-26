@@ -58,6 +58,23 @@
         app:layout_constraintTop_toBottomOf="@id/text_deck_name"
         tools:text="Cards: 20" />
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_due"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:layout_marginBottom="@dimen/text_margin"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/button_edit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/text_deck_name"
+        app:layout_constraintTop_toBottomOf="@id/text_total_cards"
+        tools:text="Due: 3"
+        tools:visibility="visible" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_edit"
         style="@style/Widget.AppCompat.Button.Borderless"
@@ -89,5 +106,5 @@
         app:iconTint="@color/daynight_black_white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_total_cards" />
+        app:layout_constraintTop_toBottomOf="@id/text_due" />
 </androidx.constraintlayout.widget.ConstraintLayout>

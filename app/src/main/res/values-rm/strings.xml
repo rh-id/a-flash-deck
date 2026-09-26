@@ -45,6 +45,8 @@
     <string name="deselect_all">Barmessar tut</string>
     <string name="total_cards">Cartas: %d</string>
     <string name="error_counting_cards">Errur contond las cartas</string>
+    <string name="deck_due_count">Da scadenza: %1$d</string>
+    <string name="error_counting_due_cards">Errur contond las cartas da scadenza</string>
     <string name="question_desc_value">D: %s</string>
     <string name="answer_desc_value">R: %s</string>
     <string name="error_deleting_card">Errur stizzond la carta</string>

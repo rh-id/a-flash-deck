@@ -45,6 +45,8 @@
     <string name="deselect_all">Tout désélectionner</string>
     <string name="total_cards">Cartes : %d</string>
     <string name="error_counting_cards">Erreur lors du comptage des cartes</string>
+    <string name="deck_due_count">À réviser : %1$d</string>
+    <string name="error_counting_due_cards">Erreur lors du comptage des cartes dues</string>
     <string name="question_desc_value">Q : %s</string>
     <string name="answer_desc_value">R : %s</string>
     <string name="error_deleting_card">Erreur lors de la suppression de la carte</string>
