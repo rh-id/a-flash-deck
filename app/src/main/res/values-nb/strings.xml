@@ -136,7 +136,8 @@
     <string name="grade_easy">Lett</string>
     <string name="grade_hint">Hvor godt kjente du det igjen?</string>
     <string name="test_complete">Testen er fullført!</string>
-    <string name="test_complete_content">Du har gått gjennom alle kortene i denne testen.</string>
+    <string name="test_summary_total">Svar totalt: %1$d</string>
+    <string name="test_summary_time">Tid: %1$s</string>
     <string name="test_suspended_cards_skipped">Kort på pause ble hoppet over (%1$d)</string>
     <string name="error_no_due_cards">Ingen kort står for tur til øving akkurat nå. Nye kort er alltid inkludert.</string>
     <string name="error_saving_card_grade">Klarte ikke å lagre vurderingen</string>

@@ -50,12 +50,15 @@ public class StudyRepository {
      * Applies a study grade to the card's review state and schedules the next
      * due date time. Review-state rows are created lazily (on first grade or
      * first suspend), so grading a never-studied card creates its row here.
-     * Also appends a ReviewLog entry so the statistics page can report daily
+     * Also appends a ReviewLog entry (including the answer timing split and
+     * the reversed flag) so the statistics page can report daily
      * review counts, streak and retention.
      * The find-or-create-and-schedule runs in a transaction so a concurrent
      * suspend cannot interleave between the read and the upsert.
      */
-    public void applyGrade(long cardId, long deckId, int grade, Date now) {
+    public void applyGrade(long cardId, long deckId, int grade, Date now,
+                           long timeBeforeRevealMs, long timeAfterRevealMs,
+                           boolean reversed) {
         mAppDatabase.runInTransaction(() -> {
             CardReviewState cardReviewState = mReviewStateDao.findByCardId(cardId);
             if (cardReviewState == null) {
@@ -68,6 +71,9 @@ public class StudyRepository {
             reviewLog.deckId = deckId;
             reviewLog.grade = grade;
             reviewLog.createdDateTime = new Date(now.getTime());
+            reviewLog.timeBeforeRevealMs = timeBeforeRevealMs;
+            reviewLog.timeAfterRevealMs = timeAfterRevealMs;
+            reviewLog.reversed = reversed;
             mAppDatabase.reviewLogDao().insertReviewLog(reviewLog);
         });
     }

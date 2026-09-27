@@ -68,4 +68,22 @@ public class ReviewLog implements Serializable {
     @TypeConverters({Converter.class})
     @ColumnInfo(name = "created_date_time")
     public Date createdDateTime;
+
+    /**
+     * Time in ms from the card being shown to the answer being revealed
+     */
+    @ColumnInfo(name = "time_before_reveal_ms")
+    public long timeBeforeRevealMs;
+
+    /**
+     * Time in ms from the answer being revealed to the grade being applied
+     */
+    @ColumnInfo(name = "time_after_reveal_ms")
+    public long timeAfterRevealMs;
+
+    /**
+     * Whether the card was reversed (Q and A swapped) at review time
+     */
+    @ColumnInfo(name = "reversed")
+    public boolean reversed;
 }

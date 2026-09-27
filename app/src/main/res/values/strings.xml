@@ -136,7 +136,8 @@
     <string name="grade_easy">Easy</string>
     <string name="grade_hint">How well did you know it?</string>
     <string name="test_complete">Test complete!</string>
-    <string name="test_complete_content">You have gone through all cards in this test.</string>
+    <string name="test_summary_total">Total answers: %1$d</string>
+    <string name="test_summary_time">Time: %1$s</string>
     <string name="test_suspended_cards_skipped">Suspended cards skipped (%1$d)</string>
     <string name="error_no_due_cards">No cards are due for study right now. New cards are always included.</string>
     <string name="error_saving_card_grade">Failed to save grade</string>

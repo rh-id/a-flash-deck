@@ -44,6 +44,8 @@ public class DbMigrationTest {
             + "-migration-test-14-15";
     private static final String TEST_DB_15_16 = DbMigrationTest.class.getName()
             + "-migration-test-15-16";
+    private static final String TEST_DB_16_17 = DbMigrationTest.class.getName()
+            + "-migration-test-16-17";
 
     @Rule
     public MigrationTestHelper helper;
@@ -127,6 +129,53 @@ public class DbMigrationTest {
         Assert.assertTrue(cursor.moveToFirst());
         Assert.assertEquals(100, cursor.getLong(
                 cursor.getColumnIndexOrThrow("due_date_time")));
+        cursor.close();
+        migratedDb.close();
+    }
+
+    @Test
+    public void migrate16To17() throws IOException {
+        // Create the v16 database with an existing review log entry (the
+        // timing split and reversed columns do not exist yet).
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB_16_17, 16);
+        db.execSQL("INSERT INTO deck (name, created_date_time, updated_date_time) " +
+                "VALUES ('deck1', 100, 100)");
+        db.execSQL("INSERT INTO card (deck_id, ordinal, question, answer, " +
+                "is_reversible_qa) VALUES (1, 0, 'q', 'a', 0)");
+        db.execSQL("INSERT INTO review_log (card_id, deck_id, grade, " +
+                "created_date_time) VALUES (1, 1, 3, 100)");
+        db.close();
+
+        // Run MIGRATION_16_17 and validate the resulting schema against v17.
+        SupportSQLiteDatabase migratedDb = helper.runMigrationsAndValidate(
+                TEST_DB_16_17, 17, true, DbMigration.MIGRATION_16_17);
+
+        // The new columns default to 0 for pre-existing rows.
+        Cursor cursor = migratedDb.query(
+                "SELECT time_before_reveal_ms, time_after_reveal_ms, reversed " +
+                        "FROM review_log WHERE card_id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals(0, cursor.getLong(
+                cursor.getColumnIndexOrThrow("time_before_reveal_ms")));
+        Assert.assertEquals(0, cursor.getLong(
+                cursor.getColumnIndexOrThrow("time_after_reveal_ms")));
+        Assert.assertEquals(0, cursor.getInt(
+                cursor.getColumnIndexOrThrow("reversed")));
+        cursor.close();
+
+        // The new columns accept values.
+        migratedDb.execSQL("UPDATE review_log SET time_before_reveal_ms = 1500, " +
+                "time_after_reveal_ms = 2500, reversed = 1 WHERE card_id = 1");
+        cursor = migratedDb.query(
+                "SELECT time_before_reveal_ms, time_after_reveal_ms, reversed " +
+                        "FROM review_log WHERE card_id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals(1500, cursor.getLong(
+                cursor.getColumnIndexOrThrow("time_before_reveal_ms")));
+        Assert.assertEquals(2500, cursor.getLong(
+                cursor.getColumnIndexOrThrow("time_after_reveal_ms")));
+        Assert.assertEquals(1, cursor.getInt(
+                cursor.getColumnIndexOrThrow("reversed")));
         cursor.close();
         migratedDb.close();
     }

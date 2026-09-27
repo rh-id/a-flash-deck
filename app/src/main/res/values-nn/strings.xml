@@ -136,7 +136,8 @@
     <string name="grade_easy">Enkel</string>
     <string name="grade_hint">Kor godt kjente du det igjen?</string>
     <string name="test_complete">Testen er fullført!</string>
-    <string name="test_complete_content">Du har gått gjennom alle korta i denne testen.</string>
+    <string name="test_summary_total">Svar totalt: %1$d</string>
+    <string name="test_summary_time">Tid: %1$s</string>
     <string name="test_suspended_cards_skipped">Kort på pause vart hoppa over (%1$d)</string>
     <string name="error_no_due_cards">Ingen kort står for tur til øving akkurat no. Nye kort er alltid inkluderte.</string>
     <string name="error_saving_card_grade">Klarte ikkje å lagra vurderinga</string>

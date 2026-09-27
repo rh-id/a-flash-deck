@@ -136,7 +136,8 @@
     <string name="grade_easy">Facile</string>
     <string name="grade_hint">À quel point le saviez-vous ?</string>
     <string name="test_complete">Test terminé !</string>
-    <string name="test_complete_content">Vous avez parcouru toutes les cartes de ce test.</string>
+    <string name="test_summary_total">Réponses au total : %1$d</string>
+    <string name="test_summary_time">Temps : %1$s</string>
     <string name="test_suspended_cards_skipped">Cartes suspendues ignorées (%1$d)</string>
     <string name="error_no_due_cards">Aucune carte à réviser pour le moment. Les nouvelles cartes sont toujours incluses.</string>
     <string name="error_saving_card_grade">Échec de l\'enregistrement de l\'évaluation</string>

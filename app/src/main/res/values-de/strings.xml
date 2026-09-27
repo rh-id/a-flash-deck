@@ -136,7 +136,8 @@
     <string name="grade_easy">Leicht</string>
     <string name="grade_hint">Wie gut wussten Sie es?</string>
     <string name="test_complete">Test abgeschlossen!</string>
-    <string name="test_complete_content">Sie haben alle Karten in diesem Test durchgearbeitet.</string>
+    <string name="test_summary_total">Antworten gesamt: %1$d</string>
+    <string name="test_summary_time">Zeit: %1$s</string>
     <string name="test_suspended_cards_skipped">Ausgesetzte Karten übersprungen (%1$d)</string>
     <string name="error_no_due_cards">Für das Lernen sind derzeit keine Karten fällig. Neue Karten werden immer einbezogen.</string>
     <string name="error_saving_card_grade">Fehler beim Speichern der Bewertung</string>

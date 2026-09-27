@@ -137,7 +137,8 @@
     <string name="grade_easy">简单</string>
     <string name="grade_hint">你记住了多少？</string>
     <string name="test_complete">测试完成！</string>
-    <string name="test_complete_content">你已完成本测试中的所有卡片。</string>
+    <string name="test_summary_total">总答题数：%1$d</string>
+    <string name="test_summary_time">用时：%1$s</string>
     <string name="test_suspended_cards_skipped">已跳过暂停的卡片（%1$d）</string>
     <string name="error_no_due_cards">当前没有待学习的到期卡片。新卡片始终包含在内。</string>
     <string name="error_saving_card_grade">保存评分失败</string>

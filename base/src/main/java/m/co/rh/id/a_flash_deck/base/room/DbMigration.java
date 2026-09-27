@@ -28,7 +28,7 @@ public class DbMigration {
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
                 MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14,
-                MIGRATION_14_15, MIGRATION_15_16};
+                MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -193,6 +193,16 @@ public class DbMigration {
                     "ON `review_log` (`card_id`)");
             database.execSQL("CREATE INDEX IF NOT EXISTS `index_review_log_created_date_time` " +
                     "ON `review_log` (`created_date_time`)");
+        }
+    };
+
+    public static final Migration MIGRATION_16_17 = new Migration(16, 17) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // add per-answer timing split and reversal flag to the review log
+            database.execSQL("ALTER TABLE review_log ADD COLUMN `time_before_reveal_ms` INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE review_log ADD COLUMN `time_after_reveal_ms` INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE review_log ADD COLUMN `reversed` INTEGER NOT NULL DEFAULT 0");
         }
     };
 }

@@ -136,7 +136,8 @@
     <string name="grade_easy">Auðvelt</string>
     <string name="grade_hint">Hversu vel vissir þú það?</string>
     <string name="test_complete">Prófi lokið!</string>
-    <string name="test_complete_content">Þú hefur farið yfir öll spjöld í þessu prófi.</string>
+    <string name="test_summary_total">Svör alls: %1$d</string>
+    <string name="test_summary_time">Tími: %1$s</string>
     <string name="test_suspended_cards_skipped">Spjöld í bið sleppt (%1$d)</string>
     <string name="error_no_due_cards">Engin spjöld eru á falldagi núna. Ný spjöld eru alltaf innifalin.</string>
     <string name="error_saving_card_grade">Tókst ekki að vista einkunn</string>

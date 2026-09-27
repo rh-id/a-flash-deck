@@ -47,6 +47,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.Test;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
+import m.co.rh.id.a_flash_deck.base.model.ReviewScheduler;
 import m.co.rh.id.a_flash_deck.base.model.TestEvent;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
@@ -82,8 +83,12 @@ public class TestStateModifier {
     public Single<TestState> previousCard(TestState testState) {
         return Single.fromCallable(() -> {
             synchronized (mLock) {
+                Card card = testState.previousCard();
+                if (card == null) {
+                    return testState;
+                }
                 Test test = mTestDao.get().getTestById(testState.getTestId());
-                testState.previousCard();
+                testState.onCardShown();
                 serializeTest(testState, test);
                 mTestChangeNotifier.get().testStateChange(testState);
                 return testState;
@@ -94,8 +99,12 @@ public class TestStateModifier {
     public Single<TestState> nextCard(TestState testState) {
         return Single.fromCallable(() -> {
             synchronized (mLock) {
+                Card card = testState.nextCard();
+                if (card == null) {
+                    return testState;
+                }
                 Test test = mTestDao.get().getTestById(testState.getTestId());
-                testState.nextCard();
+                testState.onCardShown();
                 serializeTest(testState, test);
                 mTestChangeNotifier.get().testStateChange(testState);
                 return testState;
@@ -103,29 +112,50 @@ public class TestStateModifier {
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
-    public Single<TestState> gradeCurrentCard(TestState testState, int grade) {
+    /**
+     * Applies the given grade to the current card and records the answer in
+     * the test state, a card graded AGAIN is requeued to the end of the test.
+     *
+     * @return the updated test state, sessionComplete is true when the last
+     * card was graded
+     */
+    public Single<GradeResult> gradeCurrentCard(TestState testState, int grade) {
         return Single.fromCallable(() -> {
             synchronized (mLock) {
                 Card card = testState.currentCard();
-                mStudyRepository.get().applyGrade(card.id, card.deckId, grade, new Date());
-                // check BEFORE nextCard(): TestState.nextCard() increments past the end on the last card
-                boolean isLastCard = testState.getCurrentCardIndex() == testState.getTotalCards() - 1;
-                if (!isLastCard) {
-                    Test test = mTestDao.get().getTestById(testState.getTestId());
+                Test test = mTestDao.get().getTestById(testState.getTestId());
+                if (test == null) {
+                    return new GradeResult(testState, false);
+                }
+                boolean cardExists = mCardDao.get().getCardByCardId(card.id) != null;
+                Date now = new Date();
+                if (cardExists) {
+                    TestState.AnswerTiming timing = testState.recordAnswer(grade, now.getTime());
+                    mStudyRepository.get().applyGrade(card.id, card.deckId, grade, now,
+                            timing.beforeRevealMs, timing.afterRevealMs, card.isReversed);
+                    boolean requeued = grade == ReviewScheduler.GRADE_AGAIN;
+                    if (requeued) {
+                        testState.requeueCurrentCard();
+                    }
+                }
+                // check BEFORE nextCard(): TestState.nextCard() no-ops on the last card
+                boolean sessionComplete = testState.getCurrentCardIndex() >= testState.getTotalCards() - 1;
+                if (!sessionComplete) {
                     testState.nextCard();
+                    testState.onCardShown();
                     serializeTest(testState, test);
                     mTestChangeNotifier.get().testStateChange(testState);
                 }
-                return testState;
+                return new GradeResult(testState, sessionComplete);
             }
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
-    public Single<TestState> stopActiveTest() {
+    public Single<Optional<TestState>> stopActiveTest() {
         return Single.fromCallable(() -> {
             synchronized (mLock) {
                 TestState testState = getActiveTestSync();
-                return stopTestSync(testState);
+                return Optional.ofNullable(stopTestSync(testState));
             }
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
@@ -139,7 +169,13 @@ public class TestStateModifier {
     }
 
     private TestState stopTestSync(TestState testState) {
+        if (testState == null) {
+            return null;
+        }
         Test test = mTestDao.get().getTestById(testState.getTestId());
+        if (test == null) {
+            return testState;
+        }
         File file = new File(test.stateFileLocation);
         file.delete();
         mTestDao.get().delete(test);
@@ -151,8 +187,11 @@ public class TestStateModifier {
      * @return any test that is currently running
      */
     public Single<Optional<TestState>> getActiveTest() {
-        return Single.fromCallable(() ->
-                Optional.ofNullable(getActiveTestSync())).subscribeOn(Schedulers.from(mExecutorService.get()));
+        return Single.fromCallable(() -> {
+            synchronized (mLock) {
+                return Optional.ofNullable(getActiveTestSync());
+            }
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     @Nullable
@@ -162,9 +201,16 @@ public class TestStateModifier {
         if (test != null) {
             try {
                 testState = deserializeTest(test);
+                // the card is shown again on resume, restart its elapsed time
+                testState.onCardShown();
             } catch (Exception e) {
                 mLogger.get().d(TAG, "Failed to load test state", e);
-                mExecutorService.get().execute(() -> mTestDao.get().delete(test));
+                mExecutorService.get().execute(() -> {
+                    if (test.stateFileLocation != null) {
+                        new File(test.stateFileLocation).delete();
+                    }
+                    mTestDao.get().delete(test);
+                });
                 throw e;
             }
         } else {
@@ -292,6 +338,7 @@ public class TestStateModifier {
             test.stateFileLocation = stateFile.getAbsolutePath();
             mTestDao.get().insertTest(test);
             TestState testState = new TestState(cardList, test.id);
+            testState.onSessionStarted();
             serializeTest(testState, test);
             TestEvent event = new TestEvent(testState, test);
             mTestChangeNotifier.get().startTest(event);

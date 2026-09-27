@@ -136,7 +136,8 @@
     <string name="grade_easy">Mudah</string>
     <string name="grade_hint">Seberapa baik kamu mengingatnya?</string>
     <string name="test_complete">Tes selesai!</string>
-    <string name="test_complete_content">Kamu telah menyelesaikan semua kartu dalam tes ini.</string>
+    <string name="test_summary_total">Total jawaban: %1$d</string>
+    <string name="test_summary_time">Waktu: %1$s</string>
     <string name="test_suspended_cards_skipped">Kartu ditangguhkan dilewati (%1$d)</string>
     <string name="error_no_due_cards">Tidak ada kartu yang jatuh tempo untuk dipelajari saat ini. Kartu baru selalu disertakan.</string>
     <string name="error_saving_card_grade">Gagal menyimpan penilaian</string>

@@ -66,6 +66,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
     private transient MarkdownRenderer mMarkdownRenderer;
     private transient BotAnalytics mBotAnalytics;
     private transient BehaviorSubject<TestState> mTestStateSubject;
+    private transient boolean mIsGradeInFlight;
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -81,6 +82,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
         mBotAnalytics = mSvProvider.get(BotAnalytics.class);
         mTestStateSubject = BehaviorSubject.create();
+        mIsGradeInFlight = false;
     }
 
     @Override
@@ -162,6 +164,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     textProgress.setText(progress);
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
                                     buttonNext.setEnabled(testState.getCurrentCardIndex() != testState.getTotalCards() - 1);
+                                    buttonExit.setEnabled(true);
                                 }
                         )
                 );
@@ -186,6 +189,14 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     if (ts == mTestStateSubject.getValue()) {
                                         mMarkdownRenderer.applyParsedMarkdown(textQuestion,
                                                 (Spanned) result[1]);
+                                    }
+                                }, throwable -> {
+                                    ILogger iLogger = mSvProvider.get(ILogger.class);
+                                    iLogger.e(TAG, context.getString(R.string.error_loading_deck), throwable);
+                                    TestState ts = mTestStateSubject.getValue();
+                                    if (ts != null) {
+                                        Card card = ts.currentCard();
+                                        textQuestion.setText(card.isReversed ? card.answer : card.question);
                                     }
                                 }));
         mRxDisposer
@@ -234,6 +245,14 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
     public void onClick(View view) {
         int id = view.getId();
         TestState testState = mTestStateSubject.getValue();
+        if (testState == null) {
+            return;
+        }
+        if (mIsGradeInFlight && (id == R.id.button_exit
+                || id == R.id.image_question || id == R.id.image_answer
+                || id == R.id.button_question_voice || id == R.id.button_answer_voice)) {
+            return;
+        }
         Card card = testState.currentCard();
         ILogger iLogger = mSvProvider.get(ILogger.class);
         CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
@@ -291,6 +310,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     }, throwable -> iLogger.e(TAG,
                                             context.getString(R.string.error_loading_deck), throwable)));
             mBotAnalytics.trackOpenTestAnswer(card.id);
+            testState.markAnswerRevealed();
         } else if (id == R.id.button_previous) {
             mRxDisposer
                     .add("onCLick_buttonPrevious",
@@ -298,6 +318,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     .previousCard(testState).subscribe((testState1, throwable) -> {
                                 if (throwable != null) {
                                     iLogger.e(TAG, context.getString(R.string.error_failed_to_get_previous_card));
+                                    mTestStateSubject.onNext(testState);
                                 } else {
                                     mTestStateSubject.onNext(testState1);
                                 }
@@ -335,6 +356,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     .subscribe((testState1, throwable) -> {
                                         if (throwable != null) {
                                             iLogger.e(TAG, context.getString(R.string.error_failed_to_get_next_card));
+                                            mTestStateSubject.onNext(testState);
                                         } else {
                                             mTestStateSubject.onNext(testState1);
                                         }
@@ -346,6 +368,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             View rootView = view.getRootView();
             ViewGroup containerGradeButtons = rootView.findViewById(R.id.container_grade_buttons);
             containerGradeButtons.setVisibility(View.GONE);
+            mIsGradeInFlight = true;
             // disable nav buttons while the grade is in flight,
             // a concurrent next/previous would double-advance the test
             Button buttonPrev = rootView.findViewById(R.id.button_previous);
@@ -356,37 +379,43 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                     : (id == R.id.button_grade_hard) ? ReviewScheduler.GRADE_HARD
                     : (id == R.id.button_grade_good) ? ReviewScheduler.GRADE_GOOD
                     : ReviewScheduler.GRADE_EASY;
-            boolean isLastCard = testState.getCurrentCardIndex() == testState.getTotalCards() - 1;
             mRxDisposer.add("onClick_grade",
                     mTestStateModifier.gradeCurrentCard(testState, grade)
                             .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe((testState1, throwable) -> {
+                            .subscribe((gradeResult, throwable) -> {
                                 if (throwable != null) {
+                                    mIsGradeInFlight = false;
                                     iLogger.e(TAG, context.getString(R.string.error_saving_card_grade), throwable);
+                                    mTestStateSubject.onNext(testState);
                                     containerGradeButtons.setVisibility(View.VISIBLE);
                                     // position-aware restore, Next must stay disabled on the last card
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
                                     buttonNext.setEnabled(testState.getCurrentCardIndex() != testState.getTotalCards() - 1);
-                                } else if (isLastCard) {
-                                    // test complete: stop test, pop this page, then show completion dialog
+                                } else if (gradeResult.sessionComplete) {
+                                    mIsGradeInFlight = false;
+                                    // capture the summary before stopTest deletes the session state
+                                    int[] gradeCounts = gradeResult.testState.getGradeCounts();
+                                    int totalAnswers = gradeResult.testState.getTotalAnswers();
+                                    long elapsedMs = gradeResult.testState.getElapsedMs();
                                     CompositeDisposable compositeDisposable = new CompositeDisposable();
-                                    compositeDisposable.add(mTestStateModifier.stopTest(testState)
+                                    compositeDisposable.add(mTestStateModifier.stopTest(gradeResult.testState)
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe((testState2, throwable1) -> {
                                                 if (throwable1 != null) {
                                                     iLogger.e(TAG, context.getString(R.string.error_failed_to_exit_test), throwable1);
                                                 }
                                                 mNavigator.pop();
-                                                mNavigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                        commonNavConfig.args_commonMessageDialog(
-                                                                context.getString(R.string.test_complete),
-                                                                context.getString(R.string.test_complete_content)));
+                                                String title = context.getString(R.string.test_complete);
+                                                mNavigator.push(Routes.TEST_SUMMARY_DIALOG,
+                                                        TestSummarySVDialog.Args.newArgs(
+                                                                title, gradeCounts, totalAnswers, elapsedMs));
                                                 compositeDisposable.dispose();
                                             }));
                                 } else {
+                                    mIsGradeInFlight = false;
                                     buttonPrev.setEnabled(true);
                                     buttonNext.setEnabled(true);
-                                    mTestStateSubject.onNext(testState1);
+                                    mTestStateSubject.onNext(gradeResult.testState);
                                 }
                             }));
         } else if (id == R.id.image_question) {
