@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Uuendus:
+* Testi kokkuvõte — näe vastuste koguarvu ja kulunud aega pärast testi lõpetamist
+* „Uuesti" hinnatud kaardid pannakse sama seansi jooksul uuesti järjekorda ja küsitakse uuesti
+* Iga kaardipaki tähtaegade märgised kaardipakkide loendis koos iga paki eraldi õppevooluga tähtaegsete kaartide jaoks
+* Ülevaatuste vastamisajad salvestatakse nüüd paremate õppimisstatistikate jaoks
+
+Parandused:
+* Parandatud kaardipakkide valimise kuva alumiste toimingunuppude kattumist
+* Rakenduse andmebaas on nüüd kaasatud Androidi automaatvarundusse ja seadmevahetusse

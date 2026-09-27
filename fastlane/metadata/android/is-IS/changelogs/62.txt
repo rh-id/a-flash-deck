@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Nýtt:
+* Samantekt prófunarlotu — sjáðu heildarfjölda svara og liðinn tíma þegar prófi lýkur
+* Kort sem fá einkunnina „Aftur" koma aftur í röðina og eru spurd aftur innan sömu lotu
+* Merki um föllin kort fyrir hvern stokk á stokkalistanum, með sérstöku námsflæði fyrir föllin kort í hverjum stokk
+* Svartími við endurskoðun er nú skráður til að bæta náms tölfræðina
+
+Villuleiðréttingar:
+* Neðri aðgerðahnappar skára sig ekki lengur á stokkavalskjánum
+* Gagnagrunnur forritsins er nú tekinn með í sjálfvirka Android-öryggisafritun og flutning milli tækja

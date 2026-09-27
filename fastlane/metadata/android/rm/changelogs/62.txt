@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Nova funcziun:
+* Resumè da la sessiun da test — consultai il dumber total da respostas ed il temp consumà cur ch'in test è finì
+* Chartas valitadas cun «Anc» vegnan mettas en la fila ed anc dumandadas entaifer la medema sessiun
+* Indicaziuns da scadenza per mintga stack en la glista dals stacks, cun in process dedicà a repetir chartas da scadenza per mintga stack
+* Ils temps da resposta da las repetiziuns vegnan ussa registrads per meglierar las statisticas d'emprender
+
+Corecziuns:
+* Corregì la surposiziun dals buttuns d'acziun sutvart sin la visur da tscherner stacks
+* La banca da datas da l'app è ussa includida en il backup automatic dad Android e en il transferiment dad apparats

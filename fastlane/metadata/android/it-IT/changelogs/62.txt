@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Novità:
+* Riepilogo della sessione di test — visualizza il numero totale di risposte e il tempo trascorso al termine di un test
+* Le carte valutate «Di nuovo» vengono rimesse in coda e proposte di nuovo nella stessa sessione
+* Badge delle schede scadute per ogni mazzo nell'elenco dei mazzi, con un flusso dedicato allo studio delle schede scadute di ogni mazzo
+* I tempi di risposta alle ripetizioni vengono ora registrati per migliorare le statistiche di studio
+
+Correzioni:
+* Risolto il problema della sovrapposizione dei pulsanti azione in basso nella schermata di selezione dei mazzi
+* Il database dell'app è ora incluso nel backup automatico di Android e nel trasferimento dispositivi

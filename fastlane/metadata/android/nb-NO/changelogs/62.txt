@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Ny funksjon:
+* Testsammendrag — se totalt antall svar og brukt tid når du fullfører en test
+* Kort som vurderes «Igjen» legges tilbake i køen og spørres igjen i samme økt
+* Forfall-merker per kortstokk i stokklisten, med egen flyt for å øve på forfalte kort i hver kortstokk
+* Svartider ved repetisjoner registreres nå for bedre øvingsstatistikk
+
+Feilrettinger:
+* Rettet opp i at handlingsknappene nederst overlappet på stokkvalgskjermen
+* Appdatabasen er nå inkludert i Androids automatiske sikkerhetskopiering og enhetsoverføring

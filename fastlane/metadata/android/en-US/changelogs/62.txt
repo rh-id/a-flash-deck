@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Features:
+* Test session summary — see your total answers and elapsed time when you finish a test
+* Cards rated "Again" are re-queued and asked again within the same session
+* Per-deck due badges on the deck list, with a dedicated study-due flow for each deck
+* Review response times are now recorded for better study analytics
+
+Fixes:
+* Fixed bottom action buttons overlapping on the deck selection screen
+* App database is now included in Android Auto Backup and device transfer

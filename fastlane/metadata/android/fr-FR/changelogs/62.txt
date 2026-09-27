@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Nouveautés :
+* Résumé de session de test — consultez le nombre total de réponses et le temps écoulé à la fin d'un test
+* Les cartes notées « À revoir » sont remises dans la file et reposées pendant la même session
+* Badges de cartes à réviser par paquet dans la liste des paquets, avec un flux dédié à la révision des cartes dues pour chaque paquet
+* Les temps de réponse aux révisions sont désormais enregistrés pour améliorer les statistiques d'apprentissage
+
+Corrections :
+* Correction du chevauchement des boutons d'action en bas de l'écran de sélection des paquets
+* La base de données de l'application est désormais incluse dans la sauvegarde automatique Android et le transfert vers un nouvel appareil

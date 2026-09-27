@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Ny funksjon:
+* Testsamandrag — sjå totalt antal svar og brukt tid når du fullfører ein test
+* Kort som får vurderinga «Igjen» blir lagde attende i køen og spurde igjen i same økta
+* Forfall-merke per kortstokk i stokklista, med eigen flyt for å øve på forfallne kort i kvar kortstokk
+* Svartidar ved repetisjonar blir no registrerte for betre øvingsstatistikk
+
+Feilrettingar:
+* Fiksa at handlingsknappane nedst låg over kvarandre på stokkvalskjermen
+* Appdatabasen er no med i Androids automatiske sikkerheitskopiering og einingsoverføring

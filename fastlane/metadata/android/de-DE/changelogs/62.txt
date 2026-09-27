@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Neu:
+* Testzusammenfassung — sehen Sie Ihre Antworten gesamt und die verstrichene Zeit, wenn Sie einen Test abschließen
+* Mit „Nochmal" bewertete Karten werden innerhalb derselben Sitzung erneut vorgelegt
+* Fälligkeitsabzeichen pro Stapel in der Stapelliste, mit eigenem Ablauf zum Lernen fälliger Karten pro Stapel
+* Antwortzeiten bei Wiederholungen werden nun aufgezeichnet, um die Lernstatistiken zu verbessern
+
+Fehlerbehebungen:
+* Überlappung der unteren Aktionsschaltflächen auf der Stapelauswahl behoben
+* Die App-Datenbank ist jetzt in Android-Auto-Backup und Geräteübertragung enthalten

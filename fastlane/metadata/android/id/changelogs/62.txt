@@ -1,0 +1,11 @@
+Release 2.2.0+62
+
+Fitur:
+* Ringkasan sesi tes — lihat jumlah jawaban total dan waktu yang berlalu saat menyelesaikan tes
+* Kartu yang dinilai "Ulangi" dimasukkan kembali ke antrean dan ditanyakan lagi dalam sesi yang sama
+* Lencana jatuh tempo per dek pada daftar dek, dengan alur belajar kartu jatuh tempo khusus untuk setiap dek
+* Waktu respons saat mengulang kini dicatat untuk analitik belajar yang lebih baik
+
+Perbaikan:
+* Memperbaiki tumpang tindih tombol aksi bawah di layar pemilihan dek
+* Basis data aplikasi kini disertakan dalam Pencadangan Otomatis Android dan transfer perangkat
