@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.library'
+    alias(libs.plugins.android.library)
 }
 
 android {
@@ -40,41 +40,41 @@ android {
 }
 
 dependencies {
-    api "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
+    api libs.room.runtime
+    annotationProcessor libs.room.compiler
 
-    api 'com.github.rh-id:a-provider:v0.0.23'
-    api "com.github.rh-id.a-navigator:a-navigator:$nav_version"
-    api 'com.github.rh-id:a-logger:v0.0.3'
-    api 'com.github.rh-id:rx-utils:v0.0.3'
-    api 'io.reactivex.rxjava3:rxandroid:3.0.2'
-    api 'io.reactivex.rxjava3:rxjava:3.1.12'
-    api 'androidx.appcompat:appcompat:1.7.1'
-    api 'com.google.android.material:material:1.13.0'
-    api 'androidx.constraintlayout:constraintlayout:2.2.1'
-    api 'androidx.drawerlayout:drawerlayout:1.2.0'
-    api 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    api 'androidx.recyclerview:recyclerview:1.4.0'
-    api 'androidx.exifinterface:exifinterface:1.4.1'
-    api "androidx.work:work-runtime:$work_version"
+    api libs.a.provider
+    api libs.a.navigator
+    api libs.a.logger
+    api libs.rx.utils
+    api libs.rxandroid
+    api libs.rxjava
+    api libs.androidx.appcompat
+    api libs.material
+    api libs.androidx.constraintlayout
+    api libs.androidx.drawerlayout
+    api libs.androidx.swiperefreshlayout
+    api libs.androidx.recyclerview
+    api libs.androidx.exifinterface
+    api libs.work.runtime
 
-    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
-    implementation 'com.github.rh-id:concurrent-utils:v0.0.3'
+    implementation libs.photo.view
+    implementation libs.concurrent.utils
 
     // Markwon — markdown rendering for card Q/A (latex + autolinks)
-    api "io.noties.markwon:core:$markwon_version"
-    api "io.noties.markwon:ext-tables:$markwon_version"
-    api "io.noties.markwon:ext-strikethrough:$markwon_version"
-    api "io.noties.markwon:ext-tasklist:$markwon_version"
-    api "io.noties.markwon:linkify:$markwon_version"
-    api "io.noties.markwon:ext-latex:$markwon_version"
-    api "io.noties.markwon:inline-parser:$markwon_version"
+    api libs.markwon.core
+    api libs.markwon.ext.tables
+    api libs.markwon.ext.strikethrough
+    api libs.markwon.ext.tasklist
+    api libs.markwon.linkify
+    api libs.markwon.ext.latex
+    api libs.markwon.inline.parser
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    coreLibraryDesugaring libs.desugar.jdk.libs
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
-    androidTestImplementation "androidx.room:room-testing:$room_version"
+    testImplementation libs.junit
+    androidTestImplementation libs.junit
+    androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.room.testing
 }

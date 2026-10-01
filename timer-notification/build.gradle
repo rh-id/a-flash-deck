@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.library'
+    alias(libs.plugins.android.library)
 }
 
 android {
@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    coreLibraryDesugaring libs.desugar.jdk.libs
 
     implementation project(path: ':base')
 }
