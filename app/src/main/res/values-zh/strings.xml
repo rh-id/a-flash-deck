@@ -87,6 +87,7 @@
     <string name="follow_system">跟随系统</string>
     <string name="light_mode">浅色模式</string>
     <string name="dark_mode">深色模式</string>
+    <string name="use_dynamic_colors">使用系统颜色（Material You）</string>
     <string name="notification_time_description">设置您希望接收通知的时间</string>
     <string name="notification_time_title">通知时间（ %1$s ~ %2$s ）</string>
     <string name="title_start_time">开始时间</string>

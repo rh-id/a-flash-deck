@@ -20,8 +20,10 @@ package m.co.rh.id.a_flash_deck.app;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.TypedValue;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -32,9 +34,11 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import com.google.android.material.color.DynamicColors;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
@@ -51,16 +55,51 @@ public class MainActivity extends AppCompatActivity {
         Provider provider = BaseApplication.of(this).getProvider();
         mActProvider = Provider.createNestedProvider("ActivityProvider", provider, this, new RxProviderModule());
         mRebuildUi = BehaviorSubject.create();
+        // apply Material You dynamic colors before super.onCreate installs
+        // the theme; gated on both the user setting and device support
+        AppSharedPreferences appSharedPreferences = BaseApplication.of(this).getProvider()
+                .get(AppSharedPreferences.class);
+        if (appSharedPreferences.isDynamicColorsEnabled()
+                && DynamicColors.isDynamicColorAvailable()) {
+            getTheme().applyStyle(R.style.Theme_Aflashdeck_Overlay_DynamicColors, true);
+        }
         // rebuild UI is expensive and error prone, avoid spam rebuild (especially due to day and night mode)
         mActProvider.get(RxDisposer.class)
                 .add("rebuildUI", mRebuildUi.debounce(100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aBoolean -> {
                             if (aBoolean) {
+                                // mirrors the onCreate applyStyle gate: the overrides are
+                                // skipped only when dynamic colors are actually active
+                                boolean dynamicColorsActive = appSharedPreferences.isDynamicColorsEnabled()
+                                        && DynamicColors.isDynamicColorAvailable();
+                                if (dynamicColorsActive) {
+                                    // the activity handles uiMode config changes without recreation,
+                                    // so re-apply the overlay to re-resolve its DayNight variant
+                                    // (light/dark) for the new configuration before views rebuild
+                                    getTheme().applyStyle(R.style.Theme_Aflashdeck_Overlay_DynamicColors, true);
+                                    // the window background drawable was instantiated under the previous
+                                    // configuration and is never re-created by applyStyle, so re-resolve
+                                    // it explicitly (the legacy branch below does the same via daynight_*)
+                                    TypedValue windowBackground = new TypedValue();
+                                    getTheme().resolveAttribute(android.R.attr.windowBackground, windowBackground, true);
+                                    if (windowBackground.type >= TypedValue.TYPE_FIRST_COLOR_INT
+                                            && windowBackground.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                                        getWindow().setBackgroundDrawable(new ColorDrawable(windowBackground.data));
+                                    } else if (windowBackground.resourceId != 0) {
+                                        getWindow().setBackgroundDrawableResource(windowBackground.resourceId);
+                                    }
+                                } else {
+                                    // Switching to night mode didn't update window background for some reason?
+                                    // seemed to occur on android 8 and below
+                                    getWindow().setBackgroundDrawableResource(R.color.daynight_white_black);
+                                }
                                 BaseApplication.of(this).getNavigator(this).reBuildAllRoute();
-                                // Switching to night mode didn't update window background for some reason?
-                                // seemed to occur on android 8 and below
-                                getWindow().setBackgroundDrawableResource(R.color.daynight_white_black);
+                                // reBuildAllRoute re-installs the activity content view while the
+                                // activity is running; the new hierarchy misses the initial inset
+                                // dispatch, so request one explicitly or content lays out under the
+                                // transparent status bar on Android 15+ (enforced edge-to-edge)
+                                getWindow().getDecorView().requestApplyInsets();
                             }
                         })
                 );

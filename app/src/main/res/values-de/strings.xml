@@ -86,6 +86,7 @@
     <string name="follow_system">Systemeinstellung folgen</string>
     <string name="light_mode">Heller Modus</string>
     <string name="dark_mode">Dunkler Modus</string>
+    <string name="use_dynamic_colors">Systemfarben verwenden (Material You)</string>
     <string name="notification_time_description">Einrichten, wann Sie Benachrichtigungen erhalten möchten</string>
     <string name="notification_time_title">Benachrichtigungszeit ( %1$s ~ %2$s )</string>
     <string name="title_start_time">Startzeit</string>

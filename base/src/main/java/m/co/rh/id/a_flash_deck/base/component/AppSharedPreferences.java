@@ -39,6 +39,12 @@ public class AppSharedPreferences {
     private int mSelectedTheme;
     private String mSelectedThemeKey;
 
+    /** Default: Material You dynamic colors are enabled (when supported by the device). */
+    public static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
+
+    private boolean mDynamicColorsEnabled;
+    private String mDynamicColorsEnabledKey;
+
     private Date mNotificationStartTime;
     private String mNotificationStartTimeKey;
 
@@ -65,6 +71,13 @@ public class AppSharedPreferences {
                 mSelectedThemeKey,
                 AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         setSelectedTheme(selectedTheme);
+
+        mDynamicColorsEnabledKey = SHARED_PREFERENCES_NAME
+                + ".dynamicColorsEnabled";
+        boolean dynamicColorsEnabled = mSharedPreferences.getBoolean(
+                mDynamicColorsEnabledKey,
+                DEFAULT_DYNAMIC_COLORS_ENABLED);
+        dynamicColorsEnabled(dynamicColorsEnabled);
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 6);
@@ -97,6 +110,21 @@ public class AppSharedPreferences {
 
     public int getSelectedTheme() {
         return mSelectedTheme;
+    }
+
+    private void dynamicColorsEnabled(boolean enabled) {
+        mDynamicColorsEnabled = enabled;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mDynamicColorsEnabledKey, enabled)
+                        .commit());
+    }
+
+    public void setDynamicColorsEnabled(boolean enabled) {
+        dynamicColorsEnabled(enabled);
+    }
+
+    public boolean isDynamicColorsEnabled() {
+        return mDynamicColorsEnabled;
     }
 
     private void notificationStartTime(long timeUtc) {

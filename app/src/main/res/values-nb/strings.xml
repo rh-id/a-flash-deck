@@ -86,6 +86,7 @@
     <string name="follow_system">Følg system</string>
     <string name="light_mode">Lys modus</string>
     <string name="dark_mode">Mørk modus</string>
+    <string name="use_dynamic_colors">Bruk systemfargene (Material You)</string>
     <string name="notification_time_description">Sett opp når du vil motta varsling</string>
     <string name="notification_time_title">Varslingstid ( %1$s ~ %2$s )</string>
     <string name="title_start_time">Starttid</string>

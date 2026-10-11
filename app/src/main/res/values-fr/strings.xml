@@ -86,6 +86,7 @@
     <string name="follow_system">Suivre le système</string>
     <string name="light_mode">Mode clair</string>
     <string name="dark_mode">Mode sombre</string>
+    <string name="use_dynamic_colors">Utiliser les couleurs du système (Material You)</string>
     <string name="notification_time_description">Configurez quand vous souhaitez recevoir des notifications</string>
     <string name="notification_time_title">Heure de notification ( %1$s ~ %2$s )</string>
     <string name="title_start_time">Heure de début</string>

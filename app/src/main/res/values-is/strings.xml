@@ -86,6 +86,7 @@
     <string name="follow_system">Fylgja kerfi</string>
     <string name="light_mode">Ljóshamur</string>
     <string name="dark_mode">Dökkuhamur</string>
+    <string name="use_dynamic_colors">Nota kerfisliti (Material You)</string>
     <string name="notification_time_description">Stilla hvenær þú vilt fá tilkynningu</string>
     <string name="notification_time_title">Tilkynningartími ( %1$s ~ %2$s )</string>
     <string name="title_start_time">Upphafstími</string>

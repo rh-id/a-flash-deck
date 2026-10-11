@@ -19,7 +19,9 @@ package m.co.rh.id.a_flash_deck.app;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -30,8 +32,11 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import com.google.android.material.color.DynamicColors;
+import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.component.AppShortcutHandler;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
@@ -47,13 +52,33 @@ public class CardShowActivity extends AppCompatActivity {
         Provider provider = BaseApplication.of(this).getProvider();
         mActProvider = Provider.createNestedProvider("ActivityProvider", provider, this, new RxProviderModule());
         mRebuildUi = BehaviorSubject.create();
+        AppSharedPreferences appSharedPreferences = BaseApplication.of(this).getProvider()
+                .get(AppSharedPreferences.class);
+        if (appSharedPreferences.isDynamicColorsEnabled()
+                && DynamicColors.isDynamicColorAvailable()) {
+            getTheme().applyStyle(R.style.Theme_Aflashdeck_Overlay_DynamicColors, true);
+        }
         // rebuild UI is expensive and error prone, avoid spam rebuild (especially due to day and night mode)
         mActProvider.get(RxDisposer.class)
                 .add("rebuildUI", mRebuildUi.debounce(100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aBoolean -> {
                             if (aBoolean) {
+                                boolean dynamicColorsActive = appSharedPreferences.isDynamicColorsEnabled()
+                                        && DynamicColors.isDynamicColorAvailable();
+                                if (dynamicColorsActive) {
+                                    getTheme().applyStyle(R.style.Theme_Aflashdeck_Overlay_DynamicColors, true);
+                                    TypedValue windowBackground = new TypedValue();
+                                    getTheme().resolveAttribute(android.R.attr.windowBackground, windowBackground, true);
+                                    if (windowBackground.type >= TypedValue.TYPE_FIRST_COLOR_INT
+                                            && windowBackground.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                                        getWindow().setBackgroundDrawable(new ColorDrawable(windowBackground.data));
+                                    } else if (windowBackground.resourceId != 0) {
+                                        getWindow().setBackgroundDrawableResource(windowBackground.resourceId);
+                                    }
+                                }
                                 BaseApplication.of(this).getNavigator(this).reBuildAllRoute();
+                                getWindow().getDecorView().requestApplyInsets();
                             }
                         })
                 );

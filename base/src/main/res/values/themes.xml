@@ -21,6 +21,18 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <!-- Material You dynamic color overlay, applied at runtime when the
+         device supports it. Variant colors point at day/night wrapper colors
+         so the status bar follows the system palette in both light and dark. -->
+    <style name="Theme.Aflashdeck.Overlay.DynamicColors" parent="ThemeOverlay.Material3.DynamicColors.DayNight">
+        <item name="colorPrimaryVariant">@color/dynamic_primary_variant</item>
+        <item name="colorSecondaryVariant">@color/dynamic_secondary_variant</item>
+        <!-- flash-deck-specific bridge: page roots use ?attr/pageBackground
+             (static white/black); follow the dynamic background so pages match
+             the dynamic window background instead of staying pure white/black -->
+        <item name="pageBackground">?android:attr/colorBackground</item>
+    </style>
+
     <style name="Theme.Aflashdeck.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.Aflashdeck.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />

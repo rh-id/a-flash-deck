@@ -22,4 +22,8 @@
     <color name="daynight_black_white">@color/black</color>
     <color name="daynight_white_black">@color/white</color>
     <color name="daynight_teal_custom_teal_200">@color/teal_custom</color>
+    <!-- Material You dynamic palette wrappers: resolved per UI mode so the
+         status bar follows the system colors in both light and dark. -->
+    <color name="dynamic_primary_variant">@color/m3_sys_color_dynamic_light_primary</color>
+    <color name="dynamic_secondary_variant">@color/m3_sys_color_dynamic_light_secondary</color>
 </resources>

@@ -10,4 +10,6 @@
     <color name="grade_good">#FF388E3C</color>
     <color name="grade_easy">#FF1E88E5</color>
     <color name="grade_again">#FFEF5350</color>
+    <color name="dynamic_primary_variant">@color/m3_sys_color_dynamic_dark_primary</color>
+    <color name="dynamic_secondary_variant">@color/m3_sys_color_dynamic_dark_secondary</color>
 </resources>

@@ -86,6 +86,7 @@
     <string name="follow_system">Suandar il sistem</string>
     <string name="light_mode">Modus clers</string>
     <string name="dark_mode">Modus stgir</string>
+    <string name="use_dynamic_colors">Utilisar las colurs dal sistem (Material You)</string>
     <string name="notification_time_description">Configura cura che ti vuls retschaiver notificaziuns</string>
     <string name="notification_time_title">Temp da notificaziun ( %1$s ~ %2$s )</string>
     <string name="title_start_time">Temp da cumenzament</string>
