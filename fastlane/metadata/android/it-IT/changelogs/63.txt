@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Novità:
+* Colori dinamici Material You — attiva «Usa i colori di sistema» nelle impostazioni del tema per seguire la palette dello sfondo del dispositivo (Android 12 o successivo)
+* Librerie dell'app aggiornate alle ultime versioni

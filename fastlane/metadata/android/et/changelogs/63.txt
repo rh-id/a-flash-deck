@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Uuendus:
+* Material You värvid — lubage teemasätetes „Kasuta süsteemi värve“, et järgida seadme taustapildi värve (Android 12 või uuem)
+* Rakenduse teegid uuendatud uusimatele versioonidele

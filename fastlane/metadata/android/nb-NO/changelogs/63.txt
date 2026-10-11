@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Ny funksjon:
+* Material You-farger — slå på «Bruk systemfargene» i temainnstillingene for å følge fargene fra bakgrunnsbildet på enheten (Android 12 eller nyere)
+* Appbiblioteker oppdatert til de nyeste versjonene

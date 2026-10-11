@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Nouveautés :
+* Couleurs dynamiques Material You — activez « Utiliser les couleurs du système » dans les paramètres du thème pour suivre la palette de couleurs de votre fond d'écran (Android 12 ou plus récent)
+* Bibliothèques de l'application mises à jour vers les dernières versions

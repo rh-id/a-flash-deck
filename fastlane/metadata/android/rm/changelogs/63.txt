@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Nova funcziun:
+* Colurs dinamicas Material You — activai «Utilisar las colurs dal sistem» en las parameters dal design per suandar las colurs dal fund davos da l'apparat (Android 12 u pli nov)
+* Bibliotecas da l'app actualisadas a las ultimas versiuns

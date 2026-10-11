@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Fitur:
+* Warna dinamis Material You — aktifkan "Gunakan warna sistem" di pengaturan tema untuk mengikuti palet warna wallpaper perangkat Anda (Android 12 atau lebih baru)
+* Pustaka aplikasi diperbarui ke versi terbaru

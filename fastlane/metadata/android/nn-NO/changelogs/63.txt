@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Ny funksjon:
+* Material You-fargar — slå på «Bruk systemfargane» i temainnstillingane for å følgje fargane frå bakgrunnsbiletet på eininga (Android 12 eller nyare)
+* Appbibliotek oppdatert til dei nyaste versjonane

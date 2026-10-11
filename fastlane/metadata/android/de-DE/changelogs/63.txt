@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Neu:
+* Material-You-Farbpalette — aktivieren Sie „Systemfarben verwenden“ in den Designeinstellungen, um den Farben Ihres Hintergrunds zu folgen (Android 12 oder neuer)
+* App-Bibliotheken auf die neuesten Versionen aktualisiert

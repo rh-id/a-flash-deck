@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Nýtt:
+* Material You litir — virkjið „Nota kerfisliti“ í þemastillingum til að fylgja litum veggfóðurs tækisins (Android 12 eða nýrri)
+* Forritsbókasöfn uppfærð í nýjustu útgáfur

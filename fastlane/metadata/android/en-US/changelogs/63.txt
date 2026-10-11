@@ -1,0 +1,5 @@
+Release 2.3.0+63
+
+Features:
+* Material You dynamic colors — enable "Use system colors" in the theme settings to follow your device's wallpaper palette (Android 12 or newer)
+* App libraries updated to the latest versions
