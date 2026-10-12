@@ -671,7 +671,7 @@ The project uses Fastlane to manage the app's metadata for the Google Play Store
 ## How to Build
 
 1.  Clone the repository: `git clone https://github.com/rh-id/a-flash-deck.git`
-2.  Open the project in Android Studio (recent Canary/preview channel recommended, since the project targets Android 17 / SDK 37 and uses AGP 9.2.1 with Gradle 9.4.1).
+2.  Open the project in Android Studio (recent Canary/preview channel recommended, since the project targets Android 17 / SDK 37 and uses AGP 9.4.1 with Gradle 9.8.0).
 3.  Make sure JDK 21 is available — the Gradle daemon is pinned to a JDK 21 toolchain via `gradle/gradle-daemon-jvm.properties`.
 4.  Build the project using Gradle: `./gradlew assembleDebug`
 

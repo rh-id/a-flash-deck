@@ -2,7 +2,7 @@
 agp = "9.4.1"
 room = "2.8.5"
 work = "2.11.2"
-a-navigator = "v0.0.72"
+a-navigator = "v0.0.73"
 a-provider = "v0.0.27"
 a-logger = "v0.0.4"
 rx-utils = "v0.0.3"
