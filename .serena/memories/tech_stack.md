@@ -12,7 +12,7 @@
 ## Frameworks / libraries
 - DI + navigation: JitPack libs by the same author — `com.github.rh-id:a-provider` (service-locator DI container), `a-navigator` (StatefulView stack), `a-logger`, `rx-utils` exposed `api` from `:base`; `concurrent-utils` via `implementation`.
 - Async: RxJava 3 + RxAndroid; WorkManager 2.11.2 for background jobs.
-- DB: Room 2.8.5 via annotationProcessor. Two databases: `AppDatabase` (`:base`, version 15, auto-migrations) and `BotDatabase` (`:bot`). Room schemas exported to `base/schemas/` and `bot/schemas/` — required by migration tests.
+- DB: Room 2.8.5 via annotationProcessor. Two databases: `AppDatabase` (`:base`, version 17 (12→13 auto; 14→15→16→17 manual in DbMigration)) and `BotDatabase` (`:bot`). Room schemas exported to `base/schemas/` and `bot/schemas/` — required by migration tests.
 - UI: Views/XML + Material Components, RecyclerView, ConstraintLayout, DrawerLayout, SwipeRefreshLayout, PhotoView. Markdown: Markwon 4.6.2 (core, ext-tables, ext-strikethrough, ext-tasklist, linkify, ext-latex, inline-parser) wrapped by `MarkdownRenderer`.
 - Tests: JUnit 4.13.2, androidx.test ext-junit, Espresso, Mockito 5.24 (androidTest only), Room room-testing. LeakCanary plumber-android. org.json for JSON.
 - `app/build.gradle` applies `gradle/license-html-generator.gradle`, which regenerates `app/src/main/assets/licenses.html` from `app/licenses.yml`.

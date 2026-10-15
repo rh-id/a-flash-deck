@@ -15,7 +15,7 @@
 - Conventional commits (`feat:`, `fix:`, `chore:`, `docs:`); single long-lived `master` branch; releases via `v*` tags only.
 
 ## Data
-- Room entities/DAOs per module (`base/entity` + `bot/entity`); DB version bumps need auto-migration + updated exported schema in module `schemas/` dir (migration tests load from there).
+- Room entities/DAOs per module (`base/entity` + `bot/entity`); DB version bumps need a migration (auto-annotation or manual in `base/.../room/DbMigration.java`) + updated exported schema in module `schemas/` dir (migration tests load from there).
 - Test sessions are Java-serialized to files (not Room) — keep serialization compatibility in mind for `TestState`.
 
 ## i18n

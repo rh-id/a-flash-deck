@@ -32,16 +32,23 @@ A simple and easy to use flash card app to help you study.
 * Notification time window — set start and end times for periodic reminders
 * Voice playback directly from notifications
 * Support dark mode and light mode
+* Material You dynamic colors — enable "Use system colors (Material You)" in the theme settings to follow your device's wallpaper palette (Android 12+)
+* Themed (monochrome) app icon on Android 13+
 * Easily export & share your decks to your friends
 * Select all option when exporting multiple decks
 * Import and export decks in Anki `.apkg` format (supports Basic cards with images and audio)
 * Record voices and attach images for the cards
 * Create shortcut to show random card from deck for casual study (Android 8 and above)
 * Test state persistence — resume your test after app restart, with a home-screen banner showing the ongoing test and its progress
+* App database included in Android Auto Backup and device transfer
 * Spaced repetition study — SM-2-lite scheduling with a Study Due button showing how many cards are due or new across all decks
+* Per-deck due badges on the deck list, with a "Study Due Cards" flow that tests a single deck's due/new cards
 * Grade your recall during tests (Again / Hard / Good / Easy) to schedule each card's next review
+* Cards graded "Again" are re-queued and asked again within the same test session
+* Test session summary — total answers and elapsed time shown when a test finishes
 * Suspend cards to set them aside — suspended cards are excluded from study and test flows (Study Due, Start Test, bot suggestions)
-* Statistics page — daily review counts, day streak, retention (last 30 days), due forecast for the next 14 days, and per-deck due/new progress (history starts from when this feature shipped)
+* Statistics page — reviews today, day streak, retention (last 30 days), today's grade breakdown, due forecast for the next 14 days, and per-deck due/new progress (history starts from when this feature shipped)
+* Review response times are recorded per graded review — time before the answer reveal and time after it — for study analytics
 * Flash bot to smartly suggest list of card to test you
 * AI-powered deck generation using Google Gemini API — generate from a topic, transform existing decks (translate, expand, create harder versions), generate from captured camera photos and gallery images, or generate a new deck from a single card
 * AI model selection — choose from available Gemini models dynamically
@@ -71,7 +78,7 @@ The app supports bidirectional import/export with Anki `.apkg` format:
 
 ### Authoring Decks on a Computer
 
-Decks can also be authored as the native JSON format (a ZIP containing an entry named exactly `Decks.json` — the app scans all entries and the name match is case-sensitive — with a JSON array of deck objects). Releases up to and including 2.0.0 parse only the first line of the JSON, so keep it on a single line (or use the helper script) for those versions; the fix relaxing this lands in the next release. Field reference, media layout, and format gotchas: [docs/deck-json-schema.md](docs/deck-json-schema.md). A standard-library-only helper script builds import files from CSV/TSV or JSON and fixes pretty-printed ones:
+Decks can also be authored as the native JSON format (a ZIP containing an entry named exactly `Decks.json` — the app scans all entries and the name match is case-sensitive — with a JSON array of deck objects). Releases up to and including 2.0.0 parse only the first line of the JSON, so for those old versions keep it on a single line (or use the helper script); 2.1.0 and later parse the whole stream, so pretty-printed files import fine there. Field reference, media layout, and format gotchas: [docs/deck-json-schema.md](docs/deck-json-schema.md). A standard-library-only helper script builds import files from CSV/TSV or JSON and fixes pretty-printed ones:
 
 ```
 python scripts/build_deck.py build --input cards.csv --name "Spanish vocab" --output Decks.zip
@@ -305,7 +312,7 @@ Navigation is managed by the `a-navigator` library:
 The app uses Room Persistence Library with two databases:
 
 #### AppDatabase (base module)
-- **Version**: 15 (includes auto-migration from 12→13 that removed persisted `isReversed` column from CARD table; `isReversed` is now a runtime-only `@Ignore` field, with reversible behavior using persisted `is_reversible_qa` flag only; migration 14→15 creates the `card_review_state` table — SM-2-lite spaced-repetition review state, one row per card, absent row = new card, with a `suspended` flag defaulting to 0) → **16** (migration 15→16 creates the append-only `review_log` table — one row per graded review, powering the statistics page; starts empty on upgrade, no backfill of earlier grading history)
+- **Version**: 17 → history of the interesting steps: the 12→13 auto-migration removed the persisted `isReversed` column from CARD (`isReversed` is now a runtime-only `@Ignore` field, with reversible behavior using the persisted `is_reversible_qa` flag only); 14→15 creates the `card_review_state` table — SM-2-lite spaced-repetition review state, one row per card, absent row = new card, with a `suspended` flag defaulting to 0; 15→16 creates the append-only `review_log` table — one row per graded review, powering the statistics page (starts empty on upgrade, no backfill of earlier grading history); 16→17 adds `time_before_reveal_ms`, `time_after_reveal_ms` and `reversed` columns to `review_log` (per-answer timing analytics)
 - **Entities**:
   - `Deck`: Collection of flash cards
   - `Card`: Individual flash card with question/answer content, optional image and voice attachments, and a reversible-QA flag
@@ -313,7 +320,7 @@ The app uses Room Persistence Library with two databases:
   - `AndroidNotification`: Notification history
   - `NotificationTimer`: Scheduled notification timers
   - `CardReviewState`: Per-card spaced-repetition review state (SM-2-lite scheduling with an Anki-style `suspended` flag; suspended cards are excluded from study and test flows (Study Due, Start Test, bot suggestions))
-  - `ReviewLog`: Append-only history of every graded review (card, deck, grade, timestamp) powering the statistics page
+  - `ReviewLog`: Append-only history of every graded review (card, deck, grade, timestamp, time before/after the answer reveal, reversal flag) powering the statistics page
 
 #### BotDatabase (bot module)
 - **Entities**:
@@ -384,6 +391,9 @@ erDiagram
         long deck_id
         int grade
         date created_date_time
+        long time_before_reveal_ms
+        long time_after_reveal_ms
+        boolean reversed
     }
 
     CARD_LOG {
@@ -435,6 +445,7 @@ Business logic is encapsulated in command classes following the Command pattern:
 - `NewCardCmd` / `UpdateCardCmd` / `DeleteCardCmd`: Card management
 - `CopyCardCmd` / `MoveCardCmd`: Card operations
 - `SuspendCardCmd`: Anki-style card suspend/resume
+- `StatsCmd`: Statistics queries (activity, retention, due forecast, per-deck progress)
 - `ExportImportCmd`: Deck import/export
 - `PagedDeckItemsCmd` / `PagedCardItemsCmd`: Pagination
 - `DeleteSuggestedCardCmd`: Bot suggestion management
@@ -456,7 +467,7 @@ Notifiers act as event hubs for data changes:
 - **TestChangeNotifier**: Emits test session events (start, stop, state change)
 - **NotificationTimerChangeNotifier**: Emits timer configuration changes
 - **NotificationTimeChangeNotifier**: Emits notification time settings changes
-- **SuggestedCardChangeNotifier**: Emits flash bot suggestion changes
+- **SuggestedCardChangeNotifier**: Emits flash bot suggestion changes (bot module)
 - **ApiKeyChangeNotifier**: Emits API key configuration changes (AI module)
 
 Each notifier provides `Flowable<T>` streams for subscription.
@@ -536,13 +547,14 @@ app/src/main/java/m/co/rh/id/a_flash_deck/app/
 │   ├── StatefulViewProviderModule.java
 │   ├── command/
 │   ├── component/ (AnkiExporter, AnkiImporter, AppNotificationHandler, AppShortcutHandler, ExportImportCoordinator, TestWorkflowCoordinator)
-│   └── modifier/
+│   └── modifier/ (TestStateModifier, GradeResult)
 ├── ui/
-│   ├── page/ (StatefulView pages)
+│   ├── page/ (HomePage, DeckListPage, CardListPage, CardDetailPage, DeckSelectPage, DeckDetailSVDialog, TestPage, TestSummarySVDialog, StatisticsPage, SettingsPage, SplashPage, NotificationTimerListPage, DonationsPage, CardShowHomePage, CardShowPage)
 │   └── component/ (UI components organized into sub-packages)
 │       ├── OngoingTestBannerSV.java
 │       ├── card/ (CardItemSV, CardListSV, CardRecyclerViewAdapter, MarkdownEditField, CardMediaField)
 │       ├── deck/ (DeckItemSV, DeckListSV, DeckRecyclerViewAdapter)
+│       ├── stats/ (BarChartSV)
 │       └── settings/ (LicensesMenuSV, LicensesPage, LogLineRecyclerViewAdapter, LogMenuSV, LogPage, NotificationTimeMenuSV, ThemeMenuSV, VersionMenuSV)
 └── receiver/ (NotificationDeleteReceiver, NotificationPlayVoiceReceiver)
 
@@ -564,7 +576,7 @@ base/src/main/java/m/co/rh/id/a_flash_deck/base/
 ├── component/ (Shared components: AppSharedPreferences, AudioPlayer, AudioRecorder, MarkdownRenderer, ...)
 ├── constants/ (Constants, routes, intent keys, shortcuts, WorkManager keys/tags)
 ├── exception/ (ValidationException)
-├── model/ (Event models, DeckModel, TestState, ReviewScheduler, CardSuspendStateChangedEvent)
+├── model/ (Event models, DeckModel, DeckDueCount, TestState, ReviewScheduler, ReviewStats, ReviewStatsCalculator, CardSuspendStateChangedEvent)
 ├── repository/ (AndroidNotificationRepository, DeckCardRepository, StudyRepository)
 ├── rx/ (RxDisposer)
 ├── ui/
@@ -644,8 +656,8 @@ stateDiagram-v2
 
 The project has tests across modules:
 - `app/androidTest`: tests covering Anki `.apkg` parsing, import, export, round-trip testing, and `ExportImportCmd` (plus helper modules for test DB provisioning and Anki test data)
-- `base/androidTest`: tests covering JSON model serialization, database migrations (`DbMigrationTest`), and Markdown/LaTeX rendering (`MarkdownRendererTest`)
-- `base/test`: JVM unit tests covering the SM-2-lite scheduler (`ReviewSchedulerTest`)
+- `base/androidTest`: tests covering JSON model serialization (`JsonModelSerializeTest`), database migrations (`DbMigrationTest`, driven by the exported schemas in `base/schemas/`), Markdown/LaTeX rendering (`MarkdownRendererTest`), study due queries (`StudyDaoDueQueryTest`), and batched card loading (`CardDaoBatchQueryTest`)
+- `base/test`: JVM unit tests covering the SM-2-lite scheduler (`ReviewSchedulerTest`), statistics math (`ReviewStatsCalculatorTest`), and `TestState` serialization (`TestStateTest`)
 - `bot`, `timer-notification`, `ai`: no test sources currently
 
 Tests use isolated in-memory databases and mock dependencies for hermetic testing.
@@ -679,7 +691,9 @@ The app currently targets `compileSdk`/`targetSdk` 37 (Android 17) with `minSdk`
 
 ## Libraries Used
 
-The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and RxJava / RxAndroid to handle UI use cases. Card questions and answers are rendered as Markdown with LaTeX math support via [Markwon](https://github.com/noties/Markwon) (including its `ext-latex` plugin, which brings in jlatexmath). Other notable dependencies include Room (persistence), WorkManager (background jobs), PhotoView (zoomable images), and LeakCanary's `plumber-android` (startup crash prevention). The Gemini API integration in the `:ai` module uses raw `HttpURLConnection` rather than a networking library.
+Dependency versions are managed centrally in the Gradle version catalog at [`gradle/libs.versions.toml`](gradle/libs.versions.toml) — add or bump versions there rather than hardcoding them in module `build.gradle` files.
+
+The app uses [a-navigator](https://github.com/rh-id/a-navigator) framework as navigator and `StatefulView` as base structure, combined with [a-provider](https://github.com/rh-id/a-provider) library for service locator, and RxJava / RxAndroid to handle UI use cases. Card questions and answers are rendered as Markdown with LaTeX math support via [Markwon](https://github.com/noties/Markwon) (including its `ext-latex` plugin, which brings in jlatexmath). Other notable dependencies include Room (persistence), WorkManager (background jobs), PhotoView (zoomable images), Material Components (with Material You dynamic color theming on Android 12+), and LeakCanary's `plumber-android` (startup crash prevention). The Gemini API integration in the `:ai` module uses raw `HttpURLConnection` rather than a networking library.
 
 ## License
 

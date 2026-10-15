@@ -9,8 +9,8 @@
 
 ## Deck tooling (native import format)
 - Build importable deck zip from CSV/TSV (needs `question`/`answer` columns) or authoring JSON: `python scripts/build_deck.py build --input cards.csv --name "Deck name" --output Decks.zip`
-- Minify pretty deck JSON to the required single-line form: `python scripts/build_deck.py fix --input Decks-pretty.json --output Decks.json`
-- Zip must contain exactly `Decks.json` (case-sensitive), single-line JSON; schema reference: `docs/deck-json-schema.md`.
+- Minify pretty deck JSON to a single line (only required for app releases ≤2.0.0; 2.1.0+ import multi-line/pretty JSON): `python scripts/build_deck.py fix --input Decks-pretty.json --output Decks.json`
+- Zip must contain exactly `Decks.json` (case-sensitive); schema reference: `docs/deck-json-schema.md`.
 
 ## Release sequence
 1. Bump versionCode/versionName in `app/build.gradle`.
