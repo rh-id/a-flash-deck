@@ -20,4 +20,5 @@
     <string name="title_notification_timer_list">Daftar Pengatur Waktu</string>
     <string name="notification_period_every_x_minutes">Setiap %d menit</string>
     <string name="success_updating_new_notification_timer">Sukses memperbarui pengatur waktu notifikasi %s</string>
+    <string name="permission_denied_notification">Izin notifikasi ditolak, silakan izinkan notifikasi di pengaturan aplikasi sistem untuk menerima pengingat belajar</string>
 </resources>

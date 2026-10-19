@@ -20,4 +20,5 @@
     <string name="title_notification_timer_list">Liste des minuteries de notification</string>
     <string name="notification_period_every_x_minutes">Toutes les %d minutes</string>
     <string name="success_updating_new_notification_timer">Minuterie de notification %s mise à jour avec succès</string>
+    <string name="permission_denied_notification">Permission de notification refusée, veuillez autoriser les notifications dans les paramètres système de l\'application pour recevoir des rappels d\'étude</string>
 </resources>

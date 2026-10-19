@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Per pachet</string>
     <string name="stats_deck_summary">%1$d cartas · %2$d da scadenza</string>
     <string name="stats_empty_history">Anc nagina istorgia da repetiziuns. Valita chartas in in test e tias statisticas cumparan qua.</string>
+    <string name="notification_permission_rationale">L\'app dovra avis per ta regurdar da studiar. Permetter avis?</string>
+    <string name="permission_denied_notification">Permissiun per avis refusada, permetta per plaschair avis en la configuraziun dal sistem da l\'app per retschaiver regurdanzas da studi</string>
 </resources>

@@ -20,4 +20,5 @@
     <string name="title_notification_timer_list">Elenco timer di notifica</string>
     <string name="notification_period_every_x_minutes">Ogni %d minuti</string>
     <string name="success_updating_new_notification_timer">Successo nell\'aggiornamento del timer di notifica %s</string>
+    <string name="permission_denied_notification">Permesso di notifica negato, consenti le notifiche nelle impostazioni di sistema dell\'app per ricevere promemoria di studio</string>
 </resources>

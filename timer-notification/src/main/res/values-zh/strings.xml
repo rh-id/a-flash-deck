@@ -19,4 +19,5 @@
     <string name="title_notification_timer_list">通知定时器列表</string>
     <string name="notification_period_every_x_minutes">每 %d 分钟</string>
     <string name="success_updating_new_notification_timer">通知定时器 %s 已成功更新</string>
+    <string name="permission_denied_notification">通知权限被拒绝，请在系统的应用设置中允许通知，以接收学习提醒</string>
 </resources>

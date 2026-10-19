@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Par paquet</string>
     <string name="stats_deck_summary">%1$d cartes · %2$d dues</string>
     <string name="stats_empty_history">Pas encore d\'historique de révision. Notez des cartes dans un test et vos statistiques apparaîtront ici.</string>
+    <string name="notification_permission_rationale">L\'application utilise les notifications pour vous rappeler d\'étudier. Autoriser les notifications ?</string>
+    <string name="permission_denied_notification">Permission de notification refusée, veuillez autoriser les notifications dans les paramètres système de l\'application pour recevoir des rappels d\'étude</string>
 </resources>

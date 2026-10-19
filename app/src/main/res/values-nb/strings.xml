@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Etter kortstokk</string>
     <string name="stats_deck_summary">%1$d kort · %2$d forfalt</string>
     <string name="stats_empty_history">Ingen øvingshistorikk ennå. Vurder kort i en test, og statistikken din vises her.</string>
+    <string name="notification_permission_rationale">Appen bruker varsler for å minne deg på å studere. Tillat varsler?</string>
+    <string name="permission_denied_notification">Varslingstillatelse avslått, vennligst tillat varsler i systeminnstillingene for appen for å motta studiepåminnelser</string>
 </resources>

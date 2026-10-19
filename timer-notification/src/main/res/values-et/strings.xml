@@ -20,4 +20,5 @@
     <string name="title_notification_timer_list">Teavitustaimerite nimekiri</string>
     <string name="notification_period_every_x_minutes">Iga %d minuti tagant</string>
     <string name="success_updating_new_notification_timer">Teavitustaimer %s uuendatud edukalt</string>
+    <string name="permission_denied_notification">Märguannete luba on keeldatud, palun lubage märguanded süsteemi rakenduse sätetes, et saada õppimise meeldetuletusi</string>
 </resources>

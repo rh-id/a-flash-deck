@@ -20,4 +20,5 @@
     <string name="title_notification_timer_list">Liste over varslingstidtakere</string>
     <string name="notification_period_every_x_minutes">Hvert %d minutter</string>
     <string name="success_updating_new_notification_timer">Varslingstidtaker %s oppdatert</string>
+    <string name="permission_denied_notification">Varslingstillatelse avslått, vennligst tillat varsler i systeminnstillingene for appen for å motta studiepåminnelser</string>
 </resources>

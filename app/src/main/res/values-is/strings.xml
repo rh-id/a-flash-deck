@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Eftir pakka</string>
     <string name="stats_deck_summary">%1$d spjöld · %2$d fallin á</string>
     <string name="stats_empty_history">Enginn æfingaferill ennþá. Einkunnaðu spjöld í prófi og tölfræðin þín mun birtast hér.</string>
+    <string name="notification_permission_rationale">Forritið notar tilkynningar til að minna þig á að læra. Leyfa tilkynningar?</string>
+    <string name="permission_denied_notification">Heimild fyrir tilkynningar hafnað, vinsamlegast leyfið tilkynningar í kerfisstillingum forritsins til að fá áminningar um nám</string>
 </resources>

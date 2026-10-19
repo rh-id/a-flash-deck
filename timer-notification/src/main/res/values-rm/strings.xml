@@ -20,4 +20,5 @@
     <string name="title_notification_timer_list">Glista da timers da notificaziun</string>
     <string name="notification_period_every_x_minutes">Ogni %d minutas</string>
     <string name="success_updating_new_notification_timer">Success actualisond timer da notificaziun %s</string>
+    <string name="permission_denied_notification">Permissiun per avis refusada, permetta per plaschair avis en la configuraziun dal sistem da l\'app per retschaiver regurdanzas da studi</string>
 </resources>

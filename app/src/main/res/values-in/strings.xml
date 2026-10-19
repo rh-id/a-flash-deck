@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Per dek</string>
     <string name="stats_deck_summary">%1$d kartu · %2$d jatuh tempo</string>
     <string name="stats_empty_history">Belum ada riwayat latihan. Nilai kartu dalam tes dan statistik Anda akan muncul di sini.</string>
+    <string name="notification_permission_rationale">Aplikasi menggunakan notifikasi untuk mengingatkan Anda untuk belajar. Izinkan notifikasi?</string>
+    <string name="permission_denied_notification">Izin notifikasi ditolak, silakan izinkan notifikasi di pengaturan aplikasi sistem untuk menerima pengingat belajar</string>
 </resources>

@@ -164,4 +164,6 @@
     <string name="stats_by_deck">按牌组</string>
     <string name="stats_deck_summary">%1$d 张卡片 · %2$d 张到期</string>
     <string name="stats_empty_history">暂无复习记录。在测试中为卡片评分后，统计数据将显示在这里。</string>
+    <string name="notification_permission_rationale">应用使用通知来提醒您学习。允许通知吗？</string>
+    <string name="permission_denied_notification">通知权限被拒绝，请在系统的应用设置中允许通知，以接收学习提醒</string>
 </resources>

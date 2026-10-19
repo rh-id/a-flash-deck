@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Kaardipakiti</string>
     <string name="stats_deck_summary">%1$d kaarti · %2$d tähtaegsed</string>
     <string name="stats_empty_history">Ülevaatuse ajalugu puudub veel. Hinda kaarte testis ja sinu statistika ilmub siia.</string>
+    <string name="notification_permission_rationale">Rakendus kasutab märguandeid, et meeldetuletada õppimist. Kas lubada märguanded?</string>
+    <string name="permission_denied_notification">Märguannete luba on keeldatud, palun lubage märguanded süsteemi rakenduse sätetes, et saada õppimise meeldetuletusi</string>
 </resources>

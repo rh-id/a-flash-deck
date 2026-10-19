@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Per mazzo</string>
     <string name="stats_deck_summary">%1$d schede · %2$d scadute</string>
     <string name="stats_empty_history">Ancora nessuna cronologia di ripetizioni. Valuta le schede in un test e le tue statistiche appariranno qui.</string>
+    <string name="notification_permission_rationale">L\'app utilizza le notifiche per ricordarti di studiare. Consentire le notifiche?</string>
+    <string name="permission_denied_notification">Permesso di notifica negato, consenti le notifiche nelle impostazioni di sistema dell\'app per ricevere promemoria di studio</string>
 </resources>

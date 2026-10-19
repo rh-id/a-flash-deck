@@ -163,4 +163,6 @@
     <string name="stats_by_deck">Nach Kartensatz</string>
     <string name="stats_deck_summary">%1$d Karten · %2$d fällig</string>
     <string name="stats_empty_history">Noch kein Wiederholungsverlauf. Bewerte Karten in einem Test und deine Statistiken erscheinen hier.</string>
+    <string name="notification_permission_rationale">Die App verwendet Benachrichtigungen, um Sie ans Lernen zu erinnern. Benachrichtigungen erlauben?</string>
+    <string name="permission_denied_notification">Benachrichtigungsberechtigung verweigert, bitte erlauben Sie Benachrichtigungen in den Systemeinstellungen der App, um Lernerinnerungen zu erhalten</string>
 </resources>

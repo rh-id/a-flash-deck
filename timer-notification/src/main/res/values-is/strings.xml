@@ -20,4 +20,5 @@
     <string name="title_notification_timer_list">Tilkynningartímamælalisti</string>
     <string name="notification_period_every_x_minutes">Á hverjum %d mínútum</string>
     <string name="success_updating_new_notification_timer">Tókst að uppfæra tilkynningartímamæli %s</string>
+    <string name="permission_denied_notification">Heimild fyrir tilkynningar hafnað, vinsamlegast leyfið tilkynningar í kerfisstillingum forritsins til að fá áminningar um nám</string>
 </resources>
