@@ -20,14 +20,11 @@ package m.co.rh.id.a_flash_deck.base.ui.component.common;
 import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
-import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.Serializable;
@@ -37,8 +34,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import m.co.rh.id.a_flash_deck.base.R;
 import m.co.rh.id.a_flash_deck.base.component.AudioRecorder;
-import m.co.rh.id.a_flash_deck.base.constants.Routes;
-import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
+import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.anavigator.StatefulViewDialog;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
@@ -49,7 +45,6 @@ import m.co.rh.id.aprovider.Provider;
  * Common dialog to show message only
  */
 public class VoiceRecordSVDialog extends StatefulViewDialog<Activity> implements NavOnRequestPermissionResult, View.OnTouchListener {
-    private static final int REQUEST_CODE_RECORD_AUDIO_PERMISSION = 0;
     private static final String TAG = VoiceRecordSVDialog.class.getName();
 
     @NavInject
@@ -97,12 +92,8 @@ public class VoiceRecordSVDialog extends StatefulViewDialog<Activity> implements
     protected void onShowDialog(DialogInterface dialog) {
         if (!mPermissionRequested) {
             Activity activity = getNavigator().getActivity();
-            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO)
-                    == PackageManager.PERMISSION_DENIED) {
-                ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.RECORD_AUDIO},
-                        REQUEST_CODE_RECORD_AUDIO_PERMISSION);
-            }
+            UiUtils.requestPermissionIfNeeded(activity, Manifest.permission.RECORD_AUDIO,
+                    UiUtils.REQUEST_CODE_RECORD_AUDIO);
             mPermissionRequested = true;
         }
     }
@@ -126,20 +117,14 @@ public class VoiceRecordSVDialog extends StatefulViewDialog<Activity> implements
 
     @Override
     public void onRequestPermissionsResult(View currentView, Activity activity, INavigator INavigator, int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_RECORD_AUDIO_PERMISSION: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    CommonNavConfig commonNavConfig = mProvider.get(CommonNavConfig.class);
-                    String title = activity.getString(R.string.error);
-                    String content = activity.getString(R.string.permission_denied_record_audio);
+        UiUtils.onPermissionResult(requestCode, UiUtils.REQUEST_CODE_RECORD_AUDIO, grantResults,
+                () -> { },
+                () -> {
                     INavigator navigator = getNavigator();
                     navigator.pop();
-                    navigator.push(Routes.COMMON_MESSAGE_DIALOG,
-                            commonNavConfig.args_commonMessageDialog(title, content));
-                }
-            }
-        }
+                    UiUtils.pushMessageDialog(navigator, activity,
+                            R.string.error, R.string.permission_denied_record_audio);
+                });
     }
 
     public static class Result implements Serializable {
