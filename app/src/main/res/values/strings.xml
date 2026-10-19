@@ -149,6 +149,10 @@
     <string name="success_suspending_card">Success suspending card %s</string>
     <string name="success_unsuspending_card">Success unsuspending card %s</string>
 
+    <!-- Notification permission -->
+    <string name="notification_permission_rationale">The app uses notifications to remind you to study. Allow notifications?</string>
+    <string name="permission_denied_notification">Notification permission denied, please allow notifications in the system app settings to receive study reminders</string>
+
     <!-- Statistics page -->
     <string name="title_statistics">Statistics</string>
     <string name="stats_reviews_today">Reviews today</string>

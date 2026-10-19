@@ -51,6 +51,9 @@ public class AppSharedPreferences {
     private Date mNotificationEndTime;
     private String mNotificationEndTimeKey;
 
+    private boolean mIsNotificationPermissionRequested;
+    private String mIsNotificationPermissionRequestedKey;
+
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mHandler = provider.lazyGet(Handler.class);
@@ -93,6 +96,13 @@ public class AppSharedPreferences {
         long notificationEndTime = mSharedPreferences.getLong(mNotificationEndTimeKey,
                 calendar.getTime().getTime());
         notificationEndTime(notificationEndTime);
+
+        mIsNotificationPermissionRequestedKey = SHARED_PREFERENCES_NAME
+                + ".isNotificationPermissionRequested";
+        boolean isNotificationPermissionRequested = mSharedPreferences.getBoolean(
+                mIsNotificationPermissionRequestedKey,
+                false);
+        isNotificationPermissionRequested(isNotificationPermissionRequested);
     }
 
     private void selectedTheme(int setting) {
@@ -199,5 +209,20 @@ public class AppSharedPreferences {
 
     public Date getNotificationEndTime() {
         return mNotificationEndTime;
+    }
+
+    private void isNotificationPermissionRequested(boolean requested) {
+        mIsNotificationPermissionRequested = requested;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mIsNotificationPermissionRequestedKey, requested)
+                        .commit());
+    }
+
+    public void setNotificationPermissionRequested(boolean requested) {
+        isNotificationPermissionRequested(requested);
+    }
+
+    public boolean isNotificationPermissionRequested() {
+        return mIsNotificationPermissionRequested;
     }
 }

@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 
@@ -35,24 +36,25 @@ import java.util.ArrayList;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
-import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.timer.R;
 import m.co.rh.id.a_flash_deck.timer.provider.command.NewNotificationTimerCmd;
 import m.co.rh.id.a_flash_deck.timer.provider.command.UpdateNotificationTimerCmd;
+import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
 import m.co.rh.id.anavigator.annotation.NavInject;
+import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavOnRequestPermissionResult;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity> implements RequireComponent<Provider>, View.OnClickListener {
+public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity> implements RequireComponent<Provider>, View.OnClickListener, NavOnRequestPermissionResult {
     private static String TAG = NotificationTimerDetailSVDialog.class.getName();
 
     @NavInject
@@ -181,6 +183,7 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
         int id = view.getId();
         if (id == R.id.button_save) {
             if (mNewNotificationTimerCmd.valid(mNotificationTimer)) {
+                boolean pushPermissionDialogOnSuccess = requestNotificationPermissionIfNeeded();
                 mSvProvider.get(RxDisposer.class)
                         .add("onClick_newNotificationTimer", mNewNotificationTimerCmd.execute(mNotificationTimer)
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -193,10 +196,8 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
                                         } else {
                                             errorMessage = throwable.getMessage();
                                         }
-                                        String title = context.getString(R.string.title_error);
-                                        CommonNavConfig commonNavConfig = mSvProvider.get(CommonNavConfig.class);
-                                        getNavigator().push(Routes.COMMON_MESSAGE_DIALOG,
-                                                commonNavConfig.args_commonMessageDialog(title, errorMessage));
+                                        UiUtils.pushMessageDialog(getNavigator(), context,
+                                                R.string.title_error, errorMessage);
                                     } else {
                                         String successMessage;
                                         if (isUpdate()) {
@@ -206,7 +207,18 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
                                         }
                                         mSvProvider.get(ILogger.class)
                                                 .i(TAG, successMessage);
-                                        getNavigator().pop(Result.newResult(mNotificationTimer));
+                                        // captured before the pop because this dialog gets
+                                        // disposed once popped, making getNavigator() invalid
+                                        INavigator navigator = getNavigator();
+                                        navigator.pop(Result.newResult(mNotificationTimer));
+                                        // pushed AFTER the pop because a dialog pushed before
+                                        // it would be consumed by that pop (live-test verified);
+                                        // at this point the timer dialog is gone and the dialog
+                                        // stays on screen until dismissed
+                                        if (pushPermissionDialogOnSuccess) {
+                                            UiUtils.pushMessageDialog(navigator, context,
+                                                    R.string.title_error, R.string.permission_denied_notification);
+                                        }
                                     }
                                 }));
             } else {
@@ -215,6 +227,42 @@ public class NotificationTimerDetailSVDialog extends StatefulViewDialog<Activity
         } else if (id == R.id.button_cancel) {
             getNavigator().pop();
         }
+    }
+
+    /**
+     * Android 13 (API 33) and above require POST_NOTIFICATIONS to be requested
+     * at runtime, notifications silently no-op otherwise. The save flow always
+     * proceeds regardless of the permission state, this only tries to secure
+     * the permission so the saved timer can actually fire (full flow mechanics
+     * in {@link UiUtils}). Returns true when the permission is permanently
+     * denied and the settings message dialog must be pushed after the save's
+     * pop instead: a route pushed here would be immediately consumed by the
+     * save's pop(Result), while the system request dialog is an OS overlay
+     * and immune, hence it may fire upfront.
+     */
+    private boolean requestNotificationPermissionIfNeeded() {
+        Activity activity = getNavigator().getActivity();
+        if (UiUtils.isPostNotificationsGranted(activity)) {
+            return false;
+        }
+        if (UiUtils.canAskPostNotificationsAgain(activity)) {
+            UiUtils.requestPostNotificationsPermission(activity,
+                    UiUtils.REQUEST_CODE_POST_NOTIFICATIONS_TIMER_DETAIL);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(View currentView, Activity activity, INavigator INavigator, int requestCode, String[] permissions, int[] grantResults) {
+        UiUtils.onPermissionResult(requestCode, UiUtils.REQUEST_CODE_POST_NOTIFICATIONS_TIMER_DETAIL, grantResults,
+                () -> { },
+                // the save flow runs concurrently and may already have popped
+                // this dialog by the time the result arrives, hence feedback
+                // uses a toast instead of pushing a route
+                () -> Toast.makeText(activity.getApplicationContext(),
+                        activity.getString(R.string.permission_denied_notification),
+                        Toast.LENGTH_SHORT).show());
     }
 
     private boolean isUpdate() {

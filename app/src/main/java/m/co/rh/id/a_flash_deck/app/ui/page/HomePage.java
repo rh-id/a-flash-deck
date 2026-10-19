@@ -21,6 +21,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Handler;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +46,7 @@ import m.co.rh.id.a_flash_deck.app.provider.command.NewCardCmd;
 import m.co.rh.id.a_flash_deck.app.provider.component.ExportImportCoordinator;
 import m.co.rh.id.a_flash_deck.app.provider.component.TestWorkflowCoordinator;
 import m.co.rh.id.a_flash_deck.app.ui.component.OngoingTestBannerSV;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -56,16 +58,18 @@ import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
 import m.co.rh.id.a_flash_deck.bot.provider.notifier.SuggestedCardChangeNotifier;
+import m.co.rh.id.a_flash_deck.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
+import m.co.rh.id.anavigator.component.NavOnRequestPermissionResult;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, View.OnClickListener, DrawerLayout.DrawerListener, NavOnActivityResult<Activity> {
+public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, View.OnClickListener, DrawerLayout.DrawerListener, NavOnActivityResult<Activity>, NavOnRequestPermissionResult {
     private static final String TAG = HomePage.class.getName();
 
     @NavInject
@@ -80,6 +84,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient CommonNavConfig mCommonNavConfig;
     private transient NewCardCmd mNewCardCmd;
     private transient IAppNotificationHandler mAppNotificationHandler;
+    private transient AppSharedPreferences mAppSharedPreferences;
     private transient DrawerLayout mDrawerLayout;
     @NavInject
     private OngoingTestBannerSV mOngoingTestBannerSV;
@@ -92,6 +97,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient TestChangeNotifier mTestChangeNotifier;
     private transient Button mStudyDueCardsButton;
     private transient boolean mStudyDueCardsShown;
+    private transient boolean mPrimerOffered;
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
@@ -106,6 +112,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mCommonNavConfig = mSvProvider.get(CommonNavConfig.class);
         mNewCardCmd = mSvProvider.get(NewCardCmd.class);
         mAppNotificationHandler = mSvProvider.get(IAppNotificationHandler.class);
+        mAppSharedPreferences = mSvProvider.get(AppSharedPreferences.class);
         mSuggestedCardChangeNotifier = mSvProvider.get(SuggestedCardChangeNotifier.class);
         mExecutorService = mSvProvider.get(ExecutorService.class);
         mStudyRepository = mSvProvider.get(StudyRepository.class);
@@ -224,6 +231,11 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 mTestChangeNotifier.getStopTestEventFlow()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(testEvent -> refreshDueCardCount(activity)));
+        // deferred via the main handler so the primer dialog is not pushed
+        // while the activity is still on its initial route build (mirrors
+        // SplashPage's Handler usage)
+        mSvProvider.get(Handler.class)
+                .post(() -> requestNotificationPermissionIfNeeded(activity));
         return rootLayout;
     }
 
@@ -418,6 +430,46 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         }
     }
 
+    /**
+     * Android 13 (API 33) and above require POST_NOTIFICATIONS to be requested
+     * at runtime (grant/request mechanics in {@link UiUtils}). A rationale
+     * primer dialog is shown first, the system permission dialog is only fired
+     * when the user confirms it. The grant-state is re-checked on every launch
+     * so a user who granted it later via system settings is never prompted
+     * again, while a user who cancelled the primer is offered it again next
+     * launch.
+     */
+    private void requestNotificationPermissionIfNeeded(Activity activity) {
+        if (UiUtils.isPostNotificationsGranted(activity)) {
+            return;
+        }
+        if (mAppSharedPreferences.isNotificationPermissionRequested()) {
+            return;
+        }
+        // at most once per HomePage instance, a rebuild (e.g. uiMode change)
+        // must not re-offer the primer within the same session; the pref flag
+        // remains the cross-launch guard
+        if (mPrimerOffered) {
+            return;
+        }
+        String title = activity.getString(R.string.title_confirm);
+        String content = activity.getString(R.string.notification_permission_rationale);
+        mPrimerOffered = true;
+        mNavigator.push(Routes.COMMON_BOOLEAN_DIALOG,
+                mCommonNavConfig.args_commonBooleanDialog(title, content),
+                (navigator, navRoute, currentActivity, currentView) -> {
+                    Serializable serializable = navRoute.getRouteResult();
+                    if (serializable instanceof Boolean) {
+                        if ((Boolean) serializable) {
+                            UiUtils.requestPostNotificationsPermission(currentActivity,
+                                    UiUtils.REQUEST_CODE_POST_NOTIFICATIONS_HOME_PAGE);
+                        }
+                        // cancelled: do not persist the flag, the primer is
+                        // intentionally offered again on the next launch
+                    }
+                });
+    }
+
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
@@ -480,5 +532,14 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 mExportImportCoordinator.onImportResult(data.getData());
             }
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(View currentView, Activity activity, INavigator INavigator, int requestCode, String[] permissions, int[] grantResults) {
+        UiUtils.onPermissionResult(requestCode, UiUtils.REQUEST_CODE_POST_NOTIFICATIONS_HOME_PAGE, grantResults,
+                () -> { },
+                // this is the root page, it stays on the stack (no pop)
+                () -> UiUtils.pushMessageDialog(mNavigator, activity,
+                        R.string.title_error, R.string.permission_denied_notification));
     }
 }
