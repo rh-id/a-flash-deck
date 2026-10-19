@@ -24,6 +24,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.AutoMigrationSpec;
 
 import m.co.rh.id.a_flash_deck.base.dao.AndroidNotificationDao;
+import m.co.rh.id.a_flash_deck.base.dao.AnkiNoteGuidDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
@@ -32,6 +33,7 @@ import m.co.rh.id.a_flash_deck.base.dao.ReviewLogDao;
 import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
 import m.co.rh.id.a_flash_deck.base.entity.AndroidNotification;
+import m.co.rh.id.a_flash_deck.base.entity.AnkiNoteGuid;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.CardReviewState;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
@@ -42,8 +44,8 @@ import m.co.rh.id.a_flash_deck.base.entity.Test;
 
 @Database(entities = {Deck.class, Card.class, Test.class,
         AndroidNotification.class, NotificationTimer.class, CardReviewState.class,
-        ReviewLog.class},
-        version = 17,
+        ReviewLog.class, AnkiNoteGuid.class},
+        version = 18,
         autoMigrations = {
                 @AutoMigration(from = 12, to = 13,
                         spec = AppDatabase.RemoveIsReversedSpec.class)
@@ -64,6 +66,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract NotificationTimerDao timerNotificationDao();
 
     public abstract StudyDao studyDao();
+
+    public abstract AnkiNoteGuidDao ankiNoteGuidDao();
 
     @DeleteColumn(tableName = "card", columnName = "isReversed")
     static class RemoveIsReversedSpec implements AutoMigrationSpec {

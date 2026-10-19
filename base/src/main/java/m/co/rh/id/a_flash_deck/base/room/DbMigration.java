@@ -28,7 +28,7 @@ public class DbMigration {
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
                 MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14,
-                MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17};
+                MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -203,6 +203,25 @@ public class DbMigration {
             database.execSQL("ALTER TABLE review_log ADD COLUMN `time_before_reveal_ms` INTEGER NOT NULL DEFAULT 0");
             database.execSQL("ALTER TABLE review_log ADD COLUMN `time_after_reveal_ms` INTEGER NOT NULL DEFAULT 0");
             database.execSQL("ALTER TABLE review_log ADD COLUMN `reversed` INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    public static final Migration MIGRATION_17_18 = new Migration(17, 18) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // store the original Anki note guid per imported card so the same
+            // .apkg file is not imported twice; guid rows cascade with the
+            // card. DDL must match Room's expected schema for AnkiNoteGuid.
+            database.execSQL("CREATE TABLE IF NOT EXISTS `anki_note_guid` " +
+                    "(`id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "`card_id` INTEGER NOT NULL, " +
+                    "`guid` TEXT NOT NULL, " +
+                    "FOREIGN KEY(`card_id`) REFERENCES `card`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_anki_note_guid_guid` " +
+                    "ON `anki_note_guid` (`guid`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_anki_note_guid_card_id` " +
+                    "ON `anki_note_guid` (`card_id`)");
         }
     };
 }

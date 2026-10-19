@@ -20,6 +20,7 @@ markwon = "4.6.2"
 photoview = "2.3.0"
 leakcanary = "2.14"
 desugar-jdk-libs = "2.1.5"
+zstd-jni = "1.5.7-3"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.3.0"
 espresso = "3.7.0"
@@ -54,6 +55,7 @@ markwon-inline-parser = { group = "io.noties.markwon", name = "inline-parser", v
 photo-view = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photoview" }
 leakcanary-plumber = { group = "com.squareup.leakcanary", name = "plumber-android", version.ref = "leakcanary" }
 desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar-jdk-libs" }
+zstd-jni = { group = "com.github.luben", name = "zstd-jni", version.ref = "zstd-jni" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }

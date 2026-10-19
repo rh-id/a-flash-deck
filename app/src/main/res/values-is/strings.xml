@@ -165,4 +165,15 @@
     <string name="stats_empty_history">Enginn æfingaferill ennþá. Einkunnaðu spjöld í prófi og tölfræðin þín mun birtast hér.</string>
     <string name="notification_permission_rationale">Forritið notar tilkynningar til að minna þig á að læra. Leyfa tilkynningar?</string>
     <string name="permission_denied_notification">Heimild fyrir tilkynningar hafnað, vinsamlegast leyfið tilkynningar í kerfisstillingum forritsins til að fá áminningar um nám</string>
+
+    <!-- Anki import summary -->
+    <string name="title_import_summary">Yfirlit innflutnings</string>
+    <string name="import_summary_result">Flutt inn: %1$d spjaldasöfn, %2$d spjöld</string>
+    <string name="import_summary_skipped_notetype">Sleppti spjaldategund \"%1$s\" (%2$d miði)</string>
+    <string name="import_summary_dropped_media">%1$d margmiðlunarefni sleppt, aðeins fyrsta mynd/hljóð fyrir hverja hlið spjalds er studd</string>
+    <string name="import_summary_duplicates_skipped">Sleppti %1$d afrituðum miða</string>
+    <string name="error_anki_modern_package">Þessi Anki-skrá virðist skemmd og tókst ekki að lesa hana</string>
+    <string name="error_anki_decoy_package">Þessi Anki-skrá inniheldur engin spjöld sem hægt er að flytja inn</string>
+    <string name="error_nothing_imported">Engin spjöld sem hægt er að flytja inn fundust í skránni</string>
+    <string name="imported_deck_default_name">Innflutt spjaldasafn</string>
 </resources>

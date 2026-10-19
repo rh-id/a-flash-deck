@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -50,6 +51,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
+import m.co.rh.id.a_flash_deck.app.provider.component.AnkiApkgTestBuilder;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
@@ -146,7 +148,7 @@ public class ExportImportCmdTest {
         // delete record after export
         deckCardRepo.deleteDeck(deck);
 
-        List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
+        List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet().decks;
 
         assertEquals(1, deckModelList.size());
         Deck deckResult = deckModelList.get(0).getDeck();
@@ -278,7 +280,7 @@ public class ExportImportCmdTest {
             assertFalse(cardMediaStore.getCardQuestionVoice("test_q_voice.3gp").exists());
             assertFalse(cardMediaStore.getCardAnswerVoice("test_a_voice.3gp").exists());
 
-            List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
+            List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet().decks;
 
             assertEquals(1, deckModelList.size());
             Deck deckResult = deckModelList.get(0).getDeck();
@@ -380,7 +382,7 @@ public class ExportImportCmdTest {
         // delete record after export
         deckCardRepo.deleteDeck(deck);
 
-        List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
+        List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet().decks;
 
         assertEquals(1, deckModelList.size());
         Deck deckResult = deckModelList.get(0).getDeck();
@@ -457,7 +459,7 @@ public class ExportImportCmdTest {
         deckCardRepo.deleteDeck(deck);
 
         // import
-        List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet();
+        List<DeckModel> deckModelList = cmd.importFile(exportedFile).blockingGet().decks;
 
         assertEquals(1, deckModelList.size());
         Deck deckResult = deckModelList.get(0).getDeck();
@@ -492,7 +494,7 @@ public class ExportImportCmdTest {
         ExportImportCmd cmd = new ExportImportCmd(testProvider);
         File tempZip = createDecksZip(buildPrettyDecksJson());
         try {
-            List<DeckModel> deckModelList = cmd.importFile(tempZip).blockingGet();
+            List<DeckModel> deckModelList = cmd.importFile(tempZip).blockingGet().decks;
             assertSingleTestDeckImported(deckModelList);
         } finally {
             tempZip.delete();
@@ -511,7 +513,7 @@ public class ExportImportCmdTest {
             try (FileOutputStream fos = new FileOutputStream(tempJson)) {
                 fos.write(buildPrettyDecksJson().getBytes(StandardCharsets.UTF_8));
             }
-            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet();
+            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet().decks;
             assertSingleTestDeckImported(deckModelList);
         } finally {
             tempJson.delete();
@@ -530,7 +532,7 @@ public class ExportImportCmdTest {
             try (FileOutputStream fos = new FileOutputStream(tempJson)) {
                 fos.write(buildSingleLineDecksJson().getBytes(StandardCharsets.UTF_8));
             }
-            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet();
+            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet().decks;
             assertSingleTestDeckImported(deckModelList);
         } finally {
             tempJson.delete();
@@ -549,11 +551,56 @@ public class ExportImportCmdTest {
             try (FileOutputStream fos = new FileOutputStream(tempJson)) {
                 fos.write(('\uFEFF' + buildSingleLineDecksJson()).getBytes(StandardCharsets.UTF_8));
             }
-            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet();
+            List<DeckModel> deckModelList = cmd.importFile(tempJson).blockingGet().decks;
             assertSingleTestDeckImported(deckModelList);
         } finally {
             tempJson.delete();
         }
+    }
+
+    /**
+     * Regression test: importing via a Uri (the ACTION_VIEW / SAF flow first
+     * copies the content to a temp file whose name decides the importer)
+     * must keep the .apkg extension so the file routes to the Anki importer.
+     * Previously the temp copy was always named "Deck-Import" and .apkg
+     * files were silently handled by the native JSON/zip importer, importing
+     * nothing with no user-visible feedback.
+     */
+    @Test
+    public void importFile_uriWithApkgExtension_routesToAnkiImporter() throws Exception {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        ExportImportCmd cmd = new ExportImportCmd(testProvider);
+
+        File tempDir = new File(appContext.getCacheDir(), "uri_import_test_" + System.currentTimeMillis());
+        tempDir.mkdirs();
+        File apkgFile = AnkiApkgTestBuilder.genuine(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Uri Deck")
+                .addNote(300, 100, "Uri Q", "Uri A")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "picked_file.apkg"), "collection.anki21");
+        try {
+            List<DeckModel> imported = cmd.importFile(Uri.fromFile(apkgFile)).blockingGet().decks;
+            assertEquals(1, imported.size());
+            assertEquals("Uri Deck", imported.get(0).getDeck().name);
+            assertEquals(1, imported.get(0).getCardList().size());
+        } finally {
+            deleteDirectory(tempDir);
+        }
+    }
+
+    private void deleteDirectory(File dir) {
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        dir.delete();
     }
 
     /**

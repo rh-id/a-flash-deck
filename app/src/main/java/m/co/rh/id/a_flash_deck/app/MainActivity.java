@@ -40,9 +40,13 @@ import m.co.rh.id.a_flash_deck.app.provider.command.ExportImportCmd;
 import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
+import m.co.rh.id.a_flash_deck.base.constants.Routes;
+import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.provider.RxProviderModule;
+import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
+import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.aprovider.Provider;
 
 public class MainActivity extends AppCompatActivity {
@@ -161,22 +165,45 @@ public class MainActivity extends AppCompatActivity {
         if (Intent.ACTION_VIEW.equals(intentAction)) {
             Context context = getApplicationContext();
             Uri fileData = intent.getData();
+            INavigator navigator = BaseApplication.of(this).getNavigator(this);
             mActProvider.get(ILogger.class).d(TAG, "begin import file");
             mActProvider.get(RxDisposer.class)
                     .add("handleImportFile_importFile",
                             mActProvider.get(ExportImportCmd.class)
                                     .importFile(fileData)
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((deckModels, throwable) -> {
+                                    .subscribe((result, throwable) -> {
                                         if (throwable != null) {
-                                            mActProvider.get(ILogger.class)
-                                                    .e(TAG, context.getString(R.string.error_failed_to_open_file)
-                                                            , throwable);
+                                            handleImportError(navigator, context, throwable);
                                         } else {
                                             mActProvider.get(ILogger.class).i(TAG,
-                                                    context.getString(R.string.success_import_file, deckModels.size()));
+                                                    context.getString(R.string.success_import_file, result.decks.size()));
+                                            if (result.showSummaryDialog) {
+                                                navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                        mActProvider.get(CommonNavConfig.class)
+                                                                .args_commonMessageDialog(
+                                                                        context.getString(R.string.title_import_summary),
+                                                                        result.buildSummaryMessage(context)));
+                                            }
                                         }
                                     }));
+        }
+    }
+
+    /**
+     * Shows validation errors as a dialog (same pattern as the export flow),
+     * unexpected errors are only logged.
+     */
+    private void handleImportError(INavigator navigator, Context context, Throwable throwable) {
+        Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+        if (cause instanceof ValidationException) {
+            navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                    mActProvider.get(CommonNavConfig.class).args_commonMessageDialog(
+                            context.getString(R.string.error), cause.getMessage()));
+        } else {
+            mActProvider.get(ILogger.class)
+                    .e(TAG, context.getString(R.string.error_failed_to_open_file)
+                            , throwable);
         }
     }
 }

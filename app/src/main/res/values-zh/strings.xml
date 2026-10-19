@@ -166,4 +166,15 @@
     <string name="stats_empty_history">暂无复习记录。在测试中为卡片评分后，统计数据将显示在这里。</string>
     <string name="notification_permission_rationale">应用使用通知来提醒您学习。允许通知吗？</string>
     <string name="permission_denied_notification">通知权限被拒绝，请在系统的应用设置中允许通知，以接收学习提醒</string>
+
+    <!-- Anki import summary -->
+    <string name="title_import_summary">导入摘要</string>
+    <string name="import_summary_result">已导入 %1$d 个卡组、%2$d 张卡片</string>
+    <string name="import_summary_skipped_notetype">已跳过笔记类型“%1$s”（%2$d 条笔记）</string>
+    <string name="import_summary_dropped_media">已跳过 %1$d 个媒体文件，每张卡片每面仅支持第一个图片/音频</string>
+    <string name="import_summary_duplicates_skipped">已跳过 %1$d 条重复笔记</string>
+    <string name="error_anki_modern_package">此 Anki 文件似乎已损坏，无法读取</string>
+    <string name="error_anki_decoy_package">此 Anki 文件不包含可导入的卡片</string>
+    <string name="error_nothing_imported">文件中没有可导入的卡片</string>
+    <string name="imported_deck_default_name">导入的卡组</string>
 </resources>

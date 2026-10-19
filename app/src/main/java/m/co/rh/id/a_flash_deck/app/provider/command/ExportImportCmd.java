@@ -18,7 +18,9 @@
 package m.co.rh.id.a_flash_deck.app.provider.command;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 
 import androidx.annotation.NonNull;
 
@@ -51,6 +53,7 @@ import java.util.zip.ZipOutputStream;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.anki.model.AnkiImportSummary;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiExporter;
 import m.co.rh.id.a_flash_deck.app.provider.component.AnkiImporter;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
@@ -62,6 +65,7 @@ import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
+import m.co.rh.id.a_flash_deck.base.repository.DeckImportResult;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
@@ -204,98 +208,120 @@ public class ExportImportCmd {
                 .subscribeOn(Schedulers.from(mExecutorService));
     }
 
-    public Single<List<DeckModel>> importFile(File file) {
+    public Single<ImportResult> importFile(File file) {
         if (file.getName().toLowerCase().endsWith(".apkg")) {
             return Single.fromCallable(() -> {
-                        List<DeckModel> result = mAnkiImporter.importApkg(file);
-                        if (!result.isEmpty()) {
-                            mDeckCardRepo.importDecks(result);
-                            notifyImportedDecks(result);
+                        ImportResult result = mAnkiImporter.importApkg(file);
+                        if (!result.payloads.isEmpty()) {
+                            DeckImportResult importResult =
+                                    mDeckCardRepo.importDeckPayloads(result.payloads);
+                            // the importer already skipped known duplicates,
+                            // fold in any remaining transaction-time skips so
+                            // the summary reflects what is actually in the DB
+                            result.summary.duplicateNotesSkipped += importResult.duplicateCardsSkipped;
+                            result.summary.cardsImported = importResult.cardsImported;
+                            result.summary.decksImported = importResult.decksCreated;
+                            notifyImportedDecks(importResult.createdDeckModels);
                         }
                         return result;
                     })
                     .subscribeOn(Schedulers.from(mExecutorService));
         }
         return Single.fromCallable(() -> {
-                    try (ZipFile zipFile = new ZipFile(file)) {
-                        Enumeration<? extends ZipEntry> zipEntryEnumeration = zipFile.entries();
-                        List<DeckModel> deckModelList = new ArrayList<>();
-                        while (zipEntryEnumeration.hasMoreElements()) {
-                            ZipEntry zipEntry = zipEntryEnumeration.nextElement();
-                            // process deck json
-                            if (zipEntry.getName().equals(ZIP_CONTENT_DECKS_JSON)) {
-                                InputStream is = zipFile.getInputStream(zipEntry);
-                                List<DeckModel> deckModelsFromJson = getDeckModelsFromJson(is);
-                                deckModelList.addAll(deckModelsFromJson);
-                            }
-                            if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_QUESTION_DIR)) {
-                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_QUESTION_DIR.length());
-                                File imageTempFile = mFileHelper.createImageTempFile();
-                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
-                                    mFileHelper.copyStream(bis, bos);
-                                }
-                                mCardMediaStore.createCardQuestionImage(imageTempFile, fileName);
-                                mCardMediaStore.createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
-                            }
-                            if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_ANSWER_DIR)) {
-                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_ANSWER_DIR.length());
-                                File imageTempFile = mFileHelper.createImageTempFile();
-                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
-                                    mFileHelper.copyStream(bis, bos);
-                                }
-                                mCardMediaStore.createCardAnswerImage(imageTempFile, fileName);
-                                mCardMediaStore.createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
-                            }
-                            if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_QUESTION_DIR)) {
-                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length());
-                                File tempFile = mFileHelper.createTempFile(fileName);
-                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
-                                    mFileHelper.copyStream(bis, bos);
-                                }
-                                mCardMediaStore.createCardQuestionVoice(tempFile, fileName);
-                            }
-                            if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_ANSWER_DIR)) {
-                                String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_ANSWER_DIR.length());
-                                File tempFile = mFileHelper.createTempFile(fileName);
-                                try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-                                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
-                                    mFileHelper.copyStream(bis, bos);
-                                }
-                                mCardMediaStore.createCardAnswerVoice(tempFile, fileName);
-                            }
-                        }
-
-                        if (!deckModelList.isEmpty()) {
-                            mDeckCardRepo.importDecks(deckModelList);
-                            notifyImportedDecks(deckModelList);
-                        }
-                        return deckModelList;
-                    } catch (ZipException e) {
-                        mLogger.d(TAG, "Not a zip file try json");
-                        // to support old file format Decks.json instead of zip
-                        try (FileInputStream fis = new FileInputStream(file)) {
-                            List<DeckModel> deckModelList = getDeckModelsFromJson(fis);
-                            if (!deckModelList.isEmpty()) {
-                                mDeckCardRepo.importDecks(deckModelList);
-                                notifyImportedDecks(deckModelList);
-                            }
-                            return deckModelList;
-                        } catch (Exception exception) {
-                            mLogger.d(TAG, exception.getMessage(), e);
-                            throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
-                        }
-                    } catch (FileNotFoundException e) {
-                        mLogger.d(TAG, e.getMessage(), e);
-                        throw new ValidationException(mAppContext.getString(R.string.error_failed_to_open_file));
-                    } catch (Exception e) {
-                        mLogger.d(TAG, e.getMessage(), e);
-                        throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
+                    List<DeckModel> deckModelList = importNativeFile(file);
+                    AnkiImportSummary summary = new AnkiImportSummary();
+                    summary.decksImported = deckModelList.size();
+                    for (DeckModel deckModel : deckModelList) {
+                        summary.cardsImported += deckModel.getCardList().size();
                     }
+                    // native imports have no anki specific content, only show
+                    // the summary dialog when warnings exist
+                    return ImportResult.withoutGuids(deckModelList, summary, summary.hasWarnings());
                 })
                 .subscribeOn(Schedulers.from(mExecutorService));
+    }
+
+    /**
+     * Imports a native zip (Decks.json + media) or plain Decks.json file.
+     */
+    private List<DeckModel> importNativeFile(File file) throws Exception {
+        try (ZipFile zipFile = new ZipFile(file)) {
+            Enumeration<? extends ZipEntry> zipEntryEnumeration = zipFile.entries();
+            List<DeckModel> deckModelList = new ArrayList<>();
+            while (zipEntryEnumeration.hasMoreElements()) {
+                ZipEntry zipEntry = zipEntryEnumeration.nextElement();
+                // process deck json
+                if (zipEntry.getName().equals(ZIP_CONTENT_DECKS_JSON)) {
+                    InputStream is = zipFile.getInputStream(zipEntry);
+                    List<DeckModel> deckModelsFromJson = getDeckModelsFromJson(is);
+                    deckModelList.addAll(deckModelsFromJson);
+                }
+                if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_QUESTION_DIR)) {
+                    String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_QUESTION_DIR.length());
+                    File imageTempFile = mFileHelper.createImageTempFile();
+                    try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
+                        mFileHelper.copyStream(bis, bos);
+                    }
+                    mCardMediaStore.createCardQuestionImage(imageTempFile, fileName);
+                    mCardMediaStore.createCardQuestionImageThumbnail(Uri.fromFile(imageTempFile), fileName);
+                }
+                if (zipEntry.getName().startsWith(ZIP_CONTENT_IMAGE_ANSWER_DIR)) {
+                    String fileName = zipEntry.getName().substring(ZIP_CONTENT_IMAGE_ANSWER_DIR.length());
+                    File imageTempFile = mFileHelper.createImageTempFile();
+                    try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(imageTempFile))) {
+                        mFileHelper.copyStream(bis, bos);
+                    }
+                    mCardMediaStore.createCardAnswerImage(imageTempFile, fileName);
+                    mCardMediaStore.createCardAnswerImageThumbnail(Uri.fromFile(imageTempFile), fileName);
+                }
+                if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_QUESTION_DIR)) {
+                    String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_QUESTION_DIR.length());
+                    File tempFile = mFileHelper.createTempFile(fileName);
+                    try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                        mFileHelper.copyStream(bis, bos);
+                    }
+                    mCardMediaStore.createCardQuestionVoice(tempFile, fileName);
+                }
+                if (zipEntry.getName().startsWith(ZIP_CONTENT_VOICE_ANSWER_DIR)) {
+                    String fileName = zipEntry.getName().substring(ZIP_CONTENT_VOICE_ANSWER_DIR.length());
+                    File tempFile = mFileHelper.createTempFile(fileName);
+                    try (BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+                         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                        mFileHelper.copyStream(bis, bos);
+                    }
+                    mCardMediaStore.createCardAnswerVoice(tempFile, fileName);
+                }
+            }
+
+            if (!deckModelList.isEmpty()) {
+                mDeckCardRepo.importDecks(deckModelList);
+                notifyImportedDecks(deckModelList);
+            }
+            return deckModelList;
+        } catch (ZipException e) {
+            mLogger.d(TAG, "Not a zip file try json");
+            // to support old file format Decks.json instead of zip
+            try (FileInputStream fis = new FileInputStream(file)) {
+                List<DeckModel> deckModelList = getDeckModelsFromJson(fis);
+                if (!deckModelList.isEmpty()) {
+                    mDeckCardRepo.importDecks(deckModelList);
+                    notifyImportedDecks(deckModelList);
+                }
+                return deckModelList;
+            } catch (Exception exception) {
+                mLogger.d(TAG, exception.getMessage(), e);
+                throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
+            }
+        } catch (FileNotFoundException e) {
+            mLogger.d(TAG, e.getMessage(), e);
+            throw new ValidationException(mAppContext.getString(R.string.error_failed_to_open_file));
+        } catch (Exception e) {
+            mLogger.d(TAG, e.getMessage(), e);
+            throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
+        }
     }
 
     /**
@@ -344,10 +370,42 @@ public class ExportImportCmd {
         }
     }
 
-    public Single<List<DeckModel>> importFile(Uri uri) {
-        return Single.fromCallable(() ->
-                        mFileHelper.createTempFile("Deck-Import", uri))
+    public Single<ImportResult> importFile(Uri uri) {
+        return Single.fromCallable(() -> {
+                    String fileName = resolveFileName(uri);
+                    return mFileHelper.createTempFile(fileName, uri);
+                })
                 .flatMap(this::importFile)
                 .subscribeOn(Schedulers.from(mExecutorService));
+    }
+
+    /**
+     * Derives a file name (with extension) for the temp copy of the given
+     * uri. The extension decides which importer handles the file (.apkg vs
+     * native JSON/zip): a fixed name like "Deck-Import" silently misroutes
+     * real .apkg files to the native importer. Reads
+     * {@link OpenableColumns#DISPLAY_NAME} (provided by SAF pickers,
+     * MediaStore and FileProvider), falling back to the uri's last path
+     * segment when it carries an extension.
+     */
+    private String resolveFileName(Uri uri) {
+        try (Cursor cursor = mAppContext.getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null) {
+                int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (nameIndex >= 0 && cursor.moveToFirst()) {
+                    String name = cursor.getString(nameIndex);
+                    if (name != null && !name.isEmpty()) {
+                        return name;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            mLogger.d(TAG, "Could not query display name for uri: " + uri);
+        }
+        String lastSegment = uri.getLastPathSegment();
+        if (lastSegment != null && lastSegment.contains(".")) {
+            return lastSegment;
+        }
+        return "Deck-Import";
     }
 }

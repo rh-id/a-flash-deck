@@ -115,23 +115,45 @@ public class ExportImportCoordinator {
     /**
      * Handles the import result from file chooser.
      */
-    public void onImportResult(Uri data) {
+    public void onImportResult(INavigator navigator, Uri data) {
         Context context = mProvider.getContext();
         mRxDisposer
                 .add("onImportResult",
                         mProvider.get(ExportImportCmd.class).importFile(data)
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((deckModels, throwable) -> {
+                                .subscribe((result, throwable) -> {
                                     if (throwable != null) {
-                                        mProvider.get(ILogger.class)
-                                                .e(TAG,
-                                                        context.getString(R.string.error_failed_to_open_file),
-                                                        throwable);
+                                        handleImportError(navigator, context, throwable);
                                     } else {
                                         mProvider.get(ILogger.class)
                                                 .i(TAG,
-                                                        context.getString(R.string.success_import_file, deckModels.size()));
+                                                        context.getString(R.string.success_import_file, result.decks.size()));
+                                        if (result.showSummaryDialog) {
+                                            String title = context.getString(R.string.title_import_summary);
+                                            navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                                    mProvider.get(CommonNavConfig.class).args_commonMessageDialog(title,
+                                                            result.buildSummaryMessage(context)));
+                                        }
                                     }
                                 }));
+    }
+
+    /**
+     * Shows validation errors as a dialog (same pattern as the export flow),
+     * unexpected errors are only logged.
+     */
+    private void handleImportError(INavigator navigator, Context context, Throwable throwable) {
+        Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+        if (cause instanceof ValidationException) {
+            String title = context.getString(R.string.error);
+            navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                    mProvider.get(CommonNavConfig.class).args_commonMessageDialog(title,
+                            cause.getMessage()));
+        } else {
+            mProvider.get(ILogger.class)
+                    .e(TAG,
+                            context.getString(R.string.error_failed_to_open_file),
+                            throwable);
+        }
     }
 }

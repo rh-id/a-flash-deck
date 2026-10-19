@@ -529,7 +529,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     public void onActivityResult(View currentView, Activity activity, INavigator INavigator, int requestCode, int resultCode, Intent data) {
         if (requestCode == ExportImportCoordinator.REQUEST_CODE_IMPORT_DECK) {
             if (resultCode == Activity.RESULT_OK) {
-                mExportImportCoordinator.onImportResult(data.getData());
+                mExportImportCoordinator.onImportResult(mNavigator, data.getData());
             }
         }
     }

@@ -27,18 +27,28 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.anki.model.AnkiImportSummary;
 import m.co.rh.id.a_flash_deck.app.util.provider.TestDatabaseProviderModule;
+import m.co.rh.id.a_flash_deck.app.provider.command.ImportResult;
+import m.co.rh.id.a_flash_deck.base.dao.AnkiNoteGuidDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
+import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
@@ -51,9 +61,11 @@ import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Instrumented test suite for Anki import functionality.
@@ -82,6 +94,7 @@ public class AnkiImporterTest {
     private CardMediaStore cardMediaStore;
     private DeckDao deckDao;
     private CardDao cardDao;
+    private AnkiNoteGuidDao ankiNoteGuidDao;
     private DeckCardRepository deckCardRepo;
     private File tempDir;
 
@@ -111,6 +124,7 @@ public class AnkiImporterTest {
         cardMediaStore = testProvider.get(CardMediaStore.class);
         deckDao = testProvider.get(DeckDao.class);
         cardDao = testProvider.get(CardDao.class);
+        ankiNoteGuidDao = testProvider.get(AnkiNoteGuidDao.class);
         deckCardRepo = testProvider.get(DeckCardRepository.class);
     }
 
@@ -156,7 +170,7 @@ public class AnkiImporterTest {
 
         deckCardRepo.deleteDeck(deck);
 
-        List<DeckModel> imported = importer.importApkg(apkgFile);
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
         assertEquals(1, imported.size());
 
         DeckModel deckModel = imported.get(0);
@@ -170,6 +184,39 @@ public class AnkiImporterTest {
         assertNull(importedCard1.answerImage);
         assertNull(importedCard1.questionVoice);
         assertNull(importedCard1.answerVoice);
+    }
+
+    /**
+     * Regression test: a GENUINE schema-11 package (decks in the col.decks
+     * JSON, no decks table — the shape every real Anki legacy export has)
+     * imports with the correct deck name instead of failing with
+     * "no such table: decks". Also verifies the reversed-notetype mapping
+     * still applies when the genuine package uses "Basic (and reversed
+     * card)" with two card rows per note.
+     */
+    @Test
+    public void importGenuineSchema11Package_deckNameResolvedFromColJson() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = AnkiApkgTestBuilder.genuine(tempDir)
+                .addNotetype(100, "Basic (and reversed card)", 0, new String[]{"Front", "Back"}, 2)
+                .addDeck(200, "Genuine Import Deck")
+                .addNoteWithGuid(300, "genuine-guid-1", 100, "Genuine Q", "Genuine A")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 300, 200, 1)
+                .build(new File(tempDir, "genuine_import.apkg"), "collection.anki21");
+
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
+        assertEquals(1, imported.size());
+
+        DeckModel deckModel = imported.get(0);
+        assertEquals("Genuine Import Deck", deckModel.getDeck().name);
+        assertEquals(1, deckModel.getCardList().size());
+
+        Card importedCard = deckModel.getCardList().get(0);
+        assertTrue(importedCard.isReversibleQA);
+        assertEquals("Genuine Q", importedCard.question);
+        assertEquals("Genuine A", importedCard.answer);
     }
 
     /**
@@ -209,7 +256,7 @@ public class AnkiImporterTest {
 
         deckCardRepo.deleteDeck(deck);
 
-        List<DeckModel> imported = importer.importApkg(apkgFile);
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
         assertEquals(1, imported.size());
 
         DeckModel deckModel = imported.get(0);
@@ -258,7 +305,7 @@ public class AnkiImporterTest {
 
         deckCardRepo.deleteDeck(deck);
 
-        List<DeckModel> imported = importer.importApkg(apkgFile);
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
         assertEquals(1, imported.size());
 
         DeckModel deckModel = imported.get(0);
@@ -295,7 +342,7 @@ public class AnkiImporterTest {
         File apkgFile = exporter.exportApkg(new ArrayList<>(List.of(newDeck)));
         deckCardRepo.deleteDeck(newDeck);
 
-        List<DeckModel> imported = importer.importApkg(apkgFile);
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
         assertEquals(1, imported.size());
 
         DeckModel deckModel = imported.get(0);
@@ -325,7 +372,7 @@ public class AnkiImporterTest {
 
         deckCardRepo.deleteDeck(deck);
 
-        List<DeckModel> imported = importer.importApkg(apkgFile);
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
         assertEquals(1, imported.size());
 
         DeckModel deckModel = imported.get(0);
@@ -366,7 +413,7 @@ public class AnkiImporterTest {
 
         deckCardRepo.deleteDeck(deck);
 
-        List<DeckModel> imported = importer.importApkg(apkgFile);
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
         assertEquals(1, imported.size());
 
         DeckModel deckModel = imported.get(0);
@@ -412,7 +459,7 @@ public class AnkiImporterTest {
         deckCardRepo.deleteDeck(deck1);
         deckCardRepo.deleteDeck(deck2);
 
-        List<DeckModel> imported = importer.importApkg(apkgFile);
+        List<DeckModel> imported = importer.importApkg(apkgFile).decks;
         assertEquals(2, imported.size());
 
         DeckModel deckModel1 = null;
@@ -446,6 +493,605 @@ public class AnkiImporterTest {
         assertNull(importedCard2.answerImage);
         assertNull(importedCard2.questionVoice);
         assertNull(importedCard2.answerVoice);
+    }
+
+    /**
+     * Tests importing a "Basic (and reversed card)" notetype package.
+     *
+     * <p>This test verifies that:</p>
+     * <ul>
+     *   <li>Notes of the reversed Basic variant are imported</li>
+     *   <li>Exactly ONE app card is created per note even though the notetype
+     *       has two card rows (forward and reversed)</li>
+     *   <li>The imported card is flagged as reversible QA</li>
+     *   <li>The summary reports the import without warnings</li>
+     * </ul>
+     */
+    @Test
+    public void importReversedNotetype_singleReversibleCard() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic (and reversed card)", 0, new String[]{"Front", "Back"}, 2)
+                .addDeck(200, "Reversed Deck")
+                .addNote(300, 100, "Front A", "Back A")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 300, 200, 1)
+                .build(new File(tempDir, "reversed.apkg"), "collection.anki21");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, result.summary.decksImported);
+        assertEquals(1, result.summary.notesImported);
+        assertEquals(1, result.summary.cardsImported);
+        assertFalse(result.summary.hasWarnings());
+
+        DeckModel deckModel = result.decks.get(0);
+        assertEquals("Reversed Deck", deckModel.getDeck().name);
+        assertEquals(1, deckModel.getCardList().size());
+
+        Card importedCard = deckModel.getCardList().get(0);
+        assertEquals("Front A", importedCard.question);
+        assertEquals("Back A", importedCard.answer);
+        assertTrue(importedCard.isReversibleQA);
+        assertFalse(importedCard.isReversed);
+    }
+
+    /**
+     * Tests importing a package that contains both a Basic notetype and a
+     * Cloze notetype.
+     *
+     * <p>This test verifies that:</p>
+     * <ul>
+     *   <li>Basic notes are imported normally</li>
+     *   <li>Cloze notes are NOT imported but reported in the summary as
+     *       skipped notetype with their note count</li>
+     * </ul>
+     */
+    @Test
+    public void importMixedClozePackage_skipsClozeInSummary() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addNotetype(101, "Cloze", 1, new String[]{"Text"}, 1)
+                .addDeck(200, "Mixed Deck")
+                .addNote(300, 100, "What is 2+2?", "4")
+                .addCard(400, 300, 200, 0)
+                .addNote(301, 101, "{{c1::Berlin}} is the capital of Germany")
+                .addCard(401, 301, 200, 0)
+                .build(new File(tempDir, "mixed_cloze.apkg"), "collection.anki21");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, result.summary.decksImported);
+        assertEquals(1, result.summary.notesImported);
+        assertEquals(1, result.summary.cardsImported);
+        assertTrue(result.summary.hasWarnings());
+        assertEquals(1, result.summary.skippedNotetypes.size());
+
+        AnkiImportSummary.SkippedNotetype skipped = result.summary.skippedNotetypes.get(0);
+        assertEquals("Cloze", skipped.name);
+        assertEquals(1, skipped.noteCount);
+        assertEquals("cloze", skipped.reason);
+
+        DeckModel deckModel = result.decks.get(0);
+        assertEquals(1, deckModel.getCardList().size());
+        assertEquals("What is 2+2?", deckModel.getCardList().get(0).question);
+    }
+
+    /**
+     * Tests importing a package with ONLY cloze notes: nothing is importable,
+     * so the import fails with a clear validation error.
+     */
+    @Test
+    public void importClozeOnlyPackage_throwsNothingImported() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Cloze", 1, new String[]{"Text"}, 1)
+                .addDeck(200, "Cloze Deck")
+                .addNote(300, 100, "{{c1::Berlin}} is the capital of Germany")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "cloze_only.apkg"), "collection.anki21");
+
+        try {
+            importer.importApkg(apkgFile);
+            fail("Expected ValidationException for cloze-only package");
+        } catch (ValidationException e) {
+            assertEquals(appContext.getString(R.string.error_nothing_imported), e.getMessage());
+        }
+    }
+
+    /**
+     * Tests importing a legacy 2.0 package whose zip contains ONLY
+     * collection.anki2.
+     *
+     * <p>This test verifies that legacy Anki 2.0 packages import fine.</p>
+     */
+    @Test
+    public void importLegacyAnki2Package_importsCards() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Legacy Deck")
+                .addNote(300, 100, "Legacy Q", "Legacy A")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "legacy.apkg"), "collection.anki2");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+
+        DeckModel deckModel = result.decks.get(0);
+        assertEquals("Legacy Deck", deckModel.getDeck().name);
+        assertEquals(1, deckModel.getCardList().size());
+
+        Card importedCard = deckModel.getCardList().get(0);
+        assertEquals("Legacy Q", importedCard.question);
+        assertEquals("Legacy A", importedCard.answer);
+        assertFalse(importedCard.isReversibleQA);
+    }
+
+    /**
+     * Tests importing the modern decoy package (collection.anki2 with only the
+     * "Please update to the latest Anki version" note): must fail with a clear
+     * error instead of silently importing nothing.
+     */
+    @Test
+    public void importDecoyPackage_throwsDecoyError() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front"}, 1)
+                .addNote(300, 100, "Please update to the latest Anki version")
+                .build(new File(tempDir, "decoy.apkg"), "collection.anki2");
+
+        try {
+            importer.importApkg(apkgFile);
+            fail("Expected ValidationException for decoy package");
+        } catch (ValidationException e) {
+            assertEquals(appContext.getString(R.string.error_anki_decoy_package), e.getMessage());
+        }
+    }
+
+    /**
+     * Tests importing a modern-only package whose collection.anki21b payload
+     * is NOT valid zstd: must fail with the modern-package error
+     * (R.string.error_anki_modern_package) rather than crashing.
+     */
+    @Test
+    public void importCorruptedModernZstdPackage_throwsModernPackageError() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        File apkgFile = AnkiApkgTestBuilder.buildModernOnly(
+                new File(tempDir, "modern.apkg"));
+
+        try {
+            importer.importApkg(apkgFile);
+            fail("Expected ValidationException for modern zstd package");
+        } catch (ValidationException e) {
+            assertEquals(appContext.getString(R.string.error_anki_modern_package), e.getMessage());
+        }
+    }
+
+    /**
+     * Tests that extra images/sounds per card side are counted as dropped
+     * media in the summary (only the first image/audio per side is supported),
+     * while the first image/audio of each side is kept.
+     */
+    @Test
+    public void importDeckWithExtraMedia_countsDroppedMedia() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        // real decodable media content, the importer re-compresses images
+        // when copying them into app storage
+        Map<String, byte[]> mediaContents = new HashMap<>();
+        mediaContents.put("0", readFileBytes(
+                AnkiTestDataHelper.createTestImageFile(tempDir, "first.jpg")));
+        mediaContents.put("1", readFileBytes(
+                AnkiTestDataHelper.createTestAudioFile(tempDir, "first.mp3")));
+        mediaContents.put("2", readFileBytes(
+                AnkiTestDataHelper.createTestImageFile(tempDir, "second.jpg")));
+        mediaContents.put("3", readFileBytes(
+                AnkiTestDataHelper.createTestAudioFile(tempDir, "second.mp3")));
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Media Deck")
+                .addNote(300, 100,
+                        "Question<img src=\"first.jpg\"><img src=\"second.jpg\">[sound:first.mp3][sound:second.mp3]",
+                        "Answer")
+                .addCard(400, 300, 200, 0)
+                .withMedia(mediaContents,
+                        "{\"0\":\"first.jpg\",\"1\":\"first.mp3\",\"2\":\"second.jpg\",\"3\":\"second.mp3\"}")
+                .build(new File(tempDir, "extra_media.apkg"), "collection.anki21");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, deckModelCardCount(result));
+        assertEquals(2, result.summary.droppedMediaCount);
+        assertTrue(result.summary.hasWarnings());
+
+        DeckModel deckModel = result.decks.get(0);
+        Card importedCard = deckModel.getCardList().get(0);
+        // first image and sound of the question side are kept (renamed)
+        assertNotNull(importedCard.questionImage);
+        assertNotNull(importedCard.questionVoice);
+    }
+
+    /**
+     * Tests importing a modern default export package (collection.anki21b,
+     * schema 18, zstd compressed): cards import with correct deck and text,
+     * and re-importing the same file skips everything as guid duplicates.
+     */
+    @Test
+    public void importModernAnki21bPackage_importsCards_andGuidDedupOnReimport() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = AnkiApkgTestBuilder.modern(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Modern Deck")
+                .addNote(300, 100, "Modern Q", "Modern A")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "modern_import.apkg"), "collection.anki21b");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, result.summary.notesImported);
+        assertEquals(1, result.summary.cardsImported);
+        assertEquals(1, result.summary.decksImported);
+
+        DeckModel deckModel = result.decks.get(0);
+        assertEquals("Modern Deck", deckModel.getDeck().name);
+        assertEquals(1, deckModel.getCardList().size());
+        Card importedCard = deckModel.getCardList().get(0);
+        assertEquals("Modern Q", importedCard.question);
+        assertEquals("Modern A", importedCard.answer);
+        assertFalse(importedCard.isReversibleQA);
+
+        // guid of the imported note is stored, a re-import is fully deduped
+        deckCardRepo.importDeckPayloads(result.payloads);
+        assertEquals(1, deckDao.getAllDecks().size());
+        assertEquals(1, cardDao.getCardByDeckId(deckDao.getAllDecks().get(0).id).size());
+
+        ImportResult reimport = importer.importApkg(apkgFile);
+        assertEquals(0, reimport.decks.size());
+        assertEquals(1, reimport.summary.duplicateNotesSkipped);
+        assertEquals(0, reimport.summary.cardsImported);
+    }
+
+    /**
+     * Tests that "Basic (and reversed card)" notes of a modern package map
+     * to reversible app cards.
+     */
+    @Test
+    public void importModernAnki21bReversedPackage_reversibleCard() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = AnkiApkgTestBuilder.modern(tempDir)
+                .addNotetype(100, "Basic (and reversed card)", 0, new String[]{"Front", "Back"}, 2)
+                .addDeck(200, "Reversed Deck")
+                .addNote(300, 100, "Front Q", "Back A")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 300, 200, 1)
+                .build(new File(tempDir, "modern_reversed.apkg"), "collection.anki21b");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, result.summary.notesImported);
+        assertEquals(1, deckModelCardCount(result));
+
+        Card importedCard = result.decks.get(0).getCardList().get(0);
+        assertEquals("Front Q", importedCard.question);
+        assertTrue(importedCard.isReversibleQA);
+    }
+
+    /**
+     * Tests that cloze notes of a modern package (kind = 1 inside the
+     * notetypes.config protobuf blob) are skipped and reported in the
+     * summary.
+     */
+    @Test
+    public void importModernAnki21bClozePackage_skippedInSummary() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = AnkiApkgTestBuilder.modern(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addNotetype(101, "Cloze", 1, new String[]{"Text"}, 1)
+                .addDeck(200, "Mixed Modern Deck")
+                .addNote(300, 100, "What is 2+2?", "4")
+                .addCard(400, 300, 200, 0)
+                .addNote(301, 101, "{{c1::Berlin}} is the capital of Germany")
+                .addCard(401, 301, 200, 0)
+                .build(new File(tempDir, "modern_mixed.apkg"), "collection.anki21b");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, result.summary.notesImported);
+        assertTrue(result.summary.hasWarnings());
+        assertEquals(1, result.summary.skippedNotetypes.size());
+
+        AnkiImportSummary.SkippedNotetype skipped = result.summary.skippedNotetypes.get(0);
+        assertEquals("Cloze", skipped.name);
+        assertEquals(1, skipped.noteCount);
+        assertEquals("cloze", skipped.reason);
+
+        DeckModel deckModel = result.decks.get(0);
+        assertEquals(1, deckModel.getCardList().size());
+        assertEquals("What is 2+2?", deckModel.getCardList().get(0).question);
+    }
+
+    /**
+     * Tests modern media handling end to end: images and sounds referenced
+     * by a note round through the zstd compressed media manifest and zstd
+     * compressed zip contents and end up imported into app storage.
+     */
+    @Test
+    public void importModernAnki21bWithMedia_extractsMedia() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        LinkedHashMap<String, byte[]> mediaByName = new LinkedHashMap<>();
+        mediaByName.put("pic.jpg", readFileBytes(
+                AnkiTestDataHelper.createTestImageFile(tempDir, "pic.jpg")));
+        mediaByName.put("sound.mp3", readFileBytes(
+                AnkiTestDataHelper.createTestAudioFile(tempDir, "sound.mp3")));
+
+        File apkgFile = AnkiApkgTestBuilder.modern(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Modern Media Deck")
+                .addNote(300, 100,
+                        "Question<img src=\"pic.jpg\">",
+                        "Answer[sound:sound.mp3]")
+                .addCard(400, 300, 200, 0)
+                .withModernMedia(mediaByName)
+                .build(new File(tempDir, "modern_media_import.apkg"), "collection.anki21b");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, deckModelCardCount(result));
+        assertEquals(0, result.summary.droppedMediaCount);
+
+        Card importedCard = result.decks.get(0).getCardList().get(0);
+        assertNotNull(importedCard.questionImage);
+        assertNotNull(importedCard.answerVoice);
+        assertNull(importedCard.questionVoice);
+        assertNull(importedCard.answerImage);
+    }
+
+    /**
+     * Tests importing a big deck with 1100 notes (exceeds SQLite's 999 host
+     * parameter limit, forcing the chunked nid IN (...) query).
+     */
+    @Test(timeout = 120000)
+    public void importBigDeck_1100Notes_allImported() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        int noteCount = 1100;
+        AnkiApkgTestBuilder builder = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Big Deck");
+        builder.runInTransaction(() -> {
+            for (int i = 0; i < noteCount; i++) {
+                builder.addNote(1000L + i, 100, "Q" + i, "A" + i);
+                builder.addCard(5000L + i, 1000L + i, 200, 0);
+            }
+        });
+        File apkgFile = builder.build(new File(tempDir, "big.apkg"), "collection.anki21");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(noteCount, result.summary.notesImported);
+        assertEquals(noteCount, result.summary.cardsImported);
+        assertEquals(1, result.summary.decksImported);
+
+        DeckModel deckModel = result.decks.get(0);
+        assertEquals(noteCount, deckModel.getCardList().size());
+        assertEquals("Q0", deckModel.getCardList().get(0).question);
+        assertEquals("Q1099", deckModel.getCardList().get(noteCount - 1).question);
+    }
+
+    /**
+     * Tests guid-based duplicate detection: importing the same .apkg twice
+     * must not create any new deck or card the second time.
+     *
+     * <p>This test verifies that:</p>
+     * <ul>
+     *   <li>The first import imports all notes</li>
+     *   <li>The second import returns no decks and reports every note as
+     *       skipped duplicate</li>
+     *   <li>No empty duplicate deck is created (deck and card counts
+     *       unchanged)</li>
+     *   <li>The duplicate count is part of the summary dialog message</li>
+     * </ul>
+     */
+    @Test
+    public void reimportSameApkg_duplicatesSkipped_noEmptyDeckCreated() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Dup Deck")
+                .addNoteWithGuid(300, "guid-A", 100, "Q1", "A1")
+                .addNoteWithGuid(301, "guid-B", 100, "Q2", "A2")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 301, 200, 0)
+                .build(new File(tempDir, "dup_reimport.apkg"), "collection.anki21");
+
+        // first import: everything is new
+        ImportResult first = importer.importApkg(apkgFile);
+        assertEquals(1, first.decks.size());
+        assertEquals(0, first.summary.duplicateNotesSkipped);
+        assertFalse(first.summary.hasWarnings());
+        deckCardRepo.importDeckPayloads(first.payloads);
+
+        assertEquals(1, deckDao.getAllDecks().size());
+        assertEquals(2, cardDao.getCardByDeckId(deckDao.getAllDecks().get(0).id).size());
+
+        // second import of the same file: everything is a duplicate
+        ImportResult second = importer.importApkg(apkgFile);
+        assertEquals(0, second.decks.size());
+        assertEquals(0, deckModelCardCount(second));
+        assertEquals(2, second.summary.duplicateNotesSkipped);
+        assertEquals(0, second.summary.decksImported);
+        assertEquals(0, second.summary.cardsImported);
+        // duplicates alone are not a warning, but they are reported
+        assertFalse(second.summary.hasWarnings());
+        assertTrue(second.buildSummaryMessage(appContext)
+                .contains(appContext.getString(R.string.import_summary_duplicates_skipped, 2)));
+
+        deckCardRepo.importDeckPayloads(second.payloads);
+        assertEquals(1, deckDao.getAllDecks().size());
+        assertEquals(2, cardDao.getCardByDeckId(deckDao.getAllDecks().get(0).id).size());
+    }
+
+    /**
+     * Tests a partial re-import: the package contains one edited note (new
+     * guid) and one unchanged note. Only the edited note is imported, into
+     * a renamed deck (name conflict logic untouched); the unchanged note is
+     * skipped as duplicate.
+     */
+    @Test
+    public void reimportApkgWithChangedGuid_onlyNewNoteImported() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File v1Dir = new File(tempDir, "partial_v1");
+        File v2Dir = new File(tempDir, "partial_v2");
+        assertTrue(v1Dir.mkdirs() || v1Dir.isDirectory());
+        assertTrue(v2Dir.mkdirs() || v2Dir.isDirectory());
+
+        new AnkiApkgTestBuilder(v1Dir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Partial Deck")
+                .addNoteWithGuid(300, "guid-keep-1", 100, "Q1", "A1")
+                .addNoteWithGuid(301, "guid-keep-2", 100, "Q2", "A2")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 301, 200, 0)
+                .build(new File(tempDir, "partial_v1.apkg"), "collection.anki21");
+
+        ImportResult first = importer.importApkg(new File(tempDir, "partial_v1.apkg"));
+        assertEquals(1, first.decks.size());
+        deckCardRepo.importDeckPayloads(first.payloads);
+
+        // same deck and one unchanged note, the second note got a new guid
+        // (edited note replaces guid-keep-2)
+        new AnkiApkgTestBuilder(v2Dir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Partial Deck")
+                .addNoteWithGuid(300, "guid-keep-1", 100, "Q1", "A1")
+                .addNoteWithGuid(301, "guid-changed", 100, "Q2 edited", "A2")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 301, 200, 0)
+                .build(new File(tempDir, "partial_v2.apkg"), "collection.anki21");
+
+        ImportResult second = importer.importApkg(new File(tempDir, "partial_v2.apkg"));
+        assertEquals(1, second.decks.size());
+        assertEquals(1, deckModelCardCount(second));
+        assertEquals(1, second.summary.duplicateNotesSkipped);
+        assertEquals(1, second.summary.decksImported);
+        assertEquals(1, second.summary.cardsImported);
+
+        // deck rename conflict logic stays: the new card lands in a new deck
+        DeckModel deckModel = second.decks.get(0);
+        assertEquals("Partial Deck (2)", deckModel.getDeck().name);
+        assertEquals("Q2 edited", deckModel.getCardList().get(0).question);
+
+        deckCardRepo.importDeckPayloads(second.payloads);
+        assertEquals(2, deckDao.getAllDecks().size());
+        assertEquals(3, cardDao.getCardByDeckId(deckDao.getAllDecks().get(0).id).size()
+                + cardDao.getCardByDeckId(deckDao.getAllDecks().get(1).id).size());
+    }
+
+    /**
+     * Tests within-file duplicate detection: the same guid occurring twice
+     * in one imported file must import only the first occurrence and count
+     * the second as skipped duplicate.
+     */
+    @Test
+    public void importApkgWithDuplicateGuidsWithinFile_secondOccurrenceSkipped() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Within File Dup Deck")
+                .addNoteWithGuid(300, "guid-dup", 100, "Q1", "A1")
+                .addNoteWithGuid(301, "guid-dup", 100, "Q2", "A2")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 301, 200, 0)
+                .build(new File(tempDir, "within_file_dup.apkg"), "collection.anki21");
+
+        ImportResult result = importer.importApkg(apkgFile);
+        assertEquals(1, result.decks.size());
+        assertEquals(1, deckModelCardCount(result));
+        assertEquals(1, result.summary.notesImported);
+        assertEquals(1, result.summary.duplicateNotesSkipped);
+
+        deckCardRepo.importDeckPayloads(result.payloads);
+        assertEquals(1, deckDao.getAllDecks().size());
+        assertEquals(1, cardDao.getCardByDeckId(deckDao.getAllDecks().get(0).id).size());
+    }
+
+    /**
+     * Tests that the stored guids cascade with their cards: after deleting
+     * the imported deck the same .apkg file imports fully again.
+     */
+    @Test
+    public void reimportAfterDeckDelete_importsFullyAgain() throws Exception {
+        AnkiImporter importer = new AnkiImporter(testProvider);
+
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Cascade Deck")
+                .addNoteWithGuid(300, "guid-cascade-1", 100, "Q1", "A1")
+                .addNoteWithGuid(301, "guid-cascade-2", 100, "Q2", "A2")
+                .addCard(400, 300, 200, 0)
+                .addCard(401, 301, 200, 0)
+                .build(new File(tempDir, "cascade.apkg"), "collection.anki21");
+
+        // first import stores the guids
+        ImportResult first = importer.importApkg(apkgFile);
+        deckCardRepo.importDeckPayloads(first.payloads);
+        assertEquals(2, ankiNoteGuidDao.findExistingGuids(
+                List.of("guid-cascade-1", "guid-cascade-2")).size());
+
+        // deleting the deck removes the cards and cascades the guid rows
+        deckCardRepo.deleteDeck(deckDao.getAllDecks().get(0));
+        assertEquals(0, ankiNoteGuidDao.findExistingGuids(
+                List.of("guid-cascade-1", "guid-cascade-2")).size());
+
+        // so the same file imports fully again
+        ImportResult second = importer.importApkg(apkgFile);
+        assertEquals(1, second.decks.size());
+        assertEquals(2, deckModelCardCount(second));
+        assertEquals(0, second.summary.duplicateNotesSkipped);
+
+        deckCardRepo.importDeckPayloads(second.payloads);
+        assertEquals(1, deckDao.getAllDecks().size());
+        assertEquals(2, cardDao.getCardByDeckId(deckDao.getAllDecks().get(0).id).size());
+    }
+
+    private int deckModelCardCount(ImportResult result) {
+        int count = 0;
+        for (DeckModel deckModel : result.decks) {
+            count += deckModel.getCardList().size();
+        }
+        return count;
+    }
+
+    private byte[] readFileBytes(File file) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                baos.write(buffer, 0, bytesRead);
+            }
+        }
+        return baos.toByteArray();
     }
 
     private void deleteDirectory(File directory) {

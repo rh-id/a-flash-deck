@@ -66,6 +66,19 @@ dependencies {
     implementation project(path: ':bot')
     implementation project(path: ':ai')
     implementation libs.leakcanary.plumber
+    // decompress-only zstd used by ApkgParser for modern .apkg packages
+    // (collection.anki21b and media are zstd compressed). The reference
+    // libzstd binding decodes every standard frame; pure-Java alternatives
+    // (aircompressor) either need JDK 22+ or are unverified against
+    // real-world frames. The aar ships Android 5.0+ natives for all ABIs
+    // (~1.2MB per ABI in the APK). Version catalogs cannot declare the
+    // aar artifact type, so it is selected here per Gradle docs.
+    implementation(libs.zstd.jni) {
+        artifact {
+            name = 'zstd-jni'
+            type = 'aar'
+        }
+    }
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.junit

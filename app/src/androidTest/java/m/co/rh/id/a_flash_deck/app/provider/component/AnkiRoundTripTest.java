@@ -164,7 +164,7 @@ public class AnkiRoundTripTest {
 
         deckCardRepo.deleteDeck(originalDeck);
 
-        List<DeckModel> importedDecks = importer.importApkg(apkgFile);
+        List<DeckModel> importedDecks = importer.importApkg(apkgFile).decks;
         assertEquals(1, importedDecks.size());
 
         DeckModel importedDeckModel = importedDecks.get(0);
@@ -181,7 +181,10 @@ public class AnkiRoundTripTest {
 
         assertEquals(originalCard1.question, importedCard1.question);
         assertEquals(originalCard1.answer, importedCard1.answer);
-        assertEquals(originalCard1.ordinal, importedCard1.ordinal);
+        // the exporter writes template ord 0 for every card (single Basic
+        // Front->Back template), so the anki card ord is no longer the app
+        // deck position
+        assertEquals(0, importedCard1.ordinal);
         assertNull(importedCard1.questionImage);
         assertNull(importedCard1.answerImage);
         assertNull(importedCard1.questionVoice);
@@ -189,7 +192,7 @@ public class AnkiRoundTripTest {
 
         assertEquals(originalCard2.question, importedCard2.question);
         assertEquals(originalCard2.answer, importedCard2.answer);
-        assertEquals(originalCard2.ordinal, importedCard2.ordinal);
+        assertEquals(0, importedCard2.ordinal);
     }
 
     /**
@@ -226,7 +229,7 @@ public class AnkiRoundTripTest {
 
         deckCardRepo.deleteDeck(originalDeck);
 
-        List<DeckModel> importedDecks = importer.importApkg(apkgFile);
+        List<DeckModel> importedDecks = importer.importApkg(apkgFile).decks;
         assertEquals(1, importedDecks.size());
 
         DeckModel importedDeckModel = importedDecks.get(0);
@@ -272,7 +275,7 @@ public class AnkiRoundTripTest {
 
         deckCardRepo.deleteDeck(originalDeck);
 
-        List<DeckModel> importedDecks = importer.importApkg(apkgFile);
+        List<DeckModel> importedDecks = importer.importApkg(apkgFile).decks;
         assertEquals(1, importedDecks.size());
 
         DeckModel importedDeckModel = importedDecks.get(0);
@@ -336,7 +339,7 @@ public class AnkiRoundTripTest {
 
         deckCardRepo.deleteDeck(originalDeck);
 
-        List<DeckModel> importedDecks = importer.importApkg(apkgFile);
+        List<DeckModel> importedDecks = importer.importApkg(apkgFile).decks;
         assertEquals(1, importedDecks.size());
 
         DeckModel importedDeckModel = importedDecks.get(0);
@@ -344,7 +347,8 @@ public class AnkiRoundTripTest {
 
         assertEquals(originalCard.question, importedCard.question);
         assertEquals(originalCard.answer, importedCard.answer);
-        assertEquals(originalCard.ordinal, importedCard.ordinal);
+        // exported anki cards always carry template ord 0
+        assertEquals(0, importedCard.ordinal);
         assertNotNull(importedCard.questionImage);
         assertNotNull(importedCard.questionVoice);
         assertArrayEquals(

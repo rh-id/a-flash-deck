@@ -31,11 +31,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.anki.AnkiGuids;
 import m.co.rh.id.a_flash_deck.app.anki.ApkgGenerator;
+import m.co.rh.id.a_flash_deck.base.dao.AnkiNoteGuidDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
+import m.co.rh.id.a_flash_deck.base.entity.AnkiNoteGuid;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
@@ -50,6 +52,7 @@ public class AnkiExporter {
     protected Context mAppContext;
     protected ILogger mLogger;
     protected CardDao mCardDao;
+    protected AnkiNoteGuidDao mAnkiNoteGuidDao;
     protected FileHelper mFileHelper;
     protected CardMediaStore mCardMediaStore;
 
@@ -57,6 +60,7 @@ public class AnkiExporter {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.get(ILogger.class);
         mCardDao = provider.get(CardDao.class);
+        mAnkiNoteGuidDao = provider.get(AnkiNoteGuidDao.class);
         mFileHelper = provider.get(FileHelper.class);
         mCardMediaStore = provider.get(CardMediaStore.class);
     }
@@ -127,7 +131,7 @@ public class AnkiExporter {
                 db.beginTransaction();
                 try {
                     for (Card card : allCards) {
-                        String guid = generateGuid();
+                        String guid = getNoteGuid(card);
                         String field1 = constructNoteField(card.question, card.questionImage, card.questionVoice);
                         String field2 = constructNoteField(card.answer, card.answerImage, card.answerVoice);
 
@@ -137,7 +141,9 @@ public class AnkiExporter {
                         }
 
                         long noteId = ApkgGenerator.insertNote(db, guid, deckId, notetypeId, field1, field2);
-                        ApkgGenerator.insertCard(db, noteId, deckId, card.ordinal);
+                        // ord must be a template index, this exporter only
+                        // writes the single Basic Front->Back template
+                        ApkgGenerator.insertCard(db, noteId, deckId, 0);
                     }
                     db.setTransactionSuccessful();
                 } finally {
@@ -198,8 +204,19 @@ public class AnkiExporter {
         return mediaMap;
     }
 
-    private String generateGuid() {
-        return UUID.randomUUID().toString();
+    /**
+     * Returns the Anki note guid for a card: the guid stored at import time
+     * when the card came from an .apkg import, so re-exporting to Anki
+     * updates the original notes instead of duplicating them. Natively
+     * created cards get a deterministic guid derived from the card id, in
+     * the same base91 format a native Anki client uses.
+     */
+    private String getNoteGuid(Card card) {
+        AnkiNoteGuid ankiNoteGuid = mAnkiNoteGuidDao.findByCardId(card.id);
+        if (ankiNoteGuid != null && ankiNoteGuid.guid != null && !ankiNoteGuid.guid.isEmpty()) {
+            return ankiNoteGuid.guid;
+        }
+        return AnkiGuids.base91FromLong(card.id);
     }
 
     private String constructNoteField(String text, String image, String voice) {

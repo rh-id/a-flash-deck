@@ -22,6 +22,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.room.Room;
 
+import m.co.rh.id.a_flash_deck.base.dao.AnkiNoteGuidDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
@@ -61,6 +62,8 @@ public class DatabaseProviderModule implements ProviderModule {
                 provider.get(AppDatabase.class).testDao());
         providerRegistry.registerAsync(StudyDao.class, () ->
                 provider.get(AppDatabase.class).studyDao());
+        providerRegistry.registerAsync(AnkiNoteGuidDao.class, () ->
+                provider.get(AppDatabase.class).ankiNoteGuidDao());
         providerRegistry.registerAsync(AndroidNotificationRepository.class, () ->
                 new AndroidNotificationRepository(provider.getContext(),
                         provider.get(AppDatabase.class).androidNotificationDao())
@@ -68,7 +71,7 @@ public class DatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(DeckCardRepository.class, () -> {
             AppDatabase db = provider.get(AppDatabase.class);
             return new DeckCardRepository(db, db.deckDao(), db.cardDao(),
-                    db.cardReviewStateDao(), db.reviewLogDao());
+                    db.cardReviewStateDao(), db.reviewLogDao(), db.ankiNoteGuidDao());
         });
         providerRegistry.registerAsync(StudyRepository.class, () -> {
             AppDatabase db = provider.get(AppDatabase.class);

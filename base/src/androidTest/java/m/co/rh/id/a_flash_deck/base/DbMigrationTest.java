@@ -46,6 +46,8 @@ public class DbMigrationTest {
             + "-migration-test-15-16";
     private static final String TEST_DB_16_17 = DbMigrationTest.class.getName()
             + "-migration-test-16-17";
+    private static final String TEST_DB_17_18 = DbMigrationTest.class.getName()
+            + "-migration-test-17-18";
 
     @Rule
     public MigrationTestHelper helper;
@@ -176,6 +178,41 @@ public class DbMigrationTest {
                 cursor.getColumnIndexOrThrow("time_after_reveal_ms")));
         Assert.assertEquals(1, cursor.getInt(
                 cursor.getColumnIndexOrThrow("reversed")));
+        cursor.close();
+        migratedDb.close();
+    }
+
+    @Test
+    public void migrate17To18() throws IOException {
+        // Create the v17 database with an existing card (the anki_note_guid
+        // table does not exist yet).
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB_17_18, 17);
+        db.execSQL("INSERT INTO deck (name, created_date_time, updated_date_time) " +
+                "VALUES ('deck1', 100, 100)");
+        db.execSQL("INSERT INTO card (deck_id, ordinal, question, answer, " +
+                "is_reversible_qa) VALUES (1, 0, 'q', 'a', 0)");
+        db.close();
+
+        // Run MIGRATION_17_18 and validate the resulting schema against v18
+        // (table, both indices and the CASCADE foreign key).
+        SupportSQLiteDatabase migratedDb = helper.runMigrationsAndValidate(
+                TEST_DB_17_18, 18, true, DbMigration.MIGRATION_17_18);
+
+        // The guid table starts empty and accepts rows referencing the card.
+        migratedDb.execSQL("PRAGMA foreign_keys = ON");
+        migratedDb.execSQL("INSERT INTO anki_note_guid (card_id, guid) " +
+                "VALUES (1, 'test-guid')");
+        Cursor cursor = migratedDb.query(
+                "SELECT guid FROM anki_note_guid WHERE card_id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals("test-guid", cursor.getString(0));
+        cursor.close();
+
+        // The guid row cascades when the referenced card is deleted.
+        migratedDb.execSQL("DELETE FROM card WHERE id = 1");
+        cursor = migratedDb.query("SELECT COUNT(*) FROM anki_note_guid");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals(0, cursor.getInt(0));
         cursor.close();
         migratedDb.close();
     }

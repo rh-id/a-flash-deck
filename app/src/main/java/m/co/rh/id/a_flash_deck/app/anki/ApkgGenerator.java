@@ -30,22 +30,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class ApkgGenerator {
     private static final String TAG = ApkgGenerator.class.getName();
-    private static final Random RANDOM = new Random();
+    private static long sLastUniqueId = 0;
 
     public static SQLiteDatabase createTempDatabase(File dbFile) {
         return SQLiteDatabase.openOrCreateDatabase(dbFile.getAbsolutePath(), null);
     }
 
-    private static long generateUniqueId() {
-        long timestamp = System.currentTimeMillis();
-        long random = (long) (RANDOM.nextDouble() * Long.MAX_VALUE);
-        return timestamp ^ random;
+    /**
+     * Generates a unique, strictly increasing id. Anki ids only need to be
+     * unique per collection; monotonic ids additionally keep insertion order
+     * equal to natural rowid order, which keeps card order stable when an
+     * exported .apkg is imported again (notes are iterated in rowid order
+     * and all exported cards share template ord 0).
+     */
+    private static synchronized long generateUniqueId() {
+        long candidate = Math.max(sLastUniqueId + 1, System.currentTimeMillis());
+        sLastUniqueId = candidate;
+        return candidate;
     }
 
     public static void createTables(SQLiteDatabase db) {

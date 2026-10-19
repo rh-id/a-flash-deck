@@ -165,4 +165,15 @@
     <string name="stats_empty_history">Ancora nessuna cronologia di ripetizioni. Valuta le schede in un test e le tue statistiche appariranno qui.</string>
     <string name="notification_permission_rationale">L\'app utilizza le notifiche per ricordarti di studiare. Consentire le notifiche?</string>
     <string name="permission_denied_notification">Permesso di notifica negato, consenti le notifiche nelle impostazioni di sistema dell\'app per ricevere promemoria di studio</string>
+
+    <!-- Anki import summary -->
+    <string name="title_import_summary">Riepilogo importazione</string>
+    <string name="import_summary_result">Importati: %1$d mazzo/i, %2$d carta/e</string>
+    <string name="import_summary_skipped_notetype">Tipo di nota \"%1$s\" ignorato (%2$d nota/e)</string>
+    <string name="import_summary_dropped_media">%1$d file multimediale/i ignorato/i, è supportata solo la prima immagine/audio per lato della carta</string>
+    <string name="import_summary_duplicates_skipped">Ignorate %1$d nota/e duplicate</string>
+    <string name="error_anki_modern_package">Questo file Anki sembra corrotto e non è stato possibile leggerlo</string>
+    <string name="error_anki_decoy_package">Questo file Anki non contiene carte importabili</string>
+    <string name="error_nothing_imported">Nessuna carta importabile trovata nel file</string>
+    <string name="imported_deck_default_name">Mazzo importato</string>
 </resources>

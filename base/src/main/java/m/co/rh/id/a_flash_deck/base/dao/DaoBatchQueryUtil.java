@@ -33,20 +33,21 @@ final class DaoBatchQueryUtil {
 
     /**
      * Executes an IN-clause query in chunks below SQLite's 999 bind-variable limit (older Android versions).
-     * Returns all rows matching the given ids; safe for null, empty, or duplicate id inputs (ids are deduplicated).
+     * Returns all rows matching the given items; safe for null, empty, or duplicate inputs (items are deduplicated).
      *
-     * @param ids    List of IDs to query
-     * @param query  Function that executes the query for a batch of IDs
+     * @param items  List of items (e.g. ids or guids) to query
+     * @param query  Function that executes the query for a batch of items
+     * @param <I>    Input item type of the query
      * @param <T>    Return type of the query
      * @return       Combined results from all batches, or empty list for null/empty input
      */
-    static <T> List<T> queryInBatches(List<Long> ids, Function<List<Long>, List<T>> query) {
-        if (ids == null || ids.isEmpty()) {
+    static <I, T> List<T> queryInBatches(List<I> items, Function<List<I>, List<T>> query) {
+        if (items == null || items.isEmpty()) {
             return new ArrayList<>();
         }
 
         // Deduplicate while preserving first-occurrence order
-        List<Long> deduplicatedIds = new ArrayList<>(new LinkedHashSet<>(ids));
+        List<I> deduplicatedIds = new ArrayList<>(new LinkedHashSet<>(items));
         int size = deduplicatedIds.size();
         int maxQuerySize = 500;
         if (size <= maxQuerySize) {

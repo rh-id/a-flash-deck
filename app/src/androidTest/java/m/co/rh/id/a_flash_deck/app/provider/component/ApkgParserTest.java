@@ -27,6 +27,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+
+import java.util.LinkedHashMap;
+
+import m.co.rh.id.a_flash_deck.app.anki.AnkiUnsupportedPackageException;
 import m.co.rh.id.a_flash_deck.app.anki.ApkgParser;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiCard;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiDeck;
@@ -64,6 +70,7 @@ import java.util.concurrent.Executors;
 import java.util.zip.ZipFile;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -159,9 +166,10 @@ public class ApkgParserTest {
 
     /**
      * Tests that extracting database from invalid APKG fails appropriately.
-     * 
-     * <p>This test verifies that when collection.anki21 is missing from the APKG,
-     * an IOException is thrown.</p>
+     *
+     * <p>This test verifies that when no collection database entry
+     * (collection.anki21 / collection.anki2) exists in the APKG, an
+     * IOException is thrown.</p>
      */
     @Test
     public void extractAndReadDatabase_missingDatabase_throwsException() throws IOException {
@@ -172,10 +180,366 @@ public class ApkgParserTest {
 
         try {
             ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
-            fail("Expected IOException for missing collection.anki21");
+            fail("Expected IOException for missing collection database");
         } catch (IOException e) {
-            assertTrue(e.getMessage().contains("collection.anki21 not found"));
+            assertTrue(e.getMessage().contains("No Anki collection database found"));
         }
+    }
+
+    /**
+     * Tests that a package containing both collection.anki21 and
+     * collection.anki21b prefers the legacy collection.anki21 entry and opens
+     * it successfully. Real legacy exports never carry both entries (they
+     * contain collection.anki21 plus a dummy collection.anki2 decoy), so this
+     * is a defensive-ordering test for synthetic/hostile packages.
+     */
+    @Test
+    public void extractAndReadDatabase_anki21WithAnki21b_prefersAnki21() throws Exception {
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Legacy Deck")
+                .addNote(300, 100, "Q", "A")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "anki21_with_anki21b.apkg"),
+                        "collection.anki21", "collection.anki21b");
+
+        File extractDir = new File(tempDir, "extract_both");
+        extractDir.mkdirs();
+
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+
+        assertNotNull(db);
+        List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
+        assertEquals(1, notetypes.size());
+        List<AnkiNote> notes = ApkgParser.readNotes(db, 100);
+        assertEquals(1, notes.size());
+
+        db.close();
+    }
+
+    /**
+     * Regression test for genuine Anki legacy packages: a schema-11
+     * collection has NO normalized decks table (real Anki's
+     * schema11_downgrade.sql drops it and pre-2.1.22 .anki2 packages never
+     * had it) — decks live in the col.decks JSON. readDecks must resolve
+     * deck names from there instead of failing with
+     * "no such table: decks".
+     */
+    @Test
+    public void extractAndReadDatabase_genuineSchema11_readsDecksFromColJson() throws Exception {
+        File apkgFile = AnkiApkgTestBuilder.genuine(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Genuine Deck")
+                .addNote(300, 100, "Genuine Q", "Genuine A")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "genuine.apkg"), "collection.anki21");
+
+        File extractDir = new File(tempDir, "extract_genuine");
+        extractDir.mkdirs();
+
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+        assertNotNull(db);
+
+        List<AnkiDeck> decks = ApkgParser.readDecks(db);
+        assertEquals(1, decks.size());
+        assertEquals("Genuine Deck", decks.get(0).name);
+        assertEquals(200, decks.get(0).id);
+        assertEquals(-1, decks.get(0).usn);
+        assertTrue(decks.get(0).mtimeStamp > 0);
+
+        List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
+        assertEquals(1, notetypes.size());
+        List<AnkiNote> notes = ApkgParser.readNotes(db, 100);
+        assertEquals(1, notes.size());
+
+        db.close();
+    }
+
+    /**
+     * Tests that a collection.anki21b payload that is NOT valid zstd surfaces
+     * as AnkiUnsupportedPackageException.Reason.MODERN_ZSTD.
+     */
+    @Test
+    public void extractAndReadDatabase_anki21bCorruptedZstdPayload_throwsModernZstd() throws Exception {
+        File apkgFile = AnkiApkgTestBuilder.buildModernOnly(
+                new File(tempDir, "modern_only.apkg"));
+
+        File extractDir = new File(tempDir, "extract_modern");
+        extractDir.mkdirs();
+
+        try {
+            ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+            fail("Expected AnkiUnsupportedPackageException for collection.anki21b only package");
+        } catch (AnkiUnsupportedPackageException e) {
+            assertEquals(AnkiUnsupportedPackageException.Reason.MODERN_ZSTD, e.reason);
+        }
+    }
+
+    /**
+     * Tests that a legacy 2.0 package containing only collection.anki2 opens
+     * successfully.
+     */
+    @Test
+    public void extractAndReadDatabase_legacyAnki2Package_opensDatabase() throws Exception {
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Legacy Deck")
+                .addNote(300, 100, "Q", "A")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "legacy_anki2.apkg"), "collection.anki2");
+
+        File extractDir = new File(tempDir, "extract_legacy");
+        extractDir.mkdirs();
+
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+
+        assertNotNull(db);
+        List<AnkiNote> notes = ApkgParser.readNotes(db, 100);
+        assertEquals(1, notes.size());
+
+        db.close();
+    }
+
+    /**
+     * Tests that the modern decoy collection (single "Please update to the
+     * latest Anki version" note in collection.anki2) is rejected with a
+     * distinct decoy-package error.
+     */
+    @Test
+    public void extractAndReadDatabase_decoyAnki2Package_throwsDecoy() throws Exception {
+        File apkgFile = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front"}, 1)
+                .addNote(300, 100, "Please update to the latest Anki version")
+                .build(new File(tempDir, "decoy.apkg"), "collection.anki2");
+
+        File extractDir = new File(tempDir, "extract_decoy");
+        extractDir.mkdirs();
+
+        try {
+            ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+            fail("Expected AnkiUnsupportedPackageException for decoy collection.anki2");
+        } catch (AnkiUnsupportedPackageException e) {
+            assertEquals(AnkiUnsupportedPackageException.Reason.DECOY, e.reason);
+        }
+    }
+
+    /**
+     * Tests that a modern default export package (meta protobuf version 3,
+     * zstd compressed schema-18 collection under collection.anki21b) opens
+     * the anki21b collection: notetypes come from the normalized tables,
+     * notes and cards are read unchanged and decks map card did to names.
+     *
+     * <p>The package also carries a collection.anki2 entry (like real modern
+     * exports) which must never be parsed when meta selects anki21b.</p>
+     */
+    @Test
+    public void extractAndReadDatabase_anki21bModernPackage_opensDatabase() throws Exception {
+        File apkgFile = AnkiApkgTestBuilder.modern(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Modern Deck")
+                .addNote(300, 100, "Q", "A")
+                .addCard(400, 300, 200, 0)
+                .build(new File(tempDir, "modern_basic.apkg"),
+                        "collection.anki21b", "collection.anki2");
+
+        File extractDir = new File(tempDir, "extract_modern_real");
+        extractDir.mkdirs();
+
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+
+        assertNotNull(db);
+
+        List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
+        assertEquals(1, notetypes.size());
+        AnkiNotetype notetype = notetypes.get(0);
+        assertEquals(100, notetype.id);
+        assertEquals("Basic", notetype.name);
+        assertEquals(0, notetype.type);
+        assertEquals(2, notetype.flds.size());
+        assertEquals("Front", notetype.flds.get(0).name);
+        assertEquals("Back", notetype.flds.get(1).name);
+        assertTrue(ApkgParser.isBasicNotetype(notetype));
+
+        List<AnkiNote> notes = ApkgParser.readNotes(db, 100);
+        assertEquals(1, notes.size());
+        assertEquals("Q\u001fA", notes.get(0).flds);
+
+        List<Long> noteIds = new ArrayList<>();
+        noteIds.add(notes.get(0).id);
+        List<AnkiCard> cards = ApkgParser.readCards(db, noteIds);
+        assertEquals(1, cards.size());
+        assertEquals(200, cards.get(0).did);
+
+        List<AnkiDeck> decks = ApkgParser.readDecks(db);
+        assertEquals(1, decks.size());
+        assertEquals("Modern Deck", decks.get(0).name);
+        assertEquals(200, decks.get(0).id);
+
+        db.close();
+    }
+
+    /**
+     * Tests that a schema-18 cloze notetype is detected via the kind field
+     * inside the notetypes.config protobuf blob (the schema-18 col JSON is
+     * empty and carries no type information).
+     */
+    @Test
+    public void readNotetypes_schema18_parsesKindFromConfigBlob() throws Exception {
+        File apkgFile = AnkiApkgTestBuilder.modern(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addNotetype(101, "Cloze", 1, new String[]{"Text"}, 1)
+                .addDeck(200, "Kind Deck")
+                .build(new File(tempDir, "modern_kind.apkg"), "collection.anki21b");
+
+        File extractDir = new File(tempDir, "extract_kind");
+        extractDir.mkdirs();
+
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+
+        List<AnkiNotetype> notetypes = ApkgParser.readNotetypes(db);
+        assertEquals(2, notetypes.size());
+
+        AnkiNotetype first = notetypes.get(0).id == 100 ? notetypes.get(0) : notetypes.get(1);
+        AnkiNotetype second = first.id == 100 ? notetypes.get(1) : notetypes.get(0);
+        assertTrue(ApkgParser.isBasicNotetype(first));
+        assertFalse(ApkgParser.isClozeNotetype(first));
+        assertTrue(ApkgParser.isClozeNotetype(second));
+        assertFalse(ApkgParser.isBasicNotetype(second));
+
+        db.close();
+    }
+
+    /**
+     * Tests that a modern package whose zstd payload decompresses to a
+     * collection with an unrecognized col.ver is rejected with the modern
+     * package error (schema dispatch guard).
+     */
+    @Test
+    public void extractAndReadDatabase_anki21bUnknownSchemaVersion_throwsModernZstd() throws Exception {
+        File ver99DbFile = new File(tempDir, "ver99_collection");
+        SQLiteDatabase ver99Db = SQLiteDatabase.openOrCreateDatabase(ver99DbFile.getAbsolutePath(), null);
+        ver99Db.execSQL("CREATE TABLE col (ver INTEGER NOT NULL)");
+        ver99Db.execSQL("INSERT INTO col (ver) VALUES (99)");
+        ver99Db.close();
+
+        File apkgFile = new File(tempDir, "ver99.apkg");
+        File compressedDbFile = new File(tempDir, "ver99_collection.zst");
+        try (java.io.FileInputStream fis = new java.io.FileInputStream(ver99DbFile);
+             com.github.luben.zstd.ZstdOutputStream zstdOut =
+                     new com.github.luben.zstd.ZstdOutputStream(new java.io.FileOutputStream(compressedDbFile))) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                zstdOut.write(buffer, 0, bytesRead);
+            }
+        }
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apkgFile))) {
+            zos.putNextEntry(new ZipEntry("collection.anki21b"));
+            try (java.io.FileInputStream fis = new java.io.FileInputStream(compressedDbFile)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    zos.write(buffer, 0, bytesRead);
+                }
+            }
+            zos.closeEntry();
+            zos.putNextEntry(new ZipEntry("meta"));
+            zos.write(new byte[]{0x08, 0x03});
+            zos.closeEntry();
+            zos.putNextEntry(new ZipEntry("media"));
+            zos.write(new byte[0]);
+            zos.closeEntry();
+        }
+
+        File extractDir = new File(tempDir, "extract_ver99");
+        extractDir.mkdirs();
+
+        try {
+            ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+            fail("Expected AnkiUnsupportedPackageException for unknown col.ver");
+        } catch (AnkiUnsupportedPackageException e) {
+            assertEquals(AnkiUnsupportedPackageException.Reason.MODERN_ZSTD, e.reason);
+        }
+    }
+
+    /**
+     * Tests modern media extraction: the zstd compressed MediaEntries
+     * manifest resolves real file names and the zstd compressed zip
+     * contents are decompressed into temp files with their original bytes.
+     */
+    @Test
+    public void extractMedia_modernPackage_decompressesManifestAndContents() throws Exception {
+        LinkedHashMap<String, byte[]> mediaByName = new LinkedHashMap<>();
+        mediaByName.put("image.jpg", new byte[]{1, 2, 3, 4, 5});
+        mediaByName.put("audio.mp3", new byte[]{9, 8, 7});
+
+        File apkgFile = AnkiApkgTestBuilder.modern(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Media Deck")
+                .withModernMedia(mediaByName)
+                .build(new File(tempDir, "modern_media.apkg"), "collection.anki21b");
+
+        File extractDir = new File(tempDir, "extract_media_modern");
+        extractDir.mkdirs();
+
+        ApkgParser.MediaData mediaData = ApkgParser.extractMedia(apkgFile, extractDir);
+
+        assertEquals(2, mediaData.files.size());
+        assertEquals(2, mediaData.namesByKey.size());
+        assertEquals("image.jpg", mediaData.namesByKey.get("0"));
+        assertEquals("audio.mp3", mediaData.namesByKey.get("1"));
+        assertArrayEquals(new byte[]{1, 2, 3, 4, 5},
+                readFileBytes(mediaData.files.get("0")));
+        assertArrayEquals(new byte[]{9, 8, 7},
+                readFileBytes(mediaData.files.get("1")));
+    }
+
+    private byte[] readFileBytes(File file) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file);
+             ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                bos.write(buffer, 0, bytesRead);
+            }
+            return bos.toByteArray();
+        }
+    }
+
+    /**
+     * Tests that readCards chunks the nid IN (...) query so decks with more
+     * notes than SQLite's 999 host parameter limit are read completely.
+     */
+    @Test
+    public void readCards_chunksLargeNoteLists() throws Exception {
+        int noteCount = 1100;
+        AnkiApkgTestBuilder builder = new AnkiApkgTestBuilder(tempDir)
+                .addNotetype(100, "Basic", 0, new String[]{"Front", "Back"}, 1)
+                .addDeck(200, "Big Deck");
+        builder.runInTransaction(() -> {
+            for (int i = 0; i < noteCount; i++) {
+                builder.addNote(1000L + i, 100, "Q" + i, "A" + i);
+                builder.addCard(5000L + i, 1000L + i, 200, 0);
+            }
+        });
+        File apkgFile = builder.build(new File(tempDir, "big_deck.apkg"), "collection.anki21");
+
+        File extractDir = new File(tempDir, "extract_chunk");
+        extractDir.mkdirs();
+
+        SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, extractDir);
+
+        List<AnkiNote> notes = ApkgParser.readNotes(db, 100);
+        assertEquals(noteCount, notes.size());
+
+        List<Long> noteIds = new ArrayList<>();
+        for (AnkiNote note : notes) {
+            noteIds.add(note.id);
+        }
+        List<AnkiCard> cards = ApkgParser.readCards(db, noteIds);
+        assertEquals(noteCount, cards.size());
+
+        db.close();
     }
 
     /**
@@ -451,6 +815,20 @@ public class ApkgParserTest {
 
         assertTrue(ApkgParser.isBasicNotetype(basicType));
 
+        // Basic variant notetypes are also importable
+        basicType.name = "Basic (and reversed card)";
+        assertTrue(ApkgParser.isBasicNotetype(basicType));
+
+        // case-insensitive and trimmed name matching
+        basicType.name = " basic ";
+        assertTrue(ApkgParser.isBasicNotetype(basicType));
+
+        // cloze type is never a Basic notetype
+        basicType.name = "Basic";
+        basicType.type = 1;
+        assertFalse(ApkgParser.isBasicNotetype(basicType));
+        basicType.type = 0;
+
         basicType.name = "Cloze";
         assertFalse(ApkgParser.isBasicNotetype(basicType));
 
@@ -461,6 +839,29 @@ public class ApkgParserTest {
 
         AnkiNotetype nullType = null;
         assertFalse(ApkgParser.isBasicNotetype(nullType));
+    }
+
+    /**
+     * Tests cloze notetype detection.
+     *
+     * <p>This test verifies that the isClozeNotetype method correctly
+     * identifies notetypes with schema type 1 and rejects others.</p>
+     */
+    @Test
+    public void isClozeNotetype_identifiesClozeType() {
+        AnkiNotetype clozeType = new AnkiNotetype();
+        clozeType.name = "Cloze";
+        clozeType.type = 1;
+        clozeType.flds = new ArrayList<>();
+        clozeType.flds.add(new AnkiField());
+
+        assertTrue(ApkgParser.isClozeNotetype(clozeType));
+
+        clozeType.type = 0;
+        assertFalse(ApkgParser.isClozeNotetype(clozeType));
+
+        AnkiNotetype nullType = null;
+        assertFalse(ApkgParser.isClozeNotetype(nullType));
     }
 
     /**

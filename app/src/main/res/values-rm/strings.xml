@@ -165,4 +165,15 @@
     <string name="stats_empty_history">Anc nagina istorgia da repetiziuns. Valita chartas in in test e tias statisticas cumparan qua.</string>
     <string name="notification_permission_rationale">L\'app dovra avis per ta regurdar da studiar. Permetter avis?</string>
     <string name="permission_denied_notification">Permissiun per avis refusada, permetta per plaschair avis en la configuraziun dal sistem da l\'app per retschaiver regurdanzas da studi</string>
+
+    <!-- Anki import summary -->
+    <string name="title_import_summary">Resumaziun d\'import</string>
+    <string name="import_summary_result">Importads: %1$d pacs, %2$d chartas</string>
+    <string name="import_summary_skipped_notetype">Typ da nota \"%1$s\" ignorà (%2$d notas)</string>
+    <string name="import_summary_dropped_media">%1$d medias ignoradas, mo l\'emprim\'imagi/udaziun per vart da charta è sustegnida</string>
+    <string name="import_summary_duplicates_skipped">%1$d notas dublettas ignoradas</string>
+    <string name="error_anki_modern_package">Questa datoteca Anki para dad esser donnegiada e n\'ha betg pudì vegnir legida</string>
+    <string name="error_anki_decoy_package">Questa datoteca Anki n\'ha naginas chartas importablas</string>
+    <string name="error_nothing_imported">Naginas chartas importablas chattadas en la datoteca</string>
+    <string name="imported_deck_default_name">Pac importà</string>
 </resources>

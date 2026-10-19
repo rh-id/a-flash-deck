@@ -32,27 +32,32 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipFile;
 
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.app.anki.AnkiUnsupportedPackageException;
 import m.co.rh.id.a_flash_deck.app.anki.ApkgParser;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiCard;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiDeck;
+import m.co.rh.id.a_flash_deck.app.anki.model.AnkiImportSummary;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiNote;
 import m.co.rh.id.a_flash_deck.app.anki.model.AnkiNotetype;
+import m.co.rh.id.a_flash_deck.base.dao.AnkiNoteGuidDao;
 import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
+import m.co.rh.id.a_flash_deck.base.model.DeckImportPayload;
 import m.co.rh.id.a_flash_deck.base.model.DeckModel;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
+import m.co.rh.id.a_flash_deck.app.provider.command.ImportResult;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
@@ -66,6 +71,7 @@ public class AnkiImporter {
     protected Context mAppContext;
     protected ILogger mLogger;
     protected DeckDao mDeckDao;
+    protected AnkiNoteGuidDao mAnkiNoteGuidDao;
     protected FileHelper mFileHelper;
     protected CardMediaStore mCardMediaStore;
 
@@ -73,13 +79,14 @@ public class AnkiImporter {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.get(ILogger.class);
         mDeckDao = provider.get(DeckDao.class);
+        mAnkiNoteGuidDao = provider.get(AnkiNoteGuidDao.class);
         mFileHelper = provider.get(FileHelper.class);
         mCardMediaStore = provider.get(CardMediaStore.class);
         mImgPattern = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
         mSoundPattern = Pattern.compile("\\[sound:([^\\]]+)\\]");
     }
 
-    public List<DeckModel> importApkg(File apkgFile) {
+    public ImportResult importApkg(File apkgFile) {
         File tempDir = null;
         try {
             if (!apkgFile.getName().toLowerCase().endsWith(".apkg")) {
@@ -90,39 +97,52 @@ public class AnkiImporter {
             tempDir.mkdirs();
 
             SQLiteDatabase db = ApkgParser.extractAndReadDatabase(apkgFile, tempDir);
-            Map<String, File> mediaFiles = ApkgParser.extractMediaFiles(apkgFile, tempDir);
-            Map<String, String> mediaMapping;
-            try (ZipFile zipFile = new ZipFile(apkgFile)) {
-                mediaMapping = ApkgParser.parseMediaJson(zipFile);
-            }
+            // media extraction handles both legacy JSON manifests and modern
+            // zstd MediaEntries protobuf manifests
+            ApkgParser.MediaData mediaData = ApkgParser.extractMedia(apkgFile, tempDir);
 
             List<AnkiNotetype> notetypes;
-            List<AnkiNote> notes = new ArrayList<>();
-            List<AnkiCard> cards = new ArrayList<>();
             List<AnkiDeck> decks;
-            
+            // notes of Basic variant notetypes, the only notes importable
+            List<AnkiNote> importedNotes = new ArrayList<>();
+            // reversibility per imported note id, derived from its notetype name
+            Map<Long, Boolean> reversibleNoteIds = new HashMap<>();
+            List<AnkiCard> cards = new ArrayList<>();
+            AnkiImportSummary summary = new AnkiImportSummary();
+
             try {
                 notetypes = ApkgParser.readNotetypes(db);
                 decks = ApkgParser.readDecks(db);
 
                 for (AnkiNotetype notetype : notetypes) {
                     if (ApkgParser.isBasicNotetype(notetype)) {
+                        // notes are only materialized for importable
+                        // notetypes; skipped ones use COUNT(*) so a huge
+                        // cloze/unsupported package never loads all of its
+                        // note field text into memory
                         List<AnkiNote> notetypeNotes = ApkgParser.readNotes(db, notetype.id);
-                        notes.addAll(notetypeNotes);
+                        importedNotes.addAll(notetypeNotes);
+                        boolean reversible = isReversedNotetype(notetype);
+                        List<Long> notetypeNoteIds = new ArrayList<>();
+                        for (AnkiNote note : notetypeNotes) {
+                            reversibleNoteIds.put(note.id, reversible);
+                            notetypeNoteIds.add(note.id);
+                        }
+                        cards.addAll(ApkgParser.readCards(db, notetypeNoteIds));
+                    } else if (ApkgParser.isClozeNotetype(notetype)) {
+                        int noteCount = ApkgParser.countNotes(db, notetype.id);
+                        mLogger.i(TAG, "Skipping cloze notetype: " + notetype.name
+                                + " (" + noteCount + " notes)");
+                        summary.skippedNotetypes.add(new AnkiImportSummary.SkippedNotetype(
+                                notetype.name, noteCount, "cloze"));
                     } else {
-                        mLogger.d(TAG, "Skipping non-Basic notetype: " + notetype.name);
+                        int noteCount = ApkgParser.countNotes(db, notetype.id);
+                        mLogger.i(TAG, "Skipping unsupported notetype: " + notetype.name
+                                + " (" + noteCount + " notes)");
+                        summary.skippedNotetypes.add(new AnkiImportSummary.SkippedNotetype(
+                                notetype.name, noteCount, "unsupported"));
                     }
                 }
-
-                if (notes.isEmpty()) {
-                    throw new ValidationException("No Basic cards found in APKG file");
-                }
-
-                List<Long> noteIds = new ArrayList<>();
-                for (AnkiNote note : notes) {
-                    noteIds.add(note.id);
-                }
-                cards.addAll(ApkgParser.readCards(db, noteIds));
             } finally {
                 db.close();
             }
@@ -133,18 +153,49 @@ public class AnkiImporter {
                 existingNames.add(deck.name);
             }
 
-            Map<Long, String> deckIdToNameMap = new HashMap<>();
             Map<Long, String> deckIdToResolvedNameMap = new HashMap<>();
             for (AnkiDeck ankiDeck : decks) {
                 String flattenedName = flattenDeckName(ankiDeck.name);
                 String resolvedName = resolveDeckNameConflict(flattenedName, existingNames);
-                deckIdToNameMap.put(ankiDeck.id, ankiDeck.name);
                 deckIdToResolvedNameMap.put(ankiDeck.id, resolvedName);
                 existingNames.add(resolvedName);
             }
 
+            // map each imported note to its first card row (lowest id), deck
+            // and ordinal are taken from it; every note produces exactly one
+            // app card even when the notetype generates multiple card rows
+            // (e.g. "Basic (and reversed card)")
+            Map<Long, AnkiCard> firstCardByNoteId = new HashMap<>();
+            for (AnkiCard ankiCard : cards) {
+                AnkiCard existing = firstCardByNoteId.get(ankiCard.nid);
+                if (existing == null || ankiCard.id < existing.id) {
+                    firstCardByNoteId.put(ankiCard.nid, ankiCard);
+                }
+            }
+
+            // guids of all importable notes, batched existence check against
+            // previously imported notes for duplicate detection
+            List<String> noteGuids = new ArrayList<>();
+            for (AnkiNote note : importedNotes) {
+                noteGuids.add(note.guid);
+            }
+            Set<String> existingNoteGuids = new HashSet<>(mAnkiNoteGuidDao.findExistingGuids(noteGuids));
+            // guids seen during this import, the same guid occurring twice
+            // within the file is a duplicate as well
+            Set<String> seenNoteGuids = new HashSet<>();
+            // source note guid per parsed card, kept by identity so the card
+            // list can be re-sorted below without losing the alignment
+            Map<Card, String> noteGuidByCard = new IdentityHashMap<>();
+
             Map<Long, DeckModel> deckModelMap = new HashMap<>();
-            for (AnkiNote note : notes) {
+            for (AnkiNote note : importedNotes) {
+                if (note.guid != null && !note.guid.isEmpty()) {
+                    if (existingNoteGuids.contains(note.guid) || !seenNoteGuids.add(note.guid)) {
+                        mLogger.i(TAG, "Skipping duplicate note, guid: " + note.guid);
+                        summary.duplicateNotesSkipped++;
+                        continue;
+                    }
+                }
                 if (note.flds == null || note.flds.isEmpty()) {
                     mLogger.d(TAG, "Skipping note with empty fields");
                     continue;
@@ -155,59 +206,85 @@ public class AnkiImporter {
                     continue;
                 }
 
-                String field1 = fields.length >= 1 ? fields[0] : "";
+                AnkiCard noteCard = firstCardByNoteId.get(note.id);
+                if (noteCard == null) {
+                    mLogger.d(TAG, "Skipping note without card row, note id: " + note.id);
+                    continue;
+                }
+
+                String deckName = deckIdToResolvedNameMap.get(noteCard.did);
+                if (deckName == null) {
+                    deckName = mAppContext.getString(R.string.imported_deck_default_name);
+                }
+
+                DeckModel deckModel = deckModelMap.get(noteCard.did);
+                if (deckModel == null) {
+                    Deck deck = new Deck();
+                    deck.name = deckName;
+                    deckModel = new DeckModel(deck, new ArrayList<>());
+                    deckModelMap.put(noteCard.did, deckModel);
+                }
+
+                String field1 = fields[0];
                 String field2 = fields.length >= 2 ? fields[1] : "";
 
                 String questionText = parseFieldText(field1);
-                String questionImage = parseFieldImage(field1);
-                String questionVoice = parseFieldVoice(field1);
+                String questionImage = parseFieldImage(field1, summary);
+                String questionVoice = parseFieldVoice(field1, summary);
 
                 String answerText = parseFieldText(field2);
-                String answerImage = parseFieldImage(field2);
-                String answerVoice = parseFieldVoice(field2);
+                String answerImage = parseFieldImage(field2, summary);
+                String answerVoice = parseFieldVoice(field2, summary);
 
-                for (AnkiCard ankiCard : cards) {
-                    if (ankiCard.nid != note.id) {
-                        continue;
-                    }
+                Card card = new Card();
+                card.question = questionText;
+                card.answer = answerText;
+                card.questionImage = questionImage;
+                card.answerImage = answerImage;
+                card.questionVoice = questionVoice;
+                card.answerVoice = answerVoice;
+                card.ordinal = noteCard.ord;
+                card.isReversibleQA = reversibleNoteIds.getOrDefault(note.id, false);
+                card.isReversed = false;
 
-                    String deckName = deckIdToResolvedNameMap.get(ankiCard.did);
-                    if (deckName == null) {
-                        deckName = "Imported Deck";
-                    }
-
-                    DeckModel deckModel = deckModelMap.get(ankiCard.did);
-                    if (deckModel == null) {
-                        Deck deck = new Deck();
-                        deck.name = deckName;
-                        deckModel = new DeckModel(deck, new ArrayList<>());
-                        deckModelMap.put(ankiCard.did, deckModel);
-                    }
-
-                    Card card = new Card();
-                    card.question = questionText;
-                    card.answer = answerText;
-                    card.questionImage = questionImage;
-                    card.answerImage = answerImage;
-                    card.questionVoice = questionVoice;
-                    card.answerVoice = answerVoice;
-                    card.ordinal = ankiCard.ord;
-                    card.isReversibleQA = false;
-                    card.isReversed = false;
-
-                    deckModel.getCardList().add(card);
-                }
+                deckModel.getCardList().add(card);
+                noteGuidByCard.put(card, note.guid);
+                summary.notesImported++;
+                summary.cardsImported++;
             }
 
-            copyMediaToAppPaths(mediaFiles, mediaMapping, deckModelMap);
+            // a package whose notes are all duplicates was still processed
+            // successfully (nothing new to import), only fail when there is
+            // nothing importable at all
+            if (summary.notesImported == 0 && summary.duplicateNotesSkipped == 0
+                    && deckModelMap.isEmpty()) {
+                throw new ValidationException(mAppContext.getString(R.string.error_nothing_imported));
+            }
+
+            copyMediaToAppPaths(mediaData.files, mediaData.namesByKey, deckModelMap);
             generateThumbnailsForMedia(deckModelMap);
 
             for (DeckModel deckModel : deckModelMap.values()) {
                 deckModel.getCardList().sort((c1, c2) -> Long.compare(c1.ordinal, c2.ordinal));
             }
 
-            List<DeckModel> result = new ArrayList<>(deckModelMap.values());
-            return result;
+            List<DeckImportPayload> payloads = new ArrayList<>();
+            for (DeckModel deckModel : deckModelMap.values()) {
+                List<String> cardGuids = new ArrayList<>();
+                for (Card card : deckModel.getCardList()) {
+                    cardGuids.add(noteGuidByCard.get(card));
+                }
+                payloads.add(new DeckImportPayload(deckModel, cardGuids));
+            }
+
+            summary.decksImported = deckModelMap.size();
+            return new ImportResult(payloads, summary, true);
+        } catch (AnkiUnsupportedPackageException e) {
+            mLogger.e(TAG, "Failed to import APKG, unsupported package", e);
+            String message = e.reason == AnkiUnsupportedPackageException.Reason.MODERN_ZSTD
+                    ? mAppContext.getString(R.string.error_anki_modern_package)
+                    : mAppContext.getString(R.string.error_anki_decoy_package);
+            throw new ValidationException(message);
         } catch (IOException | JSONException e) {
             mLogger.e(TAG, "Failed to import APKG", e);
             throw new ValidationException(mAppContext.getString(R.string.error_failed_to_parse_file));
@@ -216,6 +293,16 @@ public class AnkiImporter {
                 mFileHelper.deleteDirectory(tempDir);
             }
         }
+    }
+
+    /**
+     * Returns true when the Basic variant notetype name contains "reversed"
+     * (case-insensitive, e.g. "Basic (and reversed card)"). Such notes get a
+     * second card in Anki asking the back side first, which maps to the app's
+     * reversible question card.
+     */
+    private boolean isReversedNotetype(AnkiNotetype notetype) {
+        return notetype.name != null && notetype.name.toLowerCase().contains("reversed");
     }
 
     private String parseFieldText(String htmlField) {
@@ -239,7 +326,7 @@ public class AnkiImporter {
         return plainText;
     }
 
-    private String parseFieldImage(String htmlField) {
+    private String parseFieldImage(String htmlField, AnkiImportSummary summary) {
         if (htmlField == null || htmlField.isEmpty()) {
             return null;
         }
@@ -247,12 +334,16 @@ public class AnkiImporter {
         Matcher matcher = mImgPattern.matcher(htmlField);
         if (matcher.find()) {
             String imageName = matcher.group(1);
+            // count extra images, only the first image per card side is supported
+            while (matcher.find()) {
+                summary.droppedMediaCount++;
+            }
             return imageName;
         }
         return null;
     }
 
-    private String parseFieldVoice(String htmlField) {
+    private String parseFieldVoice(String htmlField, AnkiImportSummary summary) {
         if (htmlField == null || htmlField.isEmpty()) {
             return null;
         }
@@ -260,6 +351,10 @@ public class AnkiImporter {
         Matcher matcher = mSoundPattern.matcher(htmlField);
         if (matcher.find()) {
             String voiceName = matcher.group(1);
+            // count extra sounds, only the first sound per card side is supported
+            while (matcher.find()) {
+                summary.droppedMediaCount++;
+            }
             return voiceName;
         }
         return null;

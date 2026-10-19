@@ -165,4 +165,15 @@
     <string name="stats_empty_history">Ingen øvingshistorikk ennå. Vurder kort i ein test, og statistikken din vert vist her.</string>
     <string name="notification_permission_rationale">Appen brukar varslingar for å minne deg på å studere. Tillat varslingar?</string>
     <string name="permission_denied_notification">Varslingsløyve avslått, ver vennleg og tillat varslingar i systeminnstillingane for appen for å få studiepåminningar</string>
+
+    <!-- Anki import summary -->
+    <string name="title_import_summary">Importeringsoppsummering</string>
+    <string name="import_summary_result">Importerte %1$d kortstokk(ar), %2$d kort</string>
+    <string name="import_summary_skipped_notetype">Hoppa over notetype \"%1$s\" (%2$d notat)</string>
+    <string name="import_summary_dropped_media">Hoppa over %1$d mediefil(ar), berre fyrste bilete/lyd per kortsida er støtta</string>
+    <string name="import_summary_duplicates_skipped">Hoppa over %1$d duplikatnotat</string>
+    <string name="error_anki_modern_package">Denne Anki-fila ser ut til å vera skadd og kunne ikkje lesast</string>
+    <string name="error_anki_decoy_package">Denne Anki-fila inneheld ingen kort som kan importerast</string>
+    <string name="error_nothing_imported">Fann ingen kort som kan importerast i fila</string>
+    <string name="imported_deck_default_name">Importert kortstokk</string>
 </resources>

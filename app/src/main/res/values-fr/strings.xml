@@ -165,4 +165,15 @@
     <string name="stats_empty_history">Pas encore d\'historique de révision. Notez des cartes dans un test et vos statistiques apparaîtront ici.</string>
     <string name="notification_permission_rationale">L\'application utilise les notifications pour vous rappeler d\'étudier. Autoriser les notifications ?</string>
     <string name="permission_denied_notification">Permission de notification refusée, veuillez autoriser les notifications dans les paramètres système de l\'application pour recevoir des rappels d\'étude</string>
+
+    <!-- Anki import summary -->
+    <string name="title_import_summary">Résumé de l\'import</string>
+    <string name="import_summary_result">Importé : %1$d paquet(s), %2$d carte(s)</string>
+    <string name="import_summary_skipped_notetype">Type de note \"%1$s\" ignoré (%2$d note(s))</string>
+    <string name="import_summary_dropped_media">%1$d média(s) ignoré(s), seule la première image/audio par côté de carte est prise en charge</string>
+    <string name="import_summary_duplicates_skipped">%1$d note(s) en doublon ignorée(s)</string>
+    <string name="error_anki_modern_package">Ce fichier Anki semble corrompu et n\'a pas pu être lu</string>
+    <string name="error_anki_decoy_package">Ce fichier Anki ne contient aucune carte importable</string>
+    <string name="error_nothing_imported">Aucune carte importable trouvée dans le fichier</string>
+    <string name="imported_deck_default_name">Paquet importé</string>
 </resources>

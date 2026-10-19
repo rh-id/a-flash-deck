@@ -165,4 +165,15 @@
     <string name="stats_empty_history">Ülevaatuse ajalugu puudub veel. Hinda kaarte testis ja sinu statistika ilmub siia.</string>
     <string name="notification_permission_rationale">Rakendus kasutab märguandeid, et meeldetuletada õppimist. Kas lubada märguanded?</string>
     <string name="permission_denied_notification">Märguannete luba on keeldatud, palun lubage märguanded süsteemi rakenduse sätetes, et saada õppimise meeldetuletusi</string>
+
+    <!-- Anki import summary -->
+    <string name="title_import_summary">Impordi kokkuvõte</string>
+    <string name="import_summary_result">Imporditud: %1$d kaardipakki, %2$d kaarti</string>
+    <string name="import_summary_skipped_notetype">Vahele jäeti notetype \"%1$s\" (%2$d märkust)</string>
+    <string name="import_summary_dropped_media">%1$d meediafail(i) jäeti vahele, toetatud on ainult esimene pilt/heli kaardi poole kohta</string>
+    <string name="import_summary_duplicates_skipped">Jäeti vahele %1$d duplikaatmärkust</string>
+    <string name="error_anki_modern_package">Tundub, et see Anki-fail on vigane ja seda ei saanud lugeda</string>
+    <string name="error_anki_decoy_package">See Anki-fail ei sisalda importimiseks sobivaid kaarte</string>
+    <string name="error_nothing_imported">Failis ei leitud importimiseks sobivaid kaarte</string>
+    <string name="imported_deck_default_name">Imporditud kaardipakk</string>
 </resources>
