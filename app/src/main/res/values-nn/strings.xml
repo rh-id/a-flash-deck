@@ -157,6 +157,15 @@
     <string name="stats_reviews_last_30_days">Øvingar (siste 30 dagar)</string>
     <string name="stats_retention">Hugprosent (siste 30 dagar)</string>
     <string name="stats_retention_value">%1$d%% (%2$d øvingar)</string>
+    <string name="stats_speed">Tid til svar (siste 30 dagar)</string>
+    <string name="stats_speed_summary">Median %1$s · Gjennomsnitt %2$s</string>
+    <string name="stats_true_retention">Ekte hugprosent (siste 30 dagar)</string>
+    <string name="stats_true_retention_value">%1$d%% (%2$d)</string>
+    <string name="stats_true_retention_new_cards">Nye kort</string>
+    <string name="stats_bucket_lt_1_day">&lt;1 dag</string>
+    <string name="stats_bucket_1_7_days">1–7 dagar</string>
+    <string name="stats_bucket_8_30_days">8–30 dagar</string>
+    <string name="stats_bucket_gt_30_days">&gt;30 dagar</string>
     <string name="stats_today_grades">Vurderingar i dag</string>
     <string name="stats_due_forecast">Forfallprognose (komande 14 dagar)</string>
     <string name="stats_due_forecast_summary">%1$d nye · %2$d forfallne seinare</string>

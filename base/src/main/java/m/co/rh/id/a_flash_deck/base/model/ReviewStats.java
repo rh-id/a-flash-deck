@@ -48,6 +48,42 @@ public class ReviewStats implements Serializable {
     public double retentionPercent;
 
     /**
+     * Review speed per day of the last 30 days, oldest day first, today
+     * last: mean time in ms from card shown to answer revealed of the
+     * day's valid timing samples (see
+     * {@link ReviewStatsCalculator#MAX_VALID_TIME_BEFORE_REVEAL_MS}),
+     * 0 when a day has no valid sample. Never uses timeAfterRevealMs
+     */
+    public int[] dailyAvgSpeedMs;
+
+    /**
+     * Median over all valid timing samples in the last 30 days; with an
+     * even sample count the median is defined as the lower middle sample
+     * of the samples sorted ascending; 0 without a valid sample
+     */
+    public long medianSpeedMs;
+
+    /**
+     * Mean over all valid timing samples in the last 30 days,
+     * truncated to whole ms; 0 without a valid sample
+     */
+    public long avgSpeedMs;
+
+    /**
+     * Count of valid timing samples in the last 30 days
+     * (timeBeforeRevealMs greater than 0 and at most 10 minutes);
+     * 0 means no sample at all, e.g. for upgrades from app versions that
+     * did not record timings yet
+     */
+    public int speedSampleCount;
+
+    /**
+     * True retention of the last 30 days: window reviews bucketed by the
+     * whole-day gap to the previous review of the same card
+     */
+    public TrueRetention trueRetention;
+
+    /**
      * Total review count in the last 30 days window (retention sample size)
      */
     public int retentionTotal;

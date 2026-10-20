@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.text.format.DateUtils;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,12 +33,28 @@ import m.co.rh.id.anavigator.StatefulView;
 
 /**
  * Minimal bar chart for the statistics page: evenly spaced bars scaled to
- * the largest value, with the max and latest values labeled.
+ * the largest value, with the max and latest values labeled either as raw
+ * numbers or as elapsed time (see the LABEL_MODE constants).
  * Deliberately dependency-free (custom View instead of a chart library).
  */
 public class BarChartSV extends StatefulView<Activity> {
 
+    /**
+     * Label mode where values are rendered with String.valueOf
+     */
+    public static final int LABEL_MODE_RAW = 0;
+
+    /**
+     * Label mode where values are interpreted as ms and rendered as
+     * elapsed time by DateUtils.formatElapsedTime, used for the answer
+     * speed chart
+     */
+    public static final int LABEL_MODE_ELAPSED_SECONDS = 1;
+
     private final int mBarColorRes;
+    // primitive int so the field survives the Java-serialized navigator
+    // snapshot like mBarColorRes
+    private final int mLabelMode;
     private int[] mValues;
     /**
      * transient: the built android View must never be part of the navigator
@@ -46,7 +63,16 @@ public class BarChartSV extends StatefulView<Activity> {
     private transient BarChartView mBarChartView;
 
     public BarChartSV(int barColorRes) {
+        this(barColorRes, LABEL_MODE_RAW);
+    }
+
+    /**
+     * @param labelMode {@link #LABEL_MODE_RAW} or
+     *                  {@link #LABEL_MODE_ELAPSED_SECONDS}
+     */
+    public BarChartSV(int barColorRes, int labelMode) {
         mBarColorRes = barColorRes;
+        mLabelMode = labelMode;
     }
 
     /**
@@ -61,7 +87,7 @@ public class BarChartSV extends StatefulView<Activity> {
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
-        mBarChartView = new BarChartView(activity, mBarColorRes);
+        mBarChartView = new BarChartView(activity, mBarColorRes, mLabelMode);
         if (mValues != null) {
             mBarChartView.setValues(mValues);
         }
@@ -83,10 +109,12 @@ public class BarChartSV extends StatefulView<Activity> {
         private final Paint mLabelPaint;
         private final Paint mBaselinePaint;
         private final float mDensity;
+        private final int mLabelMode;
         private int[] mValues = new int[0];
 
-        private BarChartView(Context context, int barColorRes) {
+        private BarChartView(Context context, int barColorRes, int labelMode) {
             super(context);
+            mLabelMode = labelMode;
             mDensity = getResources().getDisplayMetrics().density;
             mBarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mBarPaint.setColor(ContextCompat.getColor(context, barColorRes));
@@ -103,6 +131,17 @@ public class BarChartSV extends StatefulView<Activity> {
 
         private float dp(float value) {
             return value * mDensity;
+        }
+
+        /**
+         * @return the given value formatted by the label mode: raw number,
+         * or elapsed time when the values are ms durations
+         */
+        private static String label(int labelMode, int value) {
+            if (labelMode == LABEL_MODE_ELAPSED_SECONDS) {
+                return DateUtils.formatElapsedTime(value / 1000L);
+            }
+            return String.valueOf(value);
         }
 
         private void setValues(int[] values) {
@@ -154,8 +193,8 @@ public class BarChartSV extends StatefulView<Activity> {
             // drawText's y is the text baseline; labelHeight keeps the max
             // label inside the top strip, height - labelPad keeps the last
             // label inside the bottom strip
-            canvas.drawText(String.valueOf(max), 0, labelHeight, mLabelPaint);
-            String lastLabel = String.valueOf(mValues[count - 1]);
+            canvas.drawText(label(mLabelMode, max), 0, labelHeight, mLabelPaint);
+            String lastLabel = label(mLabelMode, mValues[count - 1]);
             float lastLabelWidth = mLabelPaint.measureText(lastLabel);
             canvas.drawText(lastLabel, width - lastLabelWidth,
                     height - labelPad, mLabelPaint);

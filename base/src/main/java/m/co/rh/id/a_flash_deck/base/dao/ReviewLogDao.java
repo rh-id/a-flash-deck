@@ -24,6 +24,7 @@ import androidx.room.Query;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.ReviewLog;
+import m.co.rh.id.a_flash_deck.base.model.CardLastReview;
 
 /**
  * DAO that handles review log entity
@@ -43,6 +44,18 @@ public abstract class ReviewLogDao {
 
     @Query("SELECT * FROM review_log WHERE created_date_time >= :since")
     public abstract List<ReviewLog> findReviewLogsSince(long since);
+
+    /**
+     * @return latest review time in epoch ms of every card that has at
+     * least one review strictly before the given epoch ms timestamp; the
+     * GROUP BY collapses the matching rows to one row per card. To use
+     * this as true-retention boundary data, pass the calendar-day window
+     * start (ReviewStatsCalculator.reviewWindowStartMs) so the cutoff
+     * matches the day-bucketed statistics window
+     */
+    @Query("SELECT card_id AS cardId, MAX(created_date_time) AS lastDateTime " +
+            "FROM review_log WHERE created_date_time < :before GROUP BY card_id")
+    public abstract List<CardLastReview> findLastReviewByCardIdBefore(long before);
 
     @Query("SELECT COUNT(*) FROM review_log")
     public abstract int countAll();

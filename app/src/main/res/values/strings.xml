@@ -170,6 +170,15 @@
     <string name="stats_reviews_last_30_days">Reviews (last 30 days)</string>
     <string name="stats_retention">Retention (last 30 days)</string>
     <string name="stats_retention_value">%1$d%% (%2$d reviews)</string>
+    <string name="stats_speed">Time to answer (last 30 days)</string>
+    <string name="stats_speed_summary">Median %1$s · Avg %2$s</string>
+    <string name="stats_true_retention">True retention (last 30 days)</string>
+    <string name="stats_true_retention_value">%1$d%% (%2$d)</string>
+    <string name="stats_true_retention_new_cards">New cards</string>
+    <string name="stats_bucket_lt_1_day">&lt;1 day</string>
+    <string name="stats_bucket_1_7_days">1–7 days</string>
+    <string name="stats_bucket_8_30_days">8–30 days</string>
+    <string name="stats_bucket_gt_30_days">&gt;30 days</string>
     <string name="stats_today_grades">Today\'s grades</string>
     <string name="stats_due_forecast">Due forecast (next 14 days)</string>
     <string name="stats_due_forecast_summary">%1$d new · %2$d due later</string>

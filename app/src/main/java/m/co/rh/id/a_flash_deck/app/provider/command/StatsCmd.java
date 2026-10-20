@@ -32,14 +32,15 @@ import m.co.rh.id.a_flash_deck.base.dao.ReviewLogDao;
 import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.ReviewLog;
+import m.co.rh.id.a_flash_deck.base.model.CardLastReview;
 import m.co.rh.id.a_flash_deck.base.model.DeckDueCount;
 import m.co.rh.id.a_flash_deck.base.model.ReviewStats;
 import m.co.rh.id.a_flash_deck.base.model.ReviewStatsCalculator;
 import m.co.rh.id.aprovider.Provider;
 
 /**
- * Command that assembles the statistics page data: review history, due
- * forecast and per-deck breakdown
+ * Command that assembles the statistics page data: review history, review
+ * speed, true retention, due forecast and per-deck breakdown
  */
 public class StatsCmd {
     private static final long ONE_DAY_MS = 24 * 60 * 60 * 1000L;
@@ -73,14 +74,21 @@ public class StatsCmd {
         long windowStartMs = now.getTime()
                 - (long) ReviewStatsCalculator.DAILY_REVIEW_DAYS * ONE_DAY_MS;
         List<ReviewLog> reviewLogs = mReviewLogDao.findReviewLogsSince(windowStartMs);
+        // the boundary cutoff must match the calculator's calendar-day
+        // window (days -29..0): a rolling cutoff sits up to a day late,
+        // which would drop prior reviews of that band and misclassify
+        // their cards as first-ever instead of bucketing them by gap
+        long windowBoundaryMs = ReviewStatsCalculator.reviewWindowStartMs(now);
+        List<CardLastReview> lastReviewBeforeWindow =
+                mReviewLogDao.findLastReviewByCardIdBefore(windowBoundaryMs);
         List<Date> dueDateTimes = mCardReviewStateDao.findDueDateTimes();
         int newCardCount = mStudyDao.countNewCards();
         List<DeckDueCount> deckDueCounts =
                 mStudyDao.countDueAndNewCardsByDeckId(now.getTime());
         enrichWithDeckInfo(deckDueCounts);
         int totalReviews = mReviewLogDao.countAll();
-        return ReviewStatsCalculator.compute(reviewLogs, dueDateTimes,
-                newCardCount, deckDueCounts, totalReviews, now);
+        return ReviewStatsCalculator.compute(reviewLogs, lastReviewBeforeWindow,
+                dueDateTimes, newCardCount, deckDueCounts, totalReviews, now);
     }
 
     /**

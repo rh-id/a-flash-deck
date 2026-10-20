@@ -158,6 +158,15 @@
     <string name="stats_reviews_last_30_days">复习（近30天）</string>
     <string name="stats_retention">记忆保留率（近30天）</string>
     <string name="stats_retention_value">%1$d%%（共 %2$d 次复习）</string>
+    <string name="stats_speed">答题用时（近30天）</string>
+    <string name="stats_speed_summary">中位数 %1$s · 平均 %2$s</string>
+    <string name="stats_true_retention">真实记忆保留率（近30天）</string>
+    <string name="stats_true_retention_value">%1$d%%（%2$d）</string>
+    <string name="stats_true_retention_new_cards">新卡</string>
+    <string name="stats_bucket_lt_1_day">&lt;1 天</string>
+    <string name="stats_bucket_1_7_days">1–7 天</string>
+    <string name="stats_bucket_8_30_days">8–30 天</string>
+    <string name="stats_bucket_gt_30_days">&gt;30 天</string>
     <string name="stats_today_grades">今日评分</string>
     <string name="stats_due_forecast">到期预测（未来14天）</string>
     <string name="stats_due_forecast_summary">%1$d 张新卡 · %2$d 张稍后到期</string>

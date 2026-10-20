@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.app.ui.page;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,8 @@ import m.co.rh.id.a_flash_deck.app.provider.command.StatsCmd;
 import m.co.rh.id.a_flash_deck.app.ui.component.stats.BarChartSV;
 import m.co.rh.id.a_flash_deck.base.model.DeckDueCount;
 import m.co.rh.id.a_flash_deck.base.model.ReviewStats;
+import m.co.rh.id.a_flash_deck.base.model.ReviewStatsCalculator;
+import m.co.rh.id.a_flash_deck.base.model.TrueRetention;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
@@ -43,12 +46,23 @@ import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
 /**
- * Statistics page: daily review counts, streak, retention, due forecast
- * and per-deck breakdown, computed from the review history log
+ * Statistics page: daily review counts, streak, retention, answer speed,
+ * true retention, due forecast and per-deck breakdown, computed from the
+ * review history log
  */
 public class StatisticsPage extends StatefulView<Activity>
         implements RequireComponent<Provider> {
     private static final String TAG = StatisticsPage.class.getName();
+
+    /**
+     * Bucket order of the true-retention rows, shortest gap first
+     */
+    private static final int[] TRUE_RETENTION_BUCKET_LABEL_RES = {
+            R.string.stats_bucket_lt_1_day,
+            R.string.stats_bucket_1_7_days,
+            R.string.stats_bucket_8_30_days,
+            R.string.stats_bucket_gt_30_days
+    };
 
     @NavInject
     private AppBarSV mAppBarSV;
@@ -59,6 +73,8 @@ public class StatisticsPage extends StatefulView<Activity>
     private BarChartSV mReviewsBarChartSV;
     @NavInject
     private BarChartSV mForecastBarChartSV;
+    @NavInject
+    private BarChartSV mSpeedBarChartSV;
     private transient IStatefulViewProvider mSvProvider;
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
@@ -74,6 +90,10 @@ public class StatisticsPage extends StatefulView<Activity>
     private transient TextView mTextGradeHardCount;
     private transient TextView mTextGradeGoodCount;
     private transient TextView mTextGradeEasyCount;
+    private transient ViewGroup mContainerSpeedSection;
+    private transient TextView mTextSpeedSummary;
+    private transient ViewGroup mContainerTrueRetentionSection;
+    private transient ViewGroup mContainerTrueRetentionRows;
     private transient TextView mTextForecastSummary;
     private transient TextView mTextByDeckHeader;
     private transient ViewGroup mContainerDeckStats;
@@ -82,6 +102,8 @@ public class StatisticsPage extends StatefulView<Activity>
         mAppBarSV = new AppBarSV();
         mReviewsBarChartSV = new BarChartSV(R.color.daynight_teal_custom_teal_200);
         mForecastBarChartSV = new BarChartSV(R.color.grade_easy);
+        mSpeedBarChartSV = new BarChartSV(R.color.grade_hard,
+                BarChartSV.LABEL_MODE_ELAPSED_SECONDS);
     }
 
     @Override
@@ -111,6 +133,12 @@ public class StatisticsPage extends StatefulView<Activity>
         mTextGradeHardCount = rootLayout.findViewById(R.id.text_grade_hard_count);
         mTextGradeGoodCount = rootLayout.findViewById(R.id.text_grade_good_count);
         mTextGradeEasyCount = rootLayout.findViewById(R.id.text_grade_easy_count);
+        mContainerSpeedSection = rootLayout.findViewById(R.id.container_speed_section);
+        mTextSpeedSummary = rootLayout.findViewById(R.id.text_speed_summary);
+        mContainerTrueRetentionSection =
+                rootLayout.findViewById(R.id.container_true_retention_section);
+        mContainerTrueRetentionRows =
+                rootLayout.findViewById(R.id.container_true_retention_rows);
         mTextForecastSummary = rootLayout.findViewById(R.id.text_forecast_summary);
         mTextByDeckHeader = rootLayout.findViewById(R.id.text_by_deck_header);
         mContainerDeckStats = rootLayout.findViewById(R.id.container_deck_stats);
@@ -132,6 +160,14 @@ public class StatisticsPage extends StatefulView<Activity>
                         ViewGroup.LayoutParams.MATCH_PARENT));
         containerChartForecast.setContentDescription(
                 activity.getString(R.string.stats_due_forecast));
+        ViewGroup containerChartSpeed =
+                rootLayout.findViewById(R.id.container_chart_speed);
+        containerChartSpeed.addView(
+                mSpeedBarChartSV.buildView(activity, containerChartSpeed),
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+        containerChartSpeed.setContentDescription(
+                activity.getString(R.string.stats_speed));
 
         loadReviewStats();
         // decks added/deleted change the per-deck breakdown
@@ -185,6 +221,27 @@ public class StatisticsPage extends StatefulView<Activity>
                     reviewStats.todayGradeCounts[2]));
             mTextGradeEasyCount.setText(String.valueOf(
                     reviewStats.todayGradeCounts[3]));
+
+            // leave the timing-dependent sections hidden for upgrades from
+            // app versions that did not record timings yet (all timings 0)
+            boolean hasSpeed = reviewStats.speedSampleCount > 0;
+            mContainerSpeedSection.setVisibility(hasSpeed ? View.VISIBLE : View.GONE);
+            if (hasSpeed) {
+                mSpeedBarChartSV.setValues(reviewStats.dailyAvgSpeedMs);
+                mTextSpeedSummary.setText(context.getString(
+                        R.string.stats_speed_summary,
+                        DateUtils.formatElapsedTime(reviewStats.medianSpeedMs / 1000L),
+                        DateUtils.formatElapsedTime(reviewStats.avgSpeedMs / 1000L)));
+            }
+            TrueRetention trueRetention = reviewStats.trueRetention;
+            boolean hasTrueRetention = trueRetention != null
+                    && (trueRetention.newCardCount > 0
+                    || sum(trueRetention.bucketTotalCounts) > 0);
+            mContainerTrueRetentionSection.setVisibility(
+                    hasTrueRetention ? View.VISIBLE : View.GONE);
+            if (hasTrueRetention) {
+                renderTrueRetention(trueRetention);
+            }
         }
 
         mForecastBarChartSV.setValues(reviewStats.dailyDueCounts);
@@ -216,6 +273,44 @@ public class StatisticsPage extends StatefulView<Activity>
     }
 
     /**
+     * Inflates the true-retention rows, shortest gap first; every bucket
+     * row shows the bucket's correct percentage together with its sample
+     * count so small denominations stay honest. A final row shows the
+     * first-ever reviews as a plain count: they have no previous review
+     * to measure a gap against, so a percentage would be meaningless
+     */
+    private void renderTrueRetention(TrueRetention trueRetention) {
+        mContainerTrueRetentionRows.removeAllViews();
+        Context context = mSvProvider.getContext();
+        LayoutInflater layoutInflater = LayoutInflater.from(
+                mContainerTrueRetentionRows.getContext());
+        for (int bucket = 0;
+             bucket < ReviewStatsCalculator.TRUE_RETENTION_BUCKET_COUNT;
+             bucket++) {
+            int bucketTotal = trueRetention.bucketTotalCounts[bucket];
+            int bucketCorrect = trueRetention.bucketCorrectCounts[bucket];
+            View rowView = layoutInflater.inflate(R.layout.item_retention_row,
+                    mContainerTrueRetentionRows, false);
+            TextView textLabel = rowView.findViewById(R.id.text_retention_label);
+            TextView textValue = rowView.findViewById(R.id.text_retention_value);
+            textLabel.setText(TRUE_RETENTION_BUCKET_LABEL_RES[bucket]);
+            textValue.setText(context.getString(
+                    R.string.stats_true_retention_value,
+                    bucketTotal == 0 ? 0
+                            : Math.round(bucketCorrect * 100.0 / bucketTotal),
+                    bucketTotal));
+            mContainerTrueRetentionRows.addView(rowView);
+        }
+        View newRowView = layoutInflater.inflate(R.layout.item_retention_row,
+                mContainerTrueRetentionRows, false);
+        TextView newTextLabel = newRowView.findViewById(R.id.text_retention_label);
+        TextView newTextValue = newRowView.findViewById(R.id.text_retention_value);
+        newTextLabel.setText(R.string.stats_true_retention_new_cards);
+        newTextValue.setText(String.valueOf(trueRetention.newCardCount));
+        mContainerTrueRetentionRows.addView(newRowView);
+    }
+
+    /**
      * @return total due/new card count across decks
      * (same semantics as the home page Study Due button)
      */
@@ -225,6 +320,19 @@ public class StatisticsPage extends StatefulView<Activity>
         if (deckDueCounts != null) {
             for (DeckDueCount deckDueCount : deckDueCounts) {
                 sum += deckDueCount.count;
+            }
+        }
+        return sum;
+    }
+
+    /**
+     * @return the sum of the given array values
+     */
+    private static int sum(int[] values) {
+        int sum = 0;
+        if (values != null) {
+            for (int value : values) {
+                sum += value;
             }
         }
         return sum;
@@ -245,6 +353,10 @@ public class StatisticsPage extends StatefulView<Activity>
             mForecastBarChartSV.dispose(activity);
             mForecastBarChartSV = null;
         }
+        if (mSpeedBarChartSV != null) {
+            mSpeedBarChartSV.dispose(activity);
+            mSpeedBarChartSV = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -263,6 +375,10 @@ public class StatisticsPage extends StatefulView<Activity>
         mTextGradeHardCount = null;
         mTextGradeGoodCount = null;
         mTextGradeEasyCount = null;
+        mContainerSpeedSection = null;
+        mTextSpeedSummary = null;
+        mContainerTrueRetentionSection = null;
+        mContainerTrueRetentionRows = null;
         mTextForecastSummary = null;
         mTextByDeckHeader = null;
         mContainerDeckStats = null;

@@ -157,6 +157,15 @@
     <string name="stats_reviews_last_30_days">Kordused (viimased 30 päeva)</string>
     <string name="stats_retention">Mäletamismäär (viimased 30 päeva)</string>
     <string name="stats_retention_value">%1$d%% (%2$d kordust)</string>
+    <string name="stats_speed">Vastamise aeg (viimased 30 päeva)</string>
+    <string name="stats_speed_summary">Mediaan %1$s · Keskmine %2$s</string>
+    <string name="stats_true_retention">Tegelik mäletamismäär (viimased 30 päeva)</string>
+    <string name="stats_true_retention_value">%1$d%% (%2$d)</string>
+    <string name="stats_true_retention_new_cards">Uued kaardid</string>
+    <string name="stats_bucket_lt_1_day">&lt;1 päev</string>
+    <string name="stats_bucket_1_7_days">1–7 päeva</string>
+    <string name="stats_bucket_8_30_days">8–30 päeva</string>
+    <string name="stats_bucket_gt_30_days">&gt;30 päeva</string>
     <string name="stats_today_grades">Tänased hinnangud</string>
     <string name="stats_due_forecast">Tähtaegade prognoos (järgmised 14 päeva)</string>
     <string name="stats_due_forecast_summary">%1$d uut · %2$d hiljem tähtaegsed</string>

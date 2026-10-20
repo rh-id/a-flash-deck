@@ -157,6 +157,15 @@
     <string name="stats_reviews_last_30_days">Ripetizioni (ultimi 30 giorni)</string>
     <string name="stats_retention">Ritenzione (ultimi 30 giorni)</string>
     <string name="stats_retention_value">%1$d%% (%2$d ripetizioni)</string>
+    <string name="stats_speed">Tempo di risposta (ultimi 30 giorni)</string>
+    <string name="stats_speed_summary">Mediana %1$s · Media %2$s</string>
+    <string name="stats_true_retention">Ritenzione reale (ultimi 30 giorni)</string>
+    <string name="stats_true_retention_value">%1$d%% (%2$d)</string>
+    <string name="stats_true_retention_new_cards">Nuove schede</string>
+    <string name="stats_bucket_lt_1_day">&lt;1 giorno</string>
+    <string name="stats_bucket_1_7_days">1–7 giorni</string>
+    <string name="stats_bucket_8_30_days">8–30 giorni</string>
+    <string name="stats_bucket_gt_30_days">&gt;30 giorni</string>
     <string name="stats_today_grades">Valutazioni di oggi</string>
     <string name="stats_due_forecast">Previsione scadenze (prossimi 14 giorni)</string>
     <string name="stats_due_forecast_summary">%1$d nuove · %2$d in scadenza più tardi</string>
