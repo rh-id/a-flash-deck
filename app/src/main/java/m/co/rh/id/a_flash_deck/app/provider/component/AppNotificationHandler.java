@@ -36,6 +36,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -46,6 +47,7 @@ import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.CardShowActivity;
 import m.co.rh.id.a_flash_deck.app.MainActivity;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationDeleteReceiver;
+import m.co.rh.id.a_flash_deck.app.receiver.NotificationGradeReceiver;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationPlayVoiceReceiver;
 import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
@@ -58,13 +60,18 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.NotificationTimer;
 import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
+import m.co.rh.id.a_flash_deck.base.model.ReviewScheduler;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepository;
+import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
 import m.co.rh.id.a_flash_deck.bot.provider.component.BotAnalytics;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 public class AppNotificationHandler implements IAppNotificationHandler {
+    private static final String TAG = AppNotificationHandler.class.getName();
+
     private final Context mAppContext;
     private final ProviderValue<ExecutorService> mExecutorService;
     private final ProviderValue<AndroidNotificationRepository> mAndroidNotificationRepo;
@@ -74,6 +81,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<CardMediaStore> mCardMediaStore;
     private final ProviderValue<AudioPlayer> mAudioPlayer;
     private final ProviderValue<BotAnalytics> mBotAnalytics;
+    private final ProviderValue<ILogger> mLogger;
+    private final ProviderValue<StudyRepository> mStudyRepository;
     private final ProviderValue<MarkdownRenderer> mMarkdownRenderer;
     private final QueueSubject<NotificationTimerEvent> mNotificationTimerSubject;
     private final QueueSubject<Deck> mDeckMessageSubject;
@@ -89,6 +98,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mCardMediaStore = provider.lazyGet(CardMediaStore.class);
         mAudioPlayer = provider.lazyGet(AudioPlayer.class);
         mBotAnalytics = provider.lazyGet(BotAnalytics.class);
+        mLogger = provider.lazyGet(ILogger.class);
+        mStudyRepository = provider.lazyGet(StudyRepository.class);
         mMarkdownRenderer = provider.lazyGet(MarkdownRenderer.class);
         mNotificationTimerSubject = new QueueSubject<>();
         mDeckMessageSubject = new QueueSubject<>();
@@ -147,6 +158,12 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                         .setSummaryText(content)
                         .bigPicture(questionImage));
             }
+            // Grade actions (Again / Good / Hard) allow grading the card
+            // directly from the notification shade, persisting through the
+            // same grading path as the in-app test flow. Voice stays last.
+            addGradeAction(builder, ReviewScheduler.GRADE_AGAIN, androidNotification, intentFlag);
+            addGradeAction(builder, ReviewScheduler.GRADE_GOOD, androidNotification, intentFlag);
+            addGradeAction(builder, ReviewScheduler.GRADE_HARD, androidNotification, intentFlag);
             if (selectedCard.questionVoice != null) {
                 Intent questionVoiceIntent = new Intent(mAppContext, NotificationPlayVoiceReceiver.class);
                 questionVoiceIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
@@ -193,6 +210,54 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             NotificationManager notificationManager = mAppContext.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    /**
+     * Adds a shade grade action (Again / Good / Hard) for the card shown by
+     * the given timer notification.
+     * <p>
+     * Android dedupes PendingIntents by requestCode + Intent.filterEquals and
+     * does NOT compare extras, so the grade intent gets a filterEquals-distinct
+     * action per grade ({@link NotificationGradeReceiver#buildGradeAction})
+     * plus a requestCode derived from the notification's own requestId to make
+     * silent collapse into the wrong grade impossible. The grade value itself
+     * is also carried as the {@link #KEY_INT_GRADE} extra.
+     * <p>
+     * requestId increments once per notification, so {@code requestId * 10 +
+     * grade} yields a unique requestCode for every (notification, grade) pair.
+     */
+    private void addGradeAction(NotificationCompat.Builder builder, int grade,
+                                AndroidNotification androidNotification, int intentFlag) {
+        int titleRes;
+        switch (grade) {
+            case ReviewScheduler.GRADE_AGAIN:
+                titleRes = R.string.grade_again;
+                break;
+            case ReviewScheduler.GRADE_HARD:
+                titleRes = R.string.grade_hard;
+                break;
+            case ReviewScheduler.GRADE_GOOD:
+                titleRes = R.string.grade_good;
+                break;
+            default:
+                // Unsupported grade — do not add the action
+                return;
+        }
+        Intent gradeIntent = new Intent(mAppContext, NotificationGradeReceiver.class);
+        gradeIntent.setAction(NotificationGradeReceiver.buildGradeAction(grade));
+        gradeIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        gradeIntent.putExtra(KEY_INT_GRADE, grade);
+        // requestCode = requestId * 10 + grade: notification and grade are
+        // both encoded into the requestCode, so (notification, grade) pairs
+        // never share a PendingIntent even though extras are ignored by the
+        // dedup logic.
+        PendingIntent gradePendingIntent = PendingIntent.getBroadcast(mAppContext,
+                androidNotification.requestId * 10 + grade, gradeIntent, intentFlag);
+        // icon = 0 (no existing drawable fits Again/Good/Hard): Android 7.0
+        // (API 24) removed action icons from the notification shade, so with
+        // minSdk 23 only the rare API 23 device that also shows the icon'd
+        // voice action would render plain icon-less grade buttons — harmless.
+        builder.addAction(0, mAppContext.getString(titleRes), gradePendingIntent);
     }
 
     @Override
@@ -313,12 +378,7 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                                 mBotAnalytics.get().trackDeleteNotification(notificationTimer.currentCardId);
                             }
                         }
-                        mAndroidNotificationRepo.get().deleteNotificationByRequestId((Integer) serializable);
-                        // Dismiss the system notification. The child is normally
-                        // removed by the swipe itself; this is a safety net for OEM
-                        // ROMs, and is required for the timer group, whose summary
-                        // (ID 0) has no content intent and would otherwise linger.
-                        cancelSystemNotifications(androidNotification.groupKey, androidNotification.requestId);
+                        deleteNotificationRecordAndCancel(androidNotification);
                     }
                 } finally {
                     mLock.unlock();
@@ -376,6 +436,24 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     @Override
     public Flowable<Deck> getDeckMessageEventFlow() {
         return Flowable.fromObservable(mDeckMessageSubject, BackpressureStrategy.BUFFER);
+    }
+
+    /**
+     * Deletes the {@code android_notification} record and dismisses its
+     * system notification, including the timer group summary when it is the
+     * last timer child (see {@link #cancelSystemNotifications(String, int)}).
+     * Shared by the swipe-dismiss path ({@link #removeNotification(Intent)})
+     * and the shade-grade path ({@link #gradeNotificationCard(Intent)}).
+     * Unlike the dismiss path, shade grades carry no delete analytics.
+     * Must be called while holding {@link #mLock}.
+     */
+    private void deleteNotificationRecordAndCancel(AndroidNotification androidNotification) {
+        mAndroidNotificationRepo.get().deleteNotification(androidNotification);
+        // Dismiss the system notification. The child is normally
+        // removed by the swipe itself; this is a safety net for OEM
+        // ROMs, and is required for the timer group, whose summary
+        // (ID 0) has no content intent and would otherwise linger.
+        cancelSystemNotifications(androidNotification.groupKey, androidNotification.requestId);
     }
 
     /**
@@ -441,6 +519,60 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                     mLock.unlock();
                 }
             });
+        }
+    }
+
+    @Override
+    public void gradeNotificationCard(Intent intent) {
+        Serializable requestIdSerializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
+        Serializable gradeSerializable = intent.getSerializableExtra(KEY_INT_GRADE);
+        if (requestIdSerializable instanceof Integer && gradeSerializable instanceof Integer) {
+            int grade = (int) gradeSerializable;
+            if (grade < ReviewScheduler.GRADE_AGAIN || grade > ReviewScheduler.GRADE_EASY) {
+                mLogger.get().w(TAG, "Ignoring grade out of range from notification: " + grade);
+                return;
+            }
+            int requestId = (int) requestIdSerializable;
+            mExecutorService.get().execute(() -> {
+                mLock.lock();
+                try {
+                    AndroidNotification androidNotification =
+                            mAndroidNotificationRepo.get().findByRequestId(requestId);
+                    if (androidNotification == null) {
+                        // Record already cleaned up (double tap or expiry) — a
+                        // no-op keeps the receiver idempotent.
+                        return;
+                    }
+                    boolean graded = false;
+                    if (androidNotification.groupKey.equals(GROUP_KEY_NOTIFICATION_TIMER)) {
+                        NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
+                        if (notificationTimer != null && notificationTimer.currentCardId != null) {
+                            Card card = mCardDao.get().getCardByCardId(notificationTimer.currentCardId);
+                            if (card != null) {
+                                // Grade through the same path as the in-app test
+                                // flow: updates CardReviewState and appends a
+                                // ReviewLog row so statistics stay consistent.
+                                // Shade grades have no reveal timing, and
+                                // worker-path cards are never reversed.
+                                mStudyRepository.get().applyGrade(card.id, card.deckId, grade,
+                                        new Date(), 0, 0, false);
+                                graded = true;
+                            }
+                        }
+                    }
+                    if (!graded) {
+                        // Timer or card already gone — no analytics event for the
+                        // grade, just clean the stale notification up as the
+                        // dismiss path would.
+                        mLogger.get().d(TAG, "Grade action found no card, requestId=" + requestId);
+                    }
+                    deleteNotificationRecordAndCancel(androidNotification);
+                } finally {
+                    mLock.unlock();
+                }
+            });
+        } else {
+            mLogger.get().d(TAG, "Grade action missing request id or grade extra");
         }
     }
 }

@@ -27,8 +27,10 @@ import java.time.LocalDate;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -37,6 +39,9 @@ import m.co.rh.id.a_flash_deck.base.BaseApplication;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.CardReviewStateDao;
+import m.co.rh.id.a_flash_deck.base.dao.ReviewLogDao;
+import m.co.rh.id.a_flash_deck.base.entity.ReviewLog;
+import m.co.rh.id.a_flash_deck.base.model.ReviewScheduler;
 import m.co.rh.id.a_flash_deck.bot.R;
 import m.co.rh.id.a_flash_deck.bot.dao.CardLogDao;
 import m.co.rh.id.a_flash_deck.bot.dao.SuggestedCardDao;
@@ -65,6 +70,7 @@ public class BotAnalyzeWorker extends Worker {
         CardReviewStateDao cardReviewStateDao = provider.get(CardReviewStateDao.class);
         CardLogDao cardLogDao = provider.get(CardLogDao.class);
         SuggestedCardDao suggestedCardDao = provider.get(SuggestedCardDao.class);
+        ReviewLogDao reviewLogDao = provider.get(ReviewLogDao.class);
         int countCards = suggestedCardDao.countSuggestedCard();
         if (countCards > 0) {
             suggestedCardDao.deleteAllSuggestedCard();
@@ -78,9 +84,28 @@ public class BotAnalyzeWorker extends Worker {
         long _1dayCreatedTo = _1dayBefore.atTime(OffsetTime.MAX).toInstant().toEpochMilli();
         long todayCreatedFrom = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
         long todayCreatedTo = today.atTime(OffsetTime.now()).toInstant().toEpochMilli();
-        List<Long> cardIds = cardLogDao.findCardLogCardIdByCreatedDateFromTo(_2dayCreatedFrom, todayCreatedTo);
+        List<Long> cardLogCardIds = cardLogDao.findCardLogCardIdByCreatedDateFromTo(_2dayCreatedFrom, todayCreatedTo);
+        // review_log has no source column, so notification shade grades and
+        // in-app test grades both count as engagement events; a card graded
+        // only from the notification shade has no card_log rows, so its id
+        // joins the candidate pool via review_log rows as well
+        List<ReviewLog> recentReviewLogs = reviewLogDao.findReviewLogsSince(_2dayCreatedFrom);
+        Set<Long> cardIds = new LinkedHashSet<>(cardLogCardIds);
+        Map<Long, List<ReviewLog>> recentReviewLogsByCardId = new HashMap<>();
+        for (ReviewLog reviewLog : recentReviewLogs) {
+            if (reviewLog.cardId == null || reviewLog.createdDateTime == null) {
+                continue;
+            }
+            cardIds.add(reviewLog.cardId);
+            List<ReviewLog> cardReviewLogs = recentReviewLogsByCardId.get(reviewLog.cardId);
+            if (cardReviewLogs == null) {
+                cardReviewLogs = new ArrayList<>();
+                recentReviewLogsByCardId.put(reviewLog.cardId, cardReviewLogs);
+            }
+            cardReviewLogs.add(reviewLog);
+        }
         // check if the card actually still exist
-        List<Long> existingCardIds = cardDao.findCardIdsByCardIds(cardIds);
+        List<Long> existingCardIds = cardDao.findCardIdsByCardIds(new ArrayList<>(cardIds));
         // suspended cards keep their logs but must not be counted or suggested
         Set<Long> suspendedCardIds = new LinkedHashSet<>(
                 cardReviewStateDao.findSuspendedCardIdsByCardIds(existingCardIds));
@@ -98,6 +123,42 @@ public class BotAnalyzeWorker extends Worker {
                 int countTodayOpenNotification = cardLogDao.countCardLogByCardIdAndActionAndCreatedDateFromTo(cardId, BotAnalytics.ACTION_OPEN_NOTIFICATION, todayCreatedFrom, todayCreatedTo);
                 int countTodayDeleteNotification = cardLogDao.countCardLogByCardIdAndActionAndCreatedDateFromTo(cardId, BotAnalytics.ACTION_DELETE_NOTIFICATION, todayCreatedFrom, todayCreatedTo);
                 int countTodayOpenTestAnswer = cardLogDao.countCardLogByCardIdAndActionAndCreatedDateFromTo(cardId, BotAnalytics.ACTION_OPEN_TEST_ANSWER, todayCreatedFrom, todayCreatedTo);
+                List<ReviewLog> cardReviewLogs = recentReviewLogsByCardId.get(cardId);
+                // review grades counted in the same day buckets as the CardLog
+                // counts; rows were fetched once since _2dayCreatedFrom
+                int count2DayReviewPassed = 0;
+                int count2DayReviewFailed = 0;
+                int count1DayReviewPassed = 0;
+                int count1DayReviewFailed = 0;
+                int countTodayReviewPassed = 0;
+                int countTodayReviewFailed = 0;
+                if (cardReviewLogs != null) {
+                    for (ReviewLog reviewLog : cardReviewLogs) {
+                        long reviewCreatedDateTime = reviewLog.createdDateTime.getTime();
+                        if (reviewCreatedDateTime <= _2dayCreatedTo) {
+                            // 2 days ago
+                            if (reviewLog.grade > ReviewScheduler.GRADE_AGAIN) {
+                                count2DayReviewPassed++;
+                            } else if (reviewLog.grade == ReviewScheduler.GRADE_AGAIN) {
+                                count2DayReviewFailed++;
+                            }
+                        } else if (reviewCreatedDateTime <= _1dayCreatedTo) {
+                            // yesterday
+                            if (reviewLog.grade > ReviewScheduler.GRADE_AGAIN) {
+                                count1DayReviewPassed++;
+                            } else if (reviewLog.grade == ReviewScheduler.GRADE_AGAIN) {
+                                count1DayReviewFailed++;
+                            }
+                        } else {
+                            // today
+                            if (reviewLog.grade > ReviewScheduler.GRADE_AGAIN) {
+                                countTodayReviewPassed++;
+                            } else if (reviewLog.grade == ReviewScheduler.GRADE_AGAIN) {
+                                countTodayReviewFailed++;
+                            }
+                        }
+                    }
+                }
                 int score = 0;
                 if (count2DayOpenNotification > 0 && count2DayOpenNotification <= 3) {
                     score += 3;
@@ -126,6 +187,27 @@ public class BotAnalyzeWorker extends Worker {
                     score -= 1;
                 }
                 if (countTodayOpenTestAnswer > 0) {
+                    score += 1;
+                }
+                if (count2DayReviewPassed > 0) {
+                    score += 3;
+                }
+                if (count2DayReviewFailed > 0) {
+                    // failed recall is engagement plus a weak spot: one failure
+                    // alone never reaches the threshold, but repeated failures
+                    // across windows accumulate into it
+                    score += 1;
+                }
+                if (count1DayReviewPassed > 0) {
+                    score += 2;
+                }
+                if (count1DayReviewFailed > 0) {
+                    score += 1;
+                }
+                if (countTodayReviewPassed > 0) {
+                    score += 1;
+                }
+                if (countTodayReviewFailed > 0) {
                     score += 1;
                 }
                 CardIdScore cardIdScore = new CardIdScore();

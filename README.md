@@ -31,6 +31,7 @@ A simple and easy to use flash card app to help you study.
 * Add notification timer to periodically asking you question
 * Notification time window — set start and end times for periodic reminders
 * Voice playback directly from notifications
+* Grade flash cards directly from the timer notification (Again / Good / Hard) without opening the app
 * Support dark mode and light mode
 * Material You dynamic colors — enable "Use system colors (Material You)" in the theme settings to follow your device's wallpaper palette (Android 12+)
 * Themed (monochrome) app icon on Android 13+
@@ -556,7 +557,7 @@ app/src/main/java/m/co/rh/id/a_flash_deck/app/
 │       ├── deck/ (DeckItemSV, DeckListSV, DeckRecyclerViewAdapter)
 │       ├── stats/ (BarChartSV)
 │       └── settings/ (LicensesMenuSV, LicensesPage, LogLineRecyclerViewAdapter, LogMenuSV, LogPage, NotificationTimeMenuSV, ThemeMenuSV, VersionMenuSV)
-└── receiver/ (NotificationDeleteReceiver, NotificationPlayVoiceReceiver)
+└── receiver/ (NotificationDeleteReceiver, NotificationGradeReceiver, NotificationPlayVoiceReceiver)
 
 base/src/main/java/m/co/rh/id/a_flash_deck/base/
 ├── BaseApplication.java

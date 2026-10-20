@@ -30,6 +30,11 @@ import m.co.rh.id.a_flash_deck.base.model.NotificationTimerEvent;
 
 public interface IAppNotificationHandler {
     String KEY_INT_REQUEST_ID = "KEY_INT_REQUEST_ID";
+    /**
+     * Extra key for the timer notification grade actions; the value must be
+     * one of {@code ReviewScheduler.GRADE_AGAIN} .. {@code GRADE_EASY}.
+     */
+    String KEY_INT_GRADE = "KEY_INT_GRADE";
     String CHANNEL_ID_NOTIFICATION_TIMER = "CHANNEL_ID_NOTIFICATION_TIMER";
     String GROUP_KEY_NOTIFICATION_TIMER = "GROUP_KEY_NOTIFICATION_TIMER";
     String CHANNEL_ID_GENERAL_MESSAGE = "CHANNEL_ID_GENERAL_MESSAGE";
@@ -56,4 +61,13 @@ public interface IAppNotificationHandler {
     void cancelNotificationSync(NotificationTimer notificationTimer);
 
     void playVoice(Intent intent);
+
+    /**
+     * Records a grade for the card shown in the timer notification referenced
+     * by {@code intent} (must carry {@link #KEY_INT_REQUEST_ID} and
+     * {@link #KEY_INT_GRADE}) through the same grading path as the in-app
+     * test flow, then removes the notification. Out-of-range grades are
+     * ignored.
+     */
+    void gradeNotificationCard(Intent intent);
 }

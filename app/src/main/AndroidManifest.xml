@@ -65,6 +65,9 @@
             android:name=".app.receiver.NotificationDeleteReceiver"
             android:exported="false" />
         <receiver
+            android:name=".app.receiver.NotificationGradeReceiver"
+            android:exported="false" />
+        <receiver
             android:name=".app.receiver.NotificationPlayVoiceReceiver"
             android:exported="false" />
         <!--WorkManager will be initialized by provider instead of its own initializer-->
