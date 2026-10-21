@@ -27,6 +27,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 
+import m.co.rh.id.a_flash_deck.base.model.FsrsParams;
+import m.co.rh.id.a_flash_deck.base.model.SchedulerMode;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
@@ -53,6 +55,15 @@ public class AppSharedPreferences {
 
     private boolean mIsNotificationPermissionRequested;
     private String mIsNotificationPermissionRequestedKey;
+
+    /** Default scheduler mode: classic SM-2-lite. */
+    public static final int DEFAULT_SCHEDULER_MODE = SchedulerMode.SM2;
+
+    private int mSchedulerMode;
+    private String mSchedulerModeKey;
+
+    private double mDesiredRetention;
+    private String mDesiredRetentionKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -103,6 +114,21 @@ public class AppSharedPreferences {
                 mIsNotificationPermissionRequestedKey,
                 false);
         isNotificationPermissionRequested(isNotificationPermissionRequested);
+
+        mSchedulerModeKey = SHARED_PREFERENCES_NAME
+                + ".schedulerMode";
+        int schedulerMode = mSharedPreferences.getInt(
+                mSchedulerModeKey,
+                DEFAULT_SCHEDULER_MODE);
+        schedulerMode(schedulerMode);
+
+        mDesiredRetentionKey = SHARED_PREFERENCES_NAME
+                + ".desiredRetention";
+        double desiredRetention = Double.longBitsToDouble(
+                mSharedPreferences.getLong(mDesiredRetentionKey,
+                        Double.doubleToLongBits(
+                                FsrsParams.DEFAULT_DESIRED_RETENTION)));
+        desiredRetention(desiredRetention);
     }
 
     private void selectedTheme(int setting) {
@@ -224,5 +250,49 @@ public class AppSharedPreferences {
 
     public boolean isNotificationPermissionRequested() {
         return mIsNotificationPermissionRequested;
+    }
+
+    private void schedulerMode(int mode) {
+        // normalize any value outside SchedulerMode.SM2/FSRS (e.g. a
+        // corrupt stored value) to the default SM-2 mode
+        int normalizedMode = mode != SchedulerMode.SM2
+                && mode != SchedulerMode.FSRS
+                ? SchedulerMode.SM2 : mode;
+        mSchedulerMode = normalizedMode;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putInt(mSchedulerModeKey, normalizedMode)
+                        .commit());
+    }
+
+    public void setSchedulerMode(int mode) {
+        schedulerMode(mode);
+    }
+
+    /**
+     * @return the active scheduler mode, always
+     * SchedulerMode.SM2 or SchedulerMode.FSRS
+     */
+    public int getSchedulerMode() {
+        return mSchedulerMode;
+    }
+
+    private void desiredRetention(double retention) {
+        mDesiredRetention = FsrsParams.clampDesiredRetention(retention);
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putLong(mDesiredRetentionKey,
+                        Double.doubleToLongBits(mDesiredRetention))
+                        .commit());
+    }
+
+    public void setDesiredRetention(double retention) {
+        desiredRetention(retention);
+    }
+
+    /**
+     * @return the FSRS desired retention, always clamped to
+     * [FsrsParams.DESIRED_RETENTION_MIN, FsrsParams.DESIRED_RETENTION_MAX]
+     */
+    public double getDesiredRetention() {
+        return mDesiredRetention;
     }
 }

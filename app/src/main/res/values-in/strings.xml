@@ -185,4 +185,11 @@
     <string name="error_anki_decoy_package">File Anki ini tidak berisi kartu yang dapat diimpor</string>
     <string name="error_nothing_imported">Tidak ada kartu yang dapat diimpor dari file</string>
     <string name="imported_deck_default_name">Dek Hasil Impor</string>
+    <string name="settings_scheduler">Penjadwal latihan</string>
+    <string name="settings_scheduler_desc">Algoritma yang digunakan untuk menjadwalkan latihan kartu. Mengganti penjadwal atau mengubah retensi yang diinginkan akan menjadwalkan ulang semua kartu.</string>
+    <string name="scheduler_mode_classic">Klasik (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Retensi yang diinginkan</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Gagal menjadwalkan ulang latihan kartu</string>
 </resources>

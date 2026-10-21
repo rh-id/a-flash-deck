@@ -185,4 +185,11 @@
     <string name="error_anki_decoy_package">Diese Anki-Datei enthält keine importierbaren Karten</string>
     <string name="error_nothing_imported">Keine importierbaren Karten in der Datei gefunden</string>
     <string name="imported_deck_default_name">Importierter Kartensatz</string>
+    <string name="settings_scheduler">Wiederholungsplaner</string>
+    <string name="settings_scheduler_desc">Algorithmus, der Kartenwiederholungen plant. Ein Wechsel des Planers oder eine Änderung der gewünschten Behaltensquote plant alle Karten neu.</string>
+    <string name="scheduler_mode_classic">Klassisch (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Gewünschte Behaltensquote</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Kartenwiederholungen konnten nicht neu geplant werden</string>
 </resources>

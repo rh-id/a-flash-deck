@@ -28,7 +28,8 @@ public class DbMigration {
                 MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
                 MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14,
-                MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18};
+                MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18,
+                MIGRATION_18_19};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -222,6 +223,16 @@ public class DbMigration {
                     "ON `anki_note_guid` (`guid`)");
             database.execSQL("CREATE INDEX IF NOT EXISTS `index_anki_note_guid_card_id` " +
                     "ON `anki_note_guid` (`card_id`)");
+        }
+    };
+
+    public static final Migration MIGRATION_18_19 = new Migration(18, 19) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // add the FSRS-6 memory columns (0.0 = uninitialized/new-card
+            // sentinel); the existing SM-2 columns keep their role
+            database.execSQL("ALTER TABLE card_review_state ADD COLUMN `stability` REAL NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE card_review_state ADD COLUMN `difficulty` REAL NOT NULL DEFAULT 0");
         }
     };
 }

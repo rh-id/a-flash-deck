@@ -185,4 +185,11 @@
     <string name="error_anki_decoy_package">See Anki-fail ei sisalda importimiseks sobivaid kaarte</string>
     <string name="error_nothing_imported">Failis ei leitud importimiseks sobivaid kaarte</string>
     <string name="imported_deck_default_name">Imporditud kaardipakk</string>
+    <string name="settings_scheduler">Korduste planeerija</string>
+    <string name="settings_scheduler_desc">Algoritm, mida kasutatakse kaartide korduste planeerimiseks. Planeerija vahetamise või soovitud mäletamismäära muutmise korral planeeritakse kõik kaardid ümber.</string>
+    <string name="scheduler_mode_classic">Klassikaline (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Soovitud mäletamismäär</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Kaartide korduste ümberplaneerimine ebaõnnestus</string>
 </resources>

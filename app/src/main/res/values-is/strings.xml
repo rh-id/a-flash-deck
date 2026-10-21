@@ -185,4 +185,11 @@
     <string name="error_anki_decoy_package">Þessi Anki-skrá inniheldur engin spjöld sem hægt er að flytja inn</string>
     <string name="error_nothing_imported">Engin spjöld sem hægt er að flytja inn fundust í skránni</string>
     <string name="imported_deck_default_name">Innflutt spjaldasafn</string>
+    <string name="settings_scheduler">Áætlun spjaldaæfinga</string>
+    <string name="settings_scheduler_desc">Reiknirit sem áætlar æfingar á spjöldum. Að skipta um áætlun eða breyta æskilegu munadarhlutfalli enduráætlar öll spjöld.</string>
+    <string name="scheduler_mode_classic">Klassísk (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Æskilegt munadarhlutfall</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Mistókst að enduráætla spjaldaæfingar</string>
 </resources>

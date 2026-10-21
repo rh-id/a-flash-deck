@@ -48,6 +48,8 @@ public class DbMigrationTest {
             + "-migration-test-16-17";
     private static final String TEST_DB_17_18 = DbMigrationTest.class.getName()
             + "-migration-test-17-18";
+    private static final String TEST_DB_18_19 = DbMigrationTest.class.getName()
+            + "-migration-test-18-19";
 
     @Rule
     public MigrationTestHelper helper;
@@ -213,6 +215,48 @@ public class DbMigrationTest {
         cursor = migratedDb.query("SELECT COUNT(*) FROM anki_note_guid");
         Assert.assertTrue(cursor.moveToFirst());
         Assert.assertEquals(0, cursor.getInt(0));
+        cursor.close();
+        migratedDb.close();
+    }
+
+    @Test
+    public void migrate18To19() throws IOException {
+        // Create the v18 database with an existing review state (the FSRS
+        // stability and difficulty columns do not exist yet).
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB_18_19, 18);
+        db.execSQL("INSERT INTO card_review_state (card_id, due_date_time, " +
+                "interval_days, ease_factor, repetitions, lapses, " +
+                "last_review_date_time, suspended) " +
+                "VALUES (1, 100, 30.0, 2.5, 5, 1, 100, 0)");
+        db.close();
+
+        // Run MIGRATION_18_19 and validate the resulting schema against v19.
+        SupportSQLiteDatabase migratedDb = helper.runMigrationsAndValidate(
+                TEST_DB_18_19, 19, true, DbMigration.MIGRATION_18_19);
+
+        // The new columns default to 0 (uninitialized/new-card sentinel)
+        // for pre-existing rows.
+        Cursor cursor = migratedDb.query(
+                "SELECT stability, difficulty FROM card_review_state " +
+                        "WHERE card_id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals(0.0, cursor.getDouble(
+                cursor.getColumnIndexOrThrow("stability")), 0.0);
+        Assert.assertEquals(0.0, cursor.getDouble(
+                cursor.getColumnIndexOrThrow("difficulty")), 0.0);
+        cursor.close();
+
+        // The new columns accept values.
+        migratedDb.execSQL("UPDATE card_review_state SET stability = 12.5, " +
+                "difficulty = 5.5 WHERE card_id = 1");
+        cursor = migratedDb.query(
+                "SELECT stability, difficulty FROM card_review_state " +
+                        "WHERE card_id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals(12.5, cursor.getDouble(
+                cursor.getColumnIndexOrThrow("stability")), 0.0);
+        Assert.assertEquals(5.5, cursor.getDouble(
+                cursor.getColumnIndexOrThrow("difficulty")), 0.0);
         cursor.close();
         migratedDb.close();
     }

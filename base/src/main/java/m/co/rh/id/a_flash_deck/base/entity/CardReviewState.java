@@ -29,8 +29,24 @@ import java.util.Date;
 import m.co.rh.id.a_flash_deck.base.room.converter.Converter;
 
 /**
- * SM-2-lite spaced-repetition review state of a card, one row per card.
+ * Spaced-repetition review state of a card, one row per card.
  * Absent row means the card is new/never studied.
+ * <p>
+ * The row is dual-written: both schedulers are advanced on every grade
+ * (see StudyRepository.applyGrade) and both are deterministic functions of
+ * the grade and time history, so the stored states stay correct across
+ * scheduler-mode switches without any re-seeding. Column ownership:
+ * <ul>
+ *     <li>SM-2-lite (ReviewScheduler) owns interval_days and ease_factor;
+ *     they are written on every grade even while FSRS is the active mode</li>
+ *     <li>FSRS-6 (FsrsScheduler) owns stability and difficulty;
+ *     0.0 is the uninitialized/new-card sentinel</li>
+ *     <li>repetitions and lapses are shared and keep SM-2 semantics
+ *     (SM-2 resets repetitions to 0 on AGAIN); FsrsScheduler never reads
+ *     or writes them</li>
+ *     <li>last_review_date_time and suspended are shared;
+ *     due_date_time is written by the active scheduler only</li>
+ * </ul>
  */
 @Entity(tableName = "card_review_state")
 public class CardReviewState implements Serializable {
@@ -90,4 +106,22 @@ public class CardReviewState implements Serializable {
      */
     @ColumnInfo(name = "suspended")
     public boolean suspended = false;
+
+    /**
+     * FSRS-6 memory stability in days (FsrsScheduler-owned); the estimated
+     * number of days until recall probability drops to 90%.
+     * 0.0 is the sentinel for not yet initialized (new card, or card with
+     * only SM-2-lite history that is seeded from interval_days on its next
+     * FSRS grade)
+     */
+    @ColumnInfo(name = "stability")
+    public double stability;
+
+    /**
+     * FSRS-6 memory difficulty (FsrsScheduler-owned), clamped to
+     * [FsrsParams.DIFFICULTY_MIN, FsrsParams.DIFFICULTY_MAX].
+     * 0.0 is the sentinel for not yet initialized (see stability)
+     */
+    @ColumnInfo(name = "difficulty")
+    public double difficulty;
 }

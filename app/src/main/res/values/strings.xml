@@ -92,6 +92,13 @@
     <string name="title_start_time">Start Time</string>
     <string name="title_end_time">End Time</string>
     <string name="notification_time_updated">Notification time updated</string>
+    <string name="settings_scheduler">Review scheduler</string>
+    <string name="settings_scheduler_desc">Algorithm used to schedule card reviews. Switching the scheduler or changing the desired retention reschedules all cards.</string>
+    <string name="scheduler_mode_classic">Classic (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Desired retention</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Failed to reschedule card reviews</string>
     <string name="notification_name_notification_timer">Notification Timer</string>
     <string name="notification_description_notification_timer">Notify selected cards to test you</string>
     <string name="notification_title_flash_question">Flash Question</string>

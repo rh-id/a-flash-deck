@@ -185,4 +185,11 @@
     <string name="error_anki_decoy_package">Questa datoteca Anki n\'ha naginas chartas importablas</string>
     <string name="error_nothing_imported">Naginas chartas importablas chattadas en la datoteca</string>
     <string name="imported_deck_default_name">Pac importà</string>
+    <string name="settings_scheduler">Planisader da repetiziuns</string>
+    <string name="settings_scheduler_desc">Algorithmus che planisescha las repetiziuns da las cartas. Sche il planisader vegn midà u la rimembranza giavischada vegn adattada, vegnan tuttas cartas planisadas da nov.</string>
+    <string name="scheduler_mode_classic">Classic (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Rimembranza giavischada</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Betg reussì da planisar las repetiziuns da las cartas da nov</string>
 </resources>

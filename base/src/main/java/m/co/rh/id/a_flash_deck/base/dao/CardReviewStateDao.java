@@ -48,6 +48,13 @@ public abstract class CardReviewStateDao {
     public abstract CardReviewState findByCardId(long cardId);
 
     /**
+     * @return all review states that have been reviewed at least once;
+     * used by the scheduler-switch due date recompute
+     */
+    @Query("SELECT * FROM card_review_state WHERE last_review_date_time IS NOT NULL")
+    public abstract List<CardReviewState> findReviewedStates();
+
+    /**
      * Returns the due date time of every not suspended card that has one.
      * Used by the statistics due forecast; rows with a null due_date_time
      * (new/never studied cards or rows lazily created by suspending a

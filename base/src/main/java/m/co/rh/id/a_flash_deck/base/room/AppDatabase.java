@@ -45,7 +45,7 @@ import m.co.rh.id.a_flash_deck.base.entity.Test;
 @Database(entities = {Deck.class, Card.class, Test.class,
         AndroidNotification.class, NotificationTimer.class, CardReviewState.class,
         ReviewLog.class, AnkiNoteGuid.class},
-        version = 18,
+        version = 19,
         autoMigrations = {
                 @AutoMigration(from = 12, to = 13,
                         spec = AppDatabase.RemoveIsReversedSpec.class)

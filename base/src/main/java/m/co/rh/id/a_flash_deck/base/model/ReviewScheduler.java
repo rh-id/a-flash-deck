@@ -51,6 +51,9 @@ public final class ReviewScheduler {
         cardReviewState.easeFactor = EASE_INIT;
         cardReviewState.repetitions = 0;
         cardReviewState.lapses = 0;
+        // FSRS memory columns, owned by FsrsScheduler (0.0 = uninitialized)
+        cardReviewState.stability = 0;
+        cardReviewState.difficulty = 0;
         return cardReviewState;
     }
 

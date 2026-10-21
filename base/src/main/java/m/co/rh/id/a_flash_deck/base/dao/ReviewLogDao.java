@@ -46,6 +46,15 @@ public abstract class ReviewLogDao {
     public abstract List<ReviewLog> findReviewLogsSince(long since);
 
     /**
+     * @return the latest review log entry of every card that has at least
+     * one entry; used by the scheduler-switch recompute to read the latest
+     * grade per card
+     */
+    @Query("SELECT * FROM review_log WHERE id IN " +
+            "(SELECT MAX(id) FROM review_log GROUP BY card_id)")
+    public abstract List<ReviewLog> findLatestReviewLogs();
+
+    /**
      * @return latest review time in epoch ms of every card that has at
      * least one review strictly before the given epoch ms timestamp; the
      * GROUP BY collapses the matching rows to one row per card. To use

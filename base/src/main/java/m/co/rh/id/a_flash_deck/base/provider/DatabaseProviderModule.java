@@ -30,6 +30,7 @@ import m.co.rh.id.a_flash_deck.base.dao.NotificationTimerDao;
 import m.co.rh.id.a_flash_deck.base.dao.ReviewLogDao;
 import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.repository.AndroidNotificationRepository;
 import m.co.rh.id.a_flash_deck.base.repository.DeckCardRepository;
 import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
@@ -75,7 +76,8 @@ public class DatabaseProviderModule implements ProviderModule {
         });
         providerRegistry.registerAsync(StudyRepository.class, () -> {
             AppDatabase db = provider.get(AppDatabase.class);
-            return new StudyRepository(db, db.studyDao(), db.cardReviewStateDao());
+            return new StudyRepository(db, db.studyDao(), db.cardReviewStateDao(),
+                    provider.get(AppSharedPreferences.class));
         });
         providerRegistry.registerLazy(NotificationTimerDao.class, () ->
                 provider.get(AppDatabase.class).timerNotificationDao());

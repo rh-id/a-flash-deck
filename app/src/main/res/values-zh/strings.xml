@@ -186,4 +186,11 @@
     <string name="error_anki_decoy_package">此 Anki 文件不包含可导入的卡片</string>
     <string name="error_nothing_imported">文件中没有可导入的卡片</string>
     <string name="imported_deck_default_name">导入的卡组</string>
+    <string name="settings_scheduler">复习调度器</string>
+    <string name="settings_scheduler_desc">用于安排卡片复习的算法。切换调度器或更改目标记忆保留率将重新安排所有卡片。</string>
+    <string name="scheduler_mode_classic">经典（SM-2）</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">目标记忆保留率</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">重新安排卡片复习失败</string>
 </resources>

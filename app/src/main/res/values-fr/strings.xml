@@ -185,4 +185,11 @@
     <string name="error_anki_decoy_package">Ce fichier Anki ne contient aucune carte importable</string>
     <string name="error_nothing_imported">Aucune carte importable trouvée dans le fichier</string>
     <string name="imported_deck_default_name">Paquet importé</string>
+    <string name="settings_scheduler">Planificateur de révisions</string>
+    <string name="settings_scheduler_desc">Algorithme utilisé pour planifier les révisions des cartes. Changer de planificateur ou modifier la rétention souhaitée replanifie toutes les cartes.</string>
+    <string name="scheduler_mode_classic">Classique (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Rétention souhaitée</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Échec de la replanification des révisions de cartes</string>
 </resources>

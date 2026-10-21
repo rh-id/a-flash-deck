@@ -185,4 +185,11 @@
     <string name="error_anki_decoy_package">Denne Anki-filen inneholder ingen kort som kan importeres</string>
     <string name="error_nothing_imported">Fant ingen kort som kan importeres i filen</string>
     <string name="imported_deck_default_name">Importert kortstokk</string>
+    <string name="settings_scheduler">Øvingsplanlegger</string>
+    <string name="settings_scheduler_desc">Algoritme som brukes til å planlegge kortøvinger. Å bytte planlegger eller endre ønsket hukommelsesprosent planlegger alle kort på nytt.</string>
+    <string name="scheduler_mode_classic">Klassisk (SM-2)</string>
+    <string name="scheduler_mode_fsrs">FSRS</string>
+    <string name="scheduler_desired_retention">Ønsket hukommelsesprosent</string>
+    <string name="scheduler_retention_percent_format">%d%%</string>
+    <string name="error_failed_to_reschedule_reviews">Klarte ikke å planlegge kortøvinger på nytt</string>
 </resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/text_margin">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_scheduler" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_scheduler_desc" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup_scheduler_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_scheduler_classic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:text="@string/scheduler_mode_classic" />
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_scheduler_fsrs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:text="@string/scheduler_mode_fsrs" />
+    </RadioGroup>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/container_retention"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/scheduler_desired_retention" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_retention_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tool:text="90%" />
+
+        <SeekBar
+            android:id="@+id/seekBar_retention"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="28"
+            android:progress="20" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.appcompat.widget.LinearLayoutCompat>

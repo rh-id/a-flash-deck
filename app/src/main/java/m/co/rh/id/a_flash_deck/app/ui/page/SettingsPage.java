@@ -29,6 +29,7 @@ import m.co.rh.id.a_flash_deck.ai.ui.component.settings.AiSettingsMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.LicensesMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.LogMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.NotificationTimeMenuSV;
+import m.co.rh.id.a_flash_deck.app.ui.component.settings.SchedulerMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.ThemeMenuSV;
 import m.co.rh.id.a_flash_deck.app.ui.component.settings.VersionMenuSV;
 import m.co.rh.id.a_flash_deck.base.ui.component.common.AppBarSV;
@@ -51,6 +52,8 @@ public class SettingsPage extends StatefulView<Activity> {
         mStatefulViews = new ArrayList<>();
         AiSettingsMenuSV aiSettingsMenuSV = new AiSettingsMenuSV();
         mStatefulViews.add(aiSettingsMenuSV);
+        SchedulerMenuSV schedulerMenuSV = new SchedulerMenuSV();
+        mStatefulViews.add(schedulerMenuSV);
         NotificationTimeMenuSV notificationTimeMenuSV = new NotificationTimeMenuSV();
         mStatefulViews.add(notificationTimeMenuSV);
         ThemeMenuSV themeMenuSV = new ThemeMenuSV();
