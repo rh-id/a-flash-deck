@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Neu:
+* FSRS-Lernalgorithmus — wählen Sie in den Einstellungen zwischen FSRS und Klassisch (SM-2), mit einstellbarer gewünschter Behaltensquote (Standard 90 %)
+* Karten direkt über die Timer-Benachrichtigung bewerten — mit den Schaltflächen „Nochmal“/„Schwer“/„Gut“
+* Überarbeiteter Anki-Import (.apkg) — moderne und ältere Pakete, umgekehrte Karten werden unterstützt, bereits importierte Karten werden beim erneuten Import nicht doppelt angelegt, dazu eine ausführliche Importzusammenfassung
+* Neue Statistiken: Diagramm der Antwortzeit mit Median und Durchschnitt sowie echte Behaltensquote der letzten 30 Tage
+
+Fehlerbehebungen:
+* Auf Android 13 oder neuer wird die Benachrichtigungsberechtigung jetzt zur Laufzeit abgefragt

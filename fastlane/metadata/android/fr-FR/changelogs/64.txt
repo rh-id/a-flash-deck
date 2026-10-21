@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Nouveautés :
+* Algorithme FSRS — choisissez FSRS ou Classique (SM-2) dans les paramètres, avec une rétention souhaitée configurable (90 % par défaut)
+* Évaluez les cartes directement depuis la notification du minuteur avec les boutons « À revoir »/« Difficile »/« Bien »
+* Import des paquets Anki (.apkg) revu en profondeur — prend en charge les paquets modernes et anciens et les cartes inversées, les importations répétées ignorent les notes déjà importées, avec un résumé d'importation détaillé
+* Nouvelles statistiques : graphique du temps de réponse avec médiane et moyenne, ainsi que la rétention réelle des 30 derniers jours
+
+Corrections :
+* L'autorisation de notification est désormais demandée à l'exécution sur Android 13 ou plus récent

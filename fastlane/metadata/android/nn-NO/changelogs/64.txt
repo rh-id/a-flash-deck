@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Ny funksjon:
+* FSRS-planleggjar — vel FSRS eller Klassisk (SM-2) i innstillingane, med justerbar ønska hugprosent (standard 90 %)
+* Vurder kort rett frå varselet til tidtakaren med knappane «Igjen»/«Vanskeleg»/«Bra»
+* Grundig omarbeidd import av Anki-stokkar (.apkg) — støttar både moderne og eldre pakkar og kort med motsett side, gjenteken import hoppar over kort som allereie finst, med eit detaljert importsamandrag
+* Ny statistikk: søylediagram for svartid med median og gjennomsnitt, pluss ekte hugprosent for dei siste 30 dagane
+
+Feilrettingar:
+* Varslingsløyvet blir no spurt om ved køyretid på Android 13 eller nyere

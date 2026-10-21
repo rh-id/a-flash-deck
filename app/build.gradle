@@ -29,8 +29,8 @@ android {
         applicationId "m.co.rh.id.a_flash_deck"
         minSdk 23
         targetSdk 37
-        versionCode 63
-        versionName "2.3.0"
+        versionCode 64
+        versionName "2.4.0"
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

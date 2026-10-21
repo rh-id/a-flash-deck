@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Nova funcziun:
+* Algoritmus FSRS — tscherni en ils parameters tranter FSRS e Classic (SM-2), cun la rimembranza giavischada ajustabla (standard 90 %)
+* Assessgar las cartas directamain or da l'avert dal timer cun ils buttuns «Anc»/«Difficil»/«Bain»
+* Import da stacks Anki (.apkg) renovà a fund — sustegn pacquets moderns e vegls sco cartas invertidas; tar in import repetì vegnan cartas gia importadas betg duplicadas, plin in resumà d'import detaglià
+* Novas statisticas: diagramm da la durada da resposta (mediana e media) plin la rimembranza effectiva dals ultims 30 dis
+
+Corecziuns:
+* La permissiun per avis vegn uss dumandada sin Android 13 u pli nov

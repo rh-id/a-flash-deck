@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Fitur:
+* Algoritme penjadwalan FSRS — pilih FSRS atau Klasik (SM-2) di pengaturan, dengan retensi yang diinginkan yang dapat disetel (default 90%)
+* Beri nilai kartu langsung dari notifikasi timer dengan tombol "Ulangi"/"Sulit"/"Baik"
+* Impor dek Anki (.apkg) dirombak total — mendukung paket modern maupun lawas dan kartu terbalik, impor ulang melewati kartu yang sudah diimpor, dilengkapi ringkasan impor yang terperinci
+* Statistik baru: grafik kecepatan menjawab dengan waktu median dan rata-rata, serta retensi sebenarnya 30 hari terakhir
+
+Perbaikan:
+* Izin notifikasi kini diminta saat aplikasi berjalan di Android 13 atau lebih baru

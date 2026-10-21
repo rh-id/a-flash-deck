@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Uuendus:
+* FSRS ajastamisalgoritm — sätetes saab valida FSRS-i ja Klassikalise (SM-2) algoritmi vahel ning määrata soovitud mäletamismäära (vaikimisi 90%)
+* Hindage kaarte otse taimeri märguandest — nuppudega „Uuesti“/„Raske“/„Hea“
+* Põhjalikult ümbertöötatud Anki kaardipakkide (.apkg) import — toetatud on nii uuemad kui ka vanemad paketid ning tagurpidi kaartidega tüübid, kordusimport jätab juba imporditud kaardid vahele ja kuvatakse üksikasjalik impordikokkuvõte
+* Uued statistikad: vastamise aja diagramm koos mediaani ja keskmisega ning tegelik mäletamismäär (viimased 30 päeva)
+
+Parandused:
+* Märguannete luba küsitakse nüüd Android 13 või uuemal versioonil rakenduse käigu ajal

@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Features:
+* FSRS scheduling algorithm — choose FSRS or Classic (SM-2) in the settings, with a configurable desired retention (default 90%)
+* Grade flashcards directly from the study timer notification with the Again/Hard/Good buttons
+* Overhauled Anki deck import (.apkg) — modern and legacy packages, reversed cards supported, duplicate notes skipped on re-import, plus a detailed import summary
+* New statistics: answer-speed chart with median and average times, plus true retention over the last 30 days
+
+Fixes:
+* Notification permission is now requested at runtime on Android 13+

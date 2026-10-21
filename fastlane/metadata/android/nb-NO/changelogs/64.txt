@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Ny funksjon:
+* FSRS-planlegger — velg FSRS eller Klassisk (SM-2) i innstillingene, med justerbar ønsket hukommelsesprosent (standard 90 %)
+* Vurder kort rett fra varslet til timeren med knappene «Igjen»/«Vanskelig»/«Bra»
+* Grundig omarbeidet import av Anki-stokker (.apkg) — støtter både moderne og eldre pakker og kort med motsatt side, gjentatt import hopper over kort som allerede finnes, med et detaljert importsammendrag
+* Ny statistikk: søylediagram for svartid med median og gjennomsnitt, pluss ekte hukommelsesprosent for de siste 30 dagene
+
+Feilrettinger:
+* Varslingstillatelsen blir nå bedt om ved kjøretid på Android 13 eller nyere

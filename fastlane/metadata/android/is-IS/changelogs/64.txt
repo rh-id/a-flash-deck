@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Nýtt:
+* FSRS áætlunaraðferð — veljið FSRS eða Klassísk (SM-2) í stillingunum, með stillanlegu æskilegu munadarhlutfalli (sjálfgegið 90%)
+* Metið spjöld beint úr tilkynningu tímatækisins með hnöppum „Aftur“/„Erfitt“/„Gott“
+* Endurbættur innflutningur á kortastöflum frá Anki (.apkg) — styður nýrri og eldri pakkaform og spjöld með andstæðum svörum; endurinnflutningur afritar ekki spjöld sem þegar eru innflutt; innflutningssamantekt birtist nú einnig
+* Ný tölfræði: graf yfir svarstíma með miðgildi og meðaltali auk raunverulegs munaðarhlutfalls (síðustu 30 dagar)
+
+Villuleiðréttingar:
+* Beiðni um heimild tilkynninga á sér nú stað á Android 13 eða nýrri

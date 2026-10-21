@@ -1,0 +1,10 @@
+Release 2.4.0+64
+
+Novità:
+* Algoritmo FSRS — scegli FSRS o Classico (SM-2) nelle impostazioni, con ritenzione desiderata configurabile (90% predefinito)
+* Valuta le carte direttamente dalla notifica del timer con i pulsanti «Di nuovo»/«Difficile»/«Bene»
+* Import dei mazzi Anki (.apkg) rivisto a fondo — supporto per pacchetti moderni e legacy e mazzi con carte inverse, le note già importate vengono ignorate nelle importazioni successive, con un riepilogo dettagliato dell'importazione
+* Nuove statistiche: grafico dei tempi di risposta con mediana e media, più ritenzione reale degli ultimi 30 giorni
+
+Correzioni:
+* Il permesso di notifica viene ora richiesto a runtime su Android 13 o successivo
