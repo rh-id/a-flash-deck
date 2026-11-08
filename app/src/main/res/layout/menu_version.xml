@@ -5,12 +5,13 @@
     android:layout_height="match_parent">
 
     <com.google.android.material.textview.MaterialTextView
+        style="@style/Theme.Aflashdeck.MenuTextView"
         android:id="@+id/text_version_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
+        android:minHeight="0dp"
         android:text="@string/version"
-        android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

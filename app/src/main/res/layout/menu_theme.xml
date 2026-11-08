@@ -6,8 +6,10 @@
     android:padding="@dimen/text_margin">
 
     <com.google.android.material.textview.MaterialTextView
+        style="@style/Theme.Aflashdeck.MenuTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="0dp"
         android:text="@string/theme_setting" />
 
     <RadioGroup
