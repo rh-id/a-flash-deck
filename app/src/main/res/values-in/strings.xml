@@ -192,5 +192,18 @@
     <string name="scheduler_desired_retention">Retensi yang diinginkan</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Gagal menjadwalkan ulang latihan kartu</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Teks ke suara</string>
+    <string name="switch_tts_enabled">Aktifkan teks ke suara</string>
+    <string name="switch_tts_autoplay">Ucapkan pertanyaan secara otomatis dalam tes</string>
+    <string name="button_tts_test_voice">Uji suara</string>
+    <string name="tts_test_sentence">Ini adalah tes teks ke suara.</string>
+    <string name="tts_status_ready">Siap · %1$s · %2$d bahasa</string>
+    <string name="tts_language">Bahasa teks ke suara</string>
+    <string name="tts_language_system_default">Bawaan sistem</string>
+    <string name="speak_question">Ucapkan pertanyaan</string>
+    <string name="speak_answer">Ucapkan jawaban</string>
+    <string name="tts_unavailable">Tidak ada mesin teks ke suara yang terpasang</string>
     <string name="licenses_webview_unavailable">WebView tidak tersedia di perangkat ini. Tidak dapat menampilkan lisensi.</string>
 </resources>

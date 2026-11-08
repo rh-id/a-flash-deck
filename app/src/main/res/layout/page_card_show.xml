@@ -49,15 +49,31 @@
                     android:textSize="26sp"
                     tool:text="What is the answer to everything?" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_question_voice"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="@string/play_voice"
-                    android:visibility="gone"
-                    app:icon="@drawable/ic_keyboard_voice_black"
-                    app:iconTint="@color/daynight_white_black" />
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_question_voice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/text_margin"
+                        android:text="@string/play_voice"
+                        android:visibility="gone"
+                        app:icon="@drawable/ic_keyboard_voice_black"
+                        app:iconTint="@color/daynight_white_black" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_question_tts"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/speak_question"
+                        android:visibility="gone"
+                        app:icon="@drawable/ic_record_voice_over"
+                        app:iconTint="@color/daynight_white_black" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

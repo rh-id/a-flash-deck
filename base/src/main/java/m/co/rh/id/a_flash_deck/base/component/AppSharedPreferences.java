@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.model.FsrsParams;
 import m.co.rh.id.a_flash_deck.base.model.SchedulerMode;
 import m.co.rh.id.aprovider.Provider;
@@ -64,6 +65,22 @@ public class AppSharedPreferences {
 
     private double mDesiredRetention;
     private String mDesiredRetentionKey;
+
+    /** Default: text-to-speech playback is enabled. */
+    public static final boolean DEFAULT_TTS_ENABLED = true;
+
+    private boolean mTtsEnabled;
+    private String mTtsEnabledKey;
+    // live change notifications for ttsEnabled, seeded with the default and
+    // re-seeded with the stored value in initValue()
+    private final BehaviorSubject<Boolean> mTtsEnabledSubject =
+            BehaviorSubject.createDefault(DEFAULT_TTS_ENABLED);
+
+    /** Default: text-to-speech autoplay is disabled. */
+    public static final boolean DEFAULT_TTS_AUTOPLAY_ENABLED = false;
+
+    private boolean mTtsAutoplayEnabled;
+    private String mTtsAutoplayEnabledKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -129,6 +146,21 @@ public class AppSharedPreferences {
                         Double.doubleToLongBits(
                                 FsrsParams.DEFAULT_DESIRED_RETENTION)));
         desiredRetention(desiredRetention);
+
+        mTtsEnabledKey = SHARED_PREFERENCES_NAME
+                + ".ttsEnabled";
+        boolean ttsEnabled = mSharedPreferences.getBoolean(
+                mTtsEnabledKey,
+                DEFAULT_TTS_ENABLED);
+        ttsEnabled(ttsEnabled);
+        mTtsEnabledSubject.onNext(ttsEnabled);
+
+        mTtsAutoplayEnabledKey = SHARED_PREFERENCES_NAME
+                + ".ttsAutoplayEnabled";
+        boolean ttsAutoplayEnabled = mSharedPreferences.getBoolean(
+                mTtsAutoplayEnabledKey,
+                DEFAULT_TTS_AUTOPLAY_ENABLED);
+        ttsAutoplayEnabled(ttsAutoplayEnabled);
     }
 
     private void selectedTheme(int setting) {
@@ -294,5 +326,44 @@ public class AppSharedPreferences {
      */
     public double getDesiredRetention() {
         return mDesiredRetention;
+    }
+
+    private void ttsEnabled(boolean enabled) {
+        mTtsEnabled = enabled;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mTtsEnabledKey, enabled)
+                        .commit());
+    }
+
+    public void setTtsEnabled(boolean enabled) {
+        ttsEnabled(enabled);
+        mTtsEnabledSubject.onNext(enabled);
+    }
+
+    public boolean isTtsEnabled() {
+        return mTtsEnabled;
+    }
+
+    /**
+     * Emits the current ttsEnabled value on subscribe and on every
+     * {@link #setTtsEnabled(boolean)} change
+     */
+    public BehaviorSubject<Boolean> getTtsEnabledSubject() {
+        return mTtsEnabledSubject;
+    }
+
+    private void ttsAutoplayEnabled(boolean enabled) {
+        mTtsAutoplayEnabled = enabled;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mTtsAutoplayEnabledKey, enabled)
+                        .commit());
+    }
+
+    public void setTtsAutoplayEnabled(boolean enabled) {
+        ttsAutoplayEnabled(enabled);
+    }
+
+    public boolean isTtsAutoplayEnabled() {
+        return mTtsAutoplayEnabled;
     }
 }

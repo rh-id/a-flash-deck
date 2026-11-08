@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.base.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -78,6 +79,13 @@ public class TestState implements Serializable {
 
     public int getTotalCards() {
         return mChoosenCards.size();
+    }
+
+    /**
+     * Returns an unmodifiable view of the test's cards
+     */
+    public List<Card> getCards() {
+        return Collections.unmodifiableList(mChoosenCards);
     }
 
     /**

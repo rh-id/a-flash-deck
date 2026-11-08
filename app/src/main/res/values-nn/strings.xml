@@ -192,5 +192,18 @@
     <string name="scheduler_desired_retention">Ønska hugprosent</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Klarte ikkje å planlegga kortøvingar på nytt</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Tekst-til-tale</string>
+    <string name="switch_tts_enabled">Aktiver tekst-til-tale</string>
+    <string name="switch_tts_autoplay">Les spørsmålet automatisk i testar</string>
+    <string name="button_tts_test_voice">Test stemme</string>
+    <string name="tts_test_sentence">Dette er ein tekst-til-tale-test.</string>
+    <string name="tts_status_ready">Klar · %1$s · %2$d språk</string>
+    <string name="tts_language">Språk for tekst-til-tale</string>
+    <string name="tts_language_system_default">Systemstandard</string>
+    <string name="speak_question">Les opp spørsmål</string>
+    <string name="speak_answer">Les opp svar</string>
+    <string name="tts_unavailable">Ingen tekst-til-tale-motor er installert</string>
     <string name="licenses_webview_unavailable">WebView er ikkje tilgjengeleg på denne eininga. Kan ikkje visa lisensar.</string>
 </resources>

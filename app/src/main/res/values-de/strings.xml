@@ -192,5 +192,18 @@
     <string name="scheduler_desired_retention">Gewünschte Behaltensquote</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Kartenwiederholungen konnten nicht neu geplant werden</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Text-zu-Sprache</string>
+    <string name="switch_tts_enabled">Text-zu-Sprache aktivieren</string>
+    <string name="switch_tts_autoplay">Frage in Tests automatisch vorlesen</string>
+    <string name="button_tts_test_voice">Stimme testen</string>
+    <string name="tts_test_sentence">Dies ist ein Text-zu-Sprache-Test.</string>
+    <string name="tts_status_ready">Bereit · %1$s · %2$d Sprache(n)</string>
+    <string name="tts_language">Text-zu-Sprache-Sprache</string>
+    <string name="tts_language_system_default">Systemstandard</string>
+    <string name="speak_question">Frage vorlesen</string>
+    <string name="speak_answer">Antwort vorlesen</string>
+    <string name="tts_unavailable">Keine Text-zu-Sprache-Engine installiert</string>
     <string name="licenses_webview_unavailable">WebView ist auf diesem Gerät nicht verfügbar. Lizenzen können nicht angezeigt werden.</string>
 </resources>

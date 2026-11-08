@@ -28,6 +28,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -49,7 +50,8 @@ import m.co.rh.id.a_flash_deck.app.MainActivity;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationGradeReceiver;
 import m.co.rh.id.a_flash_deck.app.receiver.NotificationPlayVoiceReceiver;
-import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
+import m.co.rh.id.a_flash_deck.base.component.AudioService;
 import m.co.rh.id.a_flash_deck.base.component.IAppNotificationHandler;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
@@ -79,7 +81,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
     private final ProviderValue<DeckDao> mDeckDao;
     private final ProviderValue<CardDao> mCardDao;
     private final ProviderValue<CardMediaStore> mCardMediaStore;
-    private final ProviderValue<AudioPlayer> mAudioPlayer;
+    private final ProviderValue<AudioService> mAudioService;
+    private final ProviderValue<AppSharedPreferences> mAppSharedPreferences;
     private final ProviderValue<BotAnalytics> mBotAnalytics;
     private final ProviderValue<ILogger> mLogger;
     private final ProviderValue<StudyRepository> mStudyRepository;
@@ -96,7 +99,8 @@ public class AppNotificationHandler implements IAppNotificationHandler {
         mDeckDao = provider.lazyGet(DeckDao.class);
         mCardDao = provider.lazyGet(CardDao.class);
         mCardMediaStore = provider.lazyGet(CardMediaStore.class);
-        mAudioPlayer = provider.lazyGet(AudioPlayer.class);
+        mAudioService = provider.lazyGet(AudioService.class);
+        mAppSharedPreferences = provider.lazyGet(AppSharedPreferences.class);
         mBotAnalytics = provider.lazyGet(BotAnalytics.class);
         mLogger = provider.lazyGet(ILogger.class);
         mStudyRepository = provider.lazyGet(StudyRepository.class);
@@ -164,7 +168,12 @@ public class AppNotificationHandler implements IAppNotificationHandler {
             addGradeAction(builder, ReviewScheduler.GRADE_AGAIN, androidNotification, intentFlag);
             addGradeAction(builder, ReviewScheduler.GRADE_GOOD, androidNotification, intentFlag);
             addGradeAction(builder, ReviewScheduler.GRADE_HARD, androidNotification, intentFlag);
-            if (selectedCard.questionVoice != null) {
+            // Recorded question voice takes precedence; TTS is offered as a
+            // fallback so the play-voice action is also shown for text-only
+            // cards when text-to-speech is enabled.
+            if (selectedCard.questionVoice != null
+                    || (mAppSharedPreferences.get().isTtsEnabled()
+                    && !TextUtils.isEmpty(selectedCard.question))) {
                 Intent questionVoiceIntent = new Intent(mAppContext, NotificationPlayVoiceReceiver.class);
                 questionVoiceIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
                 PendingIntent questionVoicePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, questionVoiceIntent,
@@ -510,8 +519,31 @@ public class AppNotificationHandler implements IAppNotificationHandler {
                         NotificationTimer notificationTimer = mNotificationTimerDao.get().findById(androidNotification.refId);
                         if (notificationTimer != null && notificationTimer.currentCardId != null) {
                             Card card = mCardDao.get().getCardByCardId(notificationTimer.currentCardId);
-                            if (card != null && card.questionVoice != null) {
-                                mAudioPlayer.get().play(Uri.fromFile(mCardMediaStore.get().getCardQuestionVoice(card.questionVoice)));
+                            if (card != null) {
+                                if (card.questionVoice != null) {
+                                    mAudioService.get().playRecording(Uri.fromFile(mCardMediaStore.get().getCardQuestionVoice(card.questionVoice)));
+                                } else if (mAppSharedPreferences.get().isTtsEnabled()
+                                        && !TextUtils.isEmpty(card.question)) {
+                                    // speak the plain-text extraction, raw
+                                    // markdown/LaTeX markup is noise when spoken
+                                    String speakable = mMarkdownRenderer.get().toSpeakableText(card.question);
+                                    if (!TextUtils.isEmpty(speakable)) {
+                                        Deck deck = null;
+                                        if (card.deckId != null) {
+                                            deck = mDeckDao.get().getDeckById(card.deckId);
+                                            if (deck == null) {
+                                                // fall back to the system default locale
+                                                mLogger.get().w(TAG, "Deck not found for TTS notification playback, deckId=" + card.deckId);
+                                            }
+                                        }
+                                        boolean spoken = mAudioService.get().speak(speakable, "tts_notification",
+                                                mAudioService.get().resolveLocale(deck != null ? deck.ttsLanguage : null));
+                                        if (!spoken) {
+                                            // no TTS engine, a silent no-op
+                                            mLogger.get().d(TAG, "TextToSpeech unavailable for notification playback");
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

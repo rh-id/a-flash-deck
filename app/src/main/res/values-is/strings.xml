@@ -192,5 +192,18 @@
     <string name="scheduler_desired_retention">Æskilegt munadarhlutfall</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Mistókst að enduráætla spjaldaæfingar</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Texti í tal</string>
+    <string name="switch_tts_enabled">Virkja texta í tal</string>
+    <string name="switch_tts_autoplay">Lesa spurningu sjálfvirkt upp í prófum</string>
+    <string name="button_tts_test_voice">Prófa rödd</string>
+    <string name="tts_test_sentence">Þetta er próf fyrir texta í tal.</string>
+    <string name="tts_status_ready">Tilbúið · %1$s · %2$d tungumál</string>
+    <string name="tts_language">Tungumál texta í tal</string>
+    <string name="tts_language_system_default">Sjálfgefið í kerfinu</string>
+    <string name="speak_question">Lesa spurningu upp</string>
+    <string name="speak_answer">Lesa svar upp</string>
+    <string name="tts_unavailable">Engin vél fyrir texta í tal er uppsett</string>
     <string name="licenses_webview_unavailable">WebView er ekki tiltækt á þessu tæki. Ekki er hægt að birta leyfi.</string>
 </resources>

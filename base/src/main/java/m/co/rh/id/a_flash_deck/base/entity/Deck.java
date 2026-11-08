@@ -51,6 +51,13 @@ public class Deck implements Serializable, Cloneable {
     @ColumnInfo(name = "updated_date_time")
     public Date updatedDateTime;
 
+    /**
+     * Text-to-speech language (BCP-47 tag e.g. fr-FR) used to read the
+     * cards of this deck, null means system default
+     */
+    @ColumnInfo(name = "ttsLanguage")
+    public String ttsLanguage;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -59,12 +66,13 @@ public class Deck implements Serializable, Cloneable {
         return Objects.equals(id, deck.id) &&
                 Objects.equals(name, deck.name) &&
                 Objects.equals(createdDateTime, deck.createdDateTime) &&
-                Objects.equals(updatedDateTime, deck.updatedDateTime);
+                Objects.equals(updatedDateTime, deck.updatedDateTime) &&
+                Objects.equals(ttsLanguage, deck.ttsLanguage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, createdDateTime, updatedDateTime);
+        return Objects.hash(id, name, createdDateTime, updatedDateTime, ttsLanguage);
     }
 
     @Override
@@ -83,6 +91,7 @@ public class Deck implements Serializable, Cloneable {
                 ", name='" + name + '\'' +
                 ", createdDateTime=" + createdDateTime +
                 ", updatedDateTime=" + updatedDateTime +
+                ", ttsLanguage='" + ttsLanguage + '\'' +
                 '}';
     }
 
@@ -98,8 +107,13 @@ public class Deck implements Serializable, Cloneable {
         if (updatedDateTime != null) {
             updatedDateTimeStr = Long.toString(updatedDateTime.getTime());
         }
+        String ttsLanguageStr = ttsLanguage;
+        if (ttsLanguageStr == null) {
+            ttsLanguageStr = "";
+        }
         jsonObject.put("createdDateTime", createdDateTimeStr);
         jsonObject.put("updatedDateTime", updatedDateTimeStr);
+        jsonObject.put("ttsLanguage", ttsLanguageStr);
         return jsonObject;
     }
 
@@ -113,6 +127,14 @@ public class Deck implements Serializable, Cloneable {
         String updatedDateTimeMilis = jsonObject.getString("updatedDateTime");
         if (!updatedDateTimeMilis.isEmpty()) {
             updatedDateTime = new Date(Long.parseLong(updatedDateTimeMilis));
+        }
+        try {
+            ttsLanguage = jsonObject.getString("ttsLanguage");
+            if (ttsLanguage.isEmpty()) {
+                ttsLanguage = null;
+            }
+        } catch (JSONException jsonException) {
+            // leave blank
         }
     }
 }

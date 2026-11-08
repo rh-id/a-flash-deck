@@ -17,29 +17,17 @@
 
 package m.co.rh.id.a_flash_deck.app.ui.component.card;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
-
 import java.io.File;
+import java.io.Serializable;
 import java.util.Optional;
-
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
-import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
-import m.co.rh.id.a_flash_deck.base.provider.FileHelper;
-import m.co.rh.id.alogger.ILogger;
-import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
-import m.co.rh.id.a_flash_deck.util.UiUtils;
 
 /**
  * Plain Java class that manages ONE attachment slot (image or voice).
- * Handles browsing, camera capture, voice recording, and playback.
+ * Serializable pure state holder: browsing, camera capture and the UI
+ * updates on file changes are handled by CardDetailPage.
  */
-public class CardMediaField {
-    private static final String TAG = CardMediaField.class.getName();
+public class CardMediaField implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     // Request codes for image browsing and camera capture
     private static final int BROWSE_FOR_QUESTION_IMAGE = 1;
@@ -48,25 +36,16 @@ public class CardMediaField {
     private static final int CAMERA_FOR_ANSWER_IMAGE = 4;
     private static final int NO_REQUEST_CODE = 0;
 
-    private final FileHelper mFileHelper;
-    private final AudioPlayer mAudioPlayer; // nullable for image-only fields
-    private final ILogger mLogger;
-    private final RxDisposer mRxDisposer;
     private final int mBrowseRequestCode;
     private final int mCameraRequestCode;
 
-    private BehaviorSubject<Optional<File>> mFileSubject;
+    private File mFile;
     private File mTempCameraFile;
 
     /**
      * Internal constructor for CardMediaField
      */
-    private CardMediaField(FileHelper fileHelper, AudioPlayer audioPlayer, ILogger logger,
-                          RxDisposer rxDisposer, int browseRequestCode, int cameraRequestCode) {
-        mFileHelper = fileHelper;
-        mAudioPlayer = audioPlayer;
-        mLogger = logger;
-        mRxDisposer = rxDisposer;
+    private CardMediaField(int browseRequestCode, int cameraRequestCode) {
         mBrowseRequestCode = browseRequestCode;
         mCameraRequestCode = cameraRequestCode;
     }
@@ -74,29 +53,29 @@ public class CardMediaField {
     /**
      * Create a CardMediaField for question image
      */
-    public static CardMediaField forQuestionImage(FileHelper fileHelper, ILogger logger, RxDisposer rxDisposer) {
-        return new CardMediaField(fileHelper, null, logger, rxDisposer, BROWSE_FOR_QUESTION_IMAGE, CAMERA_FOR_QUESTION_IMAGE);
+    public static CardMediaField forQuestionImage() {
+        return new CardMediaField(BROWSE_FOR_QUESTION_IMAGE, CAMERA_FOR_QUESTION_IMAGE);
     }
 
     /**
      * Create a CardMediaField for answer image
      */
-    public static CardMediaField forAnswerImage(FileHelper fileHelper, ILogger logger, RxDisposer rxDisposer) {
-        return new CardMediaField(fileHelper, null, logger, rxDisposer, BROWSE_FOR_ANSWER_IMAGE, CAMERA_FOR_ANSWER_IMAGE);
+    public static CardMediaField forAnswerImage() {
+        return new CardMediaField(BROWSE_FOR_ANSWER_IMAGE, CAMERA_FOR_ANSWER_IMAGE);
     }
 
     /**
      * Create a CardMediaField for question voice
      */
-    public static CardMediaField forQuestionVoice(FileHelper fileHelper, AudioPlayer audioPlayer, ILogger logger, RxDisposer rxDisposer) {
-        return new CardMediaField(fileHelper, audioPlayer, logger, rxDisposer, NO_REQUEST_CODE, NO_REQUEST_CODE);
+    public static CardMediaField forQuestionVoice() {
+        return new CardMediaField(NO_REQUEST_CODE, NO_REQUEST_CODE);
     }
 
     /**
      * Create a CardMediaField for answer voice
      */
-    public static CardMediaField forAnswerVoice(FileHelper fileHelper, AudioPlayer audioPlayer, ILogger logger, RxDisposer rxDisposer) {
-        return new CardMediaField(fileHelper, audioPlayer, logger, rxDisposer, NO_REQUEST_CODE, NO_REQUEST_CODE);
+    public static CardMediaField forAnswerVoice() {
+        return new CardMediaField(NO_REQUEST_CODE, NO_REQUEST_CODE);
     }
 
     /**
@@ -105,10 +84,7 @@ public class CardMediaField {
      * @return Optional containing the file, or empty if none
      */
     public Optional<File> getValue() {
-        if (mFileSubject == null) {
-            return Optional.empty();
-        }
-        return mFileSubject.getValue();
+        return Optional.ofNullable(mFile);
     }
 
     /**
@@ -117,116 +93,42 @@ public class CardMediaField {
      * @param file The file to set, or null to clear
      */
     public void setFile(File file) {
-        if (mFileSubject == null) {
-            mFileSubject = BehaviorSubject.createDefault(Optional.ofNullable(file));
-        } else {
-            mFileSubject.onNext(Optional.ofNullable(file));
-        }
+        mFile = file;
     }
 
     /**
-     * Get the BehaviorSubject for UI subscriptions
+     * Get the request code used for image browsing
      *
-     * @return The BehaviorSubject for file changes
+     * @return The browse request code
      */
-    public BehaviorSubject<Optional<File>> getFileSubject() {
-        return mFileSubject;
+    public int getBrowseRequestCode() {
+        return mBrowseRequestCode;
     }
 
     /**
-     * Browse for an image file
+     * Get the request code used for camera capture
      *
-     * @param activity    The activity
+     * @return The camera request code
      */
-    public void browseImage(Activity activity) {
-        UiUtils.browseImage(activity, mBrowseRequestCode);
+    public int getCameraRequestCode() {
+        return mCameraRequestCode;
     }
 
     /**
-     * Take a photo from camera
+     * Get the temp file created for a pending camera capture
      *
-     * @param activity    The activity
-     * @return The temp file created for the camera, or null if failed
+     * @return The temp camera file, or null if none
      */
-    public File takePhotoFromCamera(Activity activity) {
-        try {
-            mTempCameraFile = mFileHelper.createImageTempFile();
-            UiUtils.takeImageFromCamera(activity, mCameraRequestCode, mTempCameraFile);
-            return mTempCameraFile;
-        } catch (Exception e) {
-            mLogger.e(TAG, e.getMessage(), e);
-            return null;
-        }
+    public File getTempCameraFile() {
+        return mTempCameraFile;
     }
 
     /**
-     * Play voice recording
-     */
-    public void playVoice() {
-        if (mAudioPlayer != null) {
-            File file = getValue().orElse(null);
-            if (file != null) {
-                mAudioPlayer.play(Uri.fromFile(file));
-            }
-        }
-    }
-
-    /**
-     * Handle activity result from browsing or camera
-     *
-     * @param requestCode The request code
-     * @param resultCode  The result code
-     * @param data        The intent data
-     * @return true if a camera-capture result was applied (result code OK for this field's camera request)
-     */
-    public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == mBrowseRequestCode && resultCode == Activity.RESULT_OK && data != null) {
-            Uri fullPhotoUri = data.getData();
-            handleImageUri(fullPhotoUri);
-            return false;
-        } else if (requestCode == mCameraRequestCode && resultCode == Activity.RESULT_OK) {
-            if (mTempCameraFile != null) {
-                Uri cameraUri = Uri.fromFile(mTempCameraFile);
-                handleImageUri(cameraUri);
-                mTempCameraFile = null;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Handle image URI processing
-     *
-     * @param imageUri  The image URI
-     */
-    private void handleImageUri(Uri imageUri) {
-        String tag = "handleImageUri_" + mBrowseRequestCode + "_" + mCameraRequestCode;
-        mRxDisposer.add(tag,
-                Single.fromCallable(() -> mFileHelper.createImageTempFile(imageUri))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(resultFile -> setFile(resultFile),
-                                e -> mLogger.e(TAG, e.getMessage(), e)));
-    }
-
-    /**
-     * Set the temp camera file (restored by the page after process death)
+     * Set the temp camera file
      *
      * @param tempCameraFile The temp camera file
      */
     public void setTempCameraFile(File tempCameraFile) {
         mTempCameraFile = tempCameraFile;
-    }
-
-    /**
-     * Dispose resources
-     */
-    public void dispose() {
-        if (mFileSubject != null) {
-            mFileSubject.onComplete();
-            mFileSubject = null;
-        }
-        mTempCameraFile = null;
     }
 }

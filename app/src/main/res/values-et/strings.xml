@@ -192,5 +192,18 @@
     <string name="scheduler_desired_retention">Soovitud mäletamismäär</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Kaartide korduste ümberplaneerimine ebaõnnestus</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Tekstist kõneks</string>
+    <string name="switch_tts_enabled">Luba tekstist kõneks</string>
+    <string name="switch_tts_autoplay">Loe küsimus testides automaatselt ette</string>
+    <string name="button_tts_test_voice">Testi häält</string>
+    <string name="tts_test_sentence">See on tekstist kõneks test.</string>
+    <string name="tts_status_ready">Valmis · %1$s · %2$d keel(t)</string>
+    <string name="tts_language">Tekstist kõneks keel</string>
+    <string name="tts_language_system_default">Süsteemi vaikeväärtus</string>
+    <string name="speak_question">Loe küsimus ette</string>
+    <string name="speak_answer">Loe vastus ette</string>
+    <string name="tts_unavailable">Ühtegi tekstist kõneks mootorit pole installitud</string>
     <string name="licenses_webview_unavailable">WebView ei ole selles seadmes saadaval. Litsentside kuvamine pole võimalik.</string>
 </resources>

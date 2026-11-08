@@ -192,5 +192,18 @@
     <string name="stats_by_deck">By deck</string>
     <string name="stats_deck_summary">%1$d cards · %2$d due</string>
     <string name="stats_empty_history">No review history yet. Grade cards in a test and your statistics will appear here.</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Text-to-speech</string>
+    <string name="switch_tts_enabled">Enable text-to-speech</string>
+    <string name="switch_tts_autoplay">Auto-speak question in tests</string>
+    <string name="button_tts_test_voice">Test voice</string>
+    <string name="tts_test_sentence">This is a text-to-speech test.</string>
+    <string name="tts_status_ready">Ready · %1$s · %2$d language(s)</string>
+    <string name="tts_language">Text-to-speech language</string>
+    <string name="tts_language_system_default">System default</string>
+    <string name="speak_question">Speak question</string>
+    <string name="speak_answer">Speak answer</string>
+    <string name="tts_unavailable">No text-to-speech engine installed</string>
     <string name="licenses_webview_unavailable">WebView is not available on this device. Unable to display licenses.</string>
 </resources>

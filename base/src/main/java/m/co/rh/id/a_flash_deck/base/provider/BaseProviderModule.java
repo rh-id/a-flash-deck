@@ -32,8 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 import co.rh.id.lib.concurrent_utils.concurrent.executor.WeightedThreadPool;
 import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
-import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
 import m.co.rh.id.a_flash_deck.base.component.AudioRecorder;
+import m.co.rh.id.a_flash_deck.base.component.AudioService;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
@@ -96,7 +96,7 @@ public class BaseProviderModule implements ProviderModule {
         providerRegistry.registerLazy(CommonNavConfig.class, CommonNavConfig::new);
         providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
         providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(provider));
-        providerRegistry.registerLazy(AudioPlayer.class, () -> new AudioPlayer(provider));
+        providerRegistry.registerLazy(AudioService.class, () -> new AudioService(provider));
         providerRegistry.registerLazy(DeckChangeNotifier.class, DeckChangeNotifier::new);
         providerRegistry.registerLazy(TestChangeNotifier.class, TestChangeNotifier::new);
         providerRegistry.registerLazy(NotificationTimerChangeNotifier.class, NotificationTimerChangeNotifier::new);

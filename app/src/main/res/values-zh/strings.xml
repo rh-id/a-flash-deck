@@ -193,5 +193,18 @@
     <string name="scheduler_desired_retention">目标记忆保留率</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">重新安排卡片复习失败</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">文字转语音</string>
+    <string name="switch_tts_enabled">启用文字转语音</string>
+    <string name="switch_tts_autoplay">测试时自动朗读问题</string>
+    <string name="button_tts_test_voice">试听语音</string>
+    <string name="tts_test_sentence">这是一条文字转语音测试。</string>
+    <string name="tts_status_ready">就绪 · %1$s · %2$d 种语言</string>
+    <string name="tts_language">文字转语音语言</string>
+    <string name="tts_language_system_default">系统默认</string>
+    <string name="speak_question">朗读问题</string>
+    <string name="speak_answer">朗读答案</string>
+    <string name="tts_unavailable">未安装文字转语音引擎</string>
     <string name="licenses_webview_unavailable">此设备不支持 WebView，无法显示许可证。</string>
 </resources>

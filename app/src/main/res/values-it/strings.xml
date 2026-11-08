@@ -192,5 +192,18 @@
     <string name="scheduler_desired_retention">Ritenzione desiderata</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Ripianificazione delle ripetizioni delle carte non riuscita</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Sintesi vocale</string>
+    <string name="switch_tts_enabled">Attiva sintesi vocale</string>
+    <string name="switch_tts_autoplay">Leggi automaticamente la domanda nei test</string>
+    <string name="button_tts_test_voice">Prova voce</string>
+    <string name="tts_test_sentence">Questo è un test di sintesi vocale.</string>
+    <string name="tts_status_ready">Pronto · %1$s · %2$d lingua/e</string>
+    <string name="tts_language">Lingua di sintesi vocale</string>
+    <string name="tts_language_system_default">Predefinita di sistema</string>
+    <string name="speak_question">Leggi la domanda</string>
+    <string name="speak_answer">Leggi la risposta</string>
+    <string name="tts_unavailable">Nessun motore di sintesi vocale installato</string>
     <string name="licenses_webview_unavailable">WebView non disponibile su questo dispositivo. Impossibile visualizzare le licenze.</string>
 </resources>

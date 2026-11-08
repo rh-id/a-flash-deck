@@ -29,7 +29,7 @@ public class DbMigration {
                 MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
                 MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_13_14,
                 MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18,
-                MIGRATION_18_19};
+                MIGRATION_18_19, MIGRATION_19_20};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -233,6 +233,15 @@ public class DbMigration {
             // sentinel); the existing SM-2 columns keep their role
             database.execSQL("ALTER TABLE card_review_state ADD COLUMN `stability` REAL NOT NULL DEFAULT 0");
             database.execSQL("ALTER TABLE card_review_state ADD COLUMN `difficulty` REAL NOT NULL DEFAULT 0");
+        }
+    };
+
+    public static final Migration MIGRATION_19_20 = new Migration(19, 20) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // add the per-deck text-to-speech language (BCP-47 tag,
+            // null = system default)
+            database.execSQL("ALTER TABLE deck ADD COLUMN `ttsLanguage` TEXT");
         }
     };
 }

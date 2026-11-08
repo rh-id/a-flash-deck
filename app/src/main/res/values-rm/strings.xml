@@ -192,5 +192,18 @@
     <string name="scheduler_desired_retention">Rimembranza giavischada</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Betg reussì da planisar las repetiziuns da las cartas da nov</string>
+
+    <!-- Text-to-speech -->
+    <string name="menu_tts">Sintesa da vusch</string>
+    <string name="switch_tts_enabled">Activar la sintesa da vusch</string>
+    <string name="switch_tts_autoplay">Leger la dumonda automaticamain en tests</string>
+    <string name="button_tts_test_voice">Emprovar la vusch</string>
+    <string name="tts_test_sentence">Quai è in test da sintesa da vusch.</string>
+    <string name="tts_status_ready">Pront · %1$s · %2$d lingua(s)</string>
+    <string name="tts_language">Lingua da la sintesa da vusch</string>
+    <string name="tts_language_system_default">Standard dal sistem</string>
+    <string name="speak_question">Leger la dumonda</string>
+    <string name="speak_answer">Leger la resposta</string>
+    <string name="tts_unavailable">Nagin motor da sintesa da vusch installà</string>
     <string name="licenses_webview_unavailable">WebView n\'è betg disponibel sin quest apparat. Impussibel da mussar las licenzas.</string>
 </resources>

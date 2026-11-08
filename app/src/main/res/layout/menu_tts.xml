@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/text_margin">
+
+    <com.google.android.material.textview.MaterialTextView
+        style="@style/Theme.Aflashdeck.MenuTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="0dp"
+        android:text="@string/menu_tts" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_tts_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        tool:text="Ready · English (United States) · 25 language(s)" />
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/switch_tts_enabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:text="@string/switch_tts_enabled" />
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/switch_tts_autoplay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:text="@string/switch_tts_autoplay" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_tts_test_voice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:text="@string/button_tts_test_voice" />
+</androidx.appcompat.widget.LinearLayoutCompat>

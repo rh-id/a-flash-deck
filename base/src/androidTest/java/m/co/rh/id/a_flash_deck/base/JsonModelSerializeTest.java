@@ -18,6 +18,7 @@
 package m.co.rh.id.a_flash_deck.base;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,6 +41,7 @@ public class JsonModelSerializeTest {
         deck.name = "test deck";
         deck.createdDateTime = date;
         deck.updatedDateTime = date;
+        deck.ttsLanguage = "fr-FR";
 
         JSONObject jsonObject = deck.toJson();
 
@@ -47,6 +49,29 @@ public class JsonModelSerializeTest {
         deserializedDeck.fromJson(jsonObject);
 
         assertEquals(deck, deserializedDeck);
+    }
+
+    @Test
+    public void deserialize_deck_without_tts_language() throws JSONException {
+        Date date = new Date();
+
+        Deck deck = new Deck();
+        deck.id = 1L;
+        deck.name = "test deck";
+        deck.createdDateTime = date;
+        deck.updatedDateTime = date;
+        deck.ttsLanguage = "fr-FR";
+
+        JSONObject jsonObject = deck.toJson();
+        // old export files do not have the ttsLanguage key
+        jsonObject.remove("ttsLanguage");
+
+        Deck deserializedDeck = new Deck();
+        deserializedDeck.fromJson(jsonObject);
+
+        assertEquals(deck.id, deserializedDeck.id);
+        assertEquals(deck.name, deserializedDeck.name);
+        assertNull(deserializedDeck.ttsLanguage);
     }
 
     @Test

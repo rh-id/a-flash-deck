@@ -25,19 +25,27 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.command.NewDeckCmd;
 import m.co.rh.id.a_flash_deck.app.provider.command.UpdateDeckCmd;
+import m.co.rh.id.a_flash_deck.base.component.AudioService;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_flash_deck.base.rx.RxDisposer;
@@ -47,7 +55,7 @@ import m.co.rh.id.anavigator.StatefulViewDialog;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.aprovider.Provider;
 
-public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements View.OnClickListener, TextWatcher {
+public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements View.OnClickListener, TextWatcher, AdapterView.OnItemSelectedListener {
     private static String TAG = DeckDetailSVDialog.class.getName();
 
     @NavInject
@@ -60,6 +68,11 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
     private String mTitle;
     private transient BehaviorSubject<String> mTitleSubject;
     private transient BehaviorSubject<String> mNameSubject;
+    private transient View mTtsLanguageContainer;
+    private transient Spinner mTtsLanguageSpinner;
+    private transient ArrayAdapter<String> mTtsLanguageAdapter;
+    private transient List<Locale> mTtsLocales;
+    private transient boolean mTtsLanguageAvailable;
 
     public DeckDetailSVDialog() {
         // no need navigator as this will be used as main route and will not be re-used as other SV component
@@ -122,6 +135,7 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
                                 editTextName.setError(s);
                             }
                         }));
+        setupTtsLanguageSpinner(activity, view);
         return view;
     }
 
@@ -157,6 +171,11 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
             mNameSubject.onComplete();
             mNameSubject = null;
         }
+        mTtsLanguageContainer = null;
+        mTtsLanguageSpinner = null;
+        mTtsLanguageAdapter = null;
+        mTtsLocales = null;
+        mTtsLanguageAvailable = false;
     }
 
     private Args getArgs() {
@@ -239,6 +258,104 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
     public void afterTextChanged(Editable editable) {
         mDeck.name = editable.toString();
         mNewDeckCmd.valid(mDeck);
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        if (mDeck == null || !mTtsLanguageAvailable) {
+            return;
+        }
+        if (i == 0) {
+            mDeck.ttsLanguage = null;
+        } else {
+            mDeck.ttsLanguage = mTtsLocales.get(i).toLanguageTag();
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+        // Leave blank
+    }
+
+    private void setupTtsLanguageSpinner(Activity activity, View view) {
+        mTtsLocales = new ArrayList<>();
+        mTtsLanguageAdapter = new ArrayAdapter<>(activity,
+                android.R.layout.simple_spinner_item);
+        mTtsLanguageAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item);
+        mTtsLanguageSpinner = view.findViewById(R.id.spinner_tts_language);
+        mTtsLanguageSpinner.setAdapter(mTtsLanguageAdapter);
+        mTtsLanguageSpinner.setOnItemSelectedListener(this);
+        mTtsLanguageContainer = view.findViewById(R.id.container_tts_language);
+        // keep the row hidden until the engine reports itself available
+        mTtsLanguageContainer.setVisibility(View.GONE);
+        AudioService audioService = mSvProvider.get(AudioService.class);
+        // trigger the lazy engine init, the subscription below populates
+        // the spinner once the engine is ready
+        audioService.getAvailableLanguages();
+        mSvProvider.get(RxDisposer.class).add("ttsLanguageAvailability",
+                audioService.getSpeechAvailabilitySubject()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::handleTtsLanguageAvailability));
+    }
+
+    private void handleTtsLanguageAvailability(Boolean available) {
+        if (mTtsLanguageContainer == null) {
+            return;
+        }
+        if (available) {
+            mTtsLanguageAvailable = true;
+            updateTtsLanguageEntries();
+            mTtsLanguageContainer.setVisibility(View.VISIBLE);
+        } else {
+            mTtsLanguageAvailable = false;
+            mTtsLanguageContainer.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateTtsLanguageEntries() {
+        Context context = mSvProvider.getContext();
+        List<Locale> availableLocales = new ArrayList<>(
+                mSvProvider.get(AudioService.class).getAvailableLanguages());
+        Collections.sort(availableLocales, (left, right) ->
+                left.getDisplayName().compareToIgnoreCase(right.getDisplayName()));
+        mTtsLocales.clear();
+        List<String> entries = new ArrayList<>();
+        // first entry is always the system default
+        mTtsLocales.add(null);
+        entries.add(context.getString(R.string.tts_language_system_default));
+        for (Locale locale : availableLocales) {
+            mTtsLocales.add(locale);
+            entries.add(locale.getDisplayName());
+        }
+        int selectedPosition = 0;
+        String savedTtsLanguage = mDeck.ttsLanguage;
+        if (savedTtsLanguage != null && !savedTtsLanguage.isEmpty()) {
+            selectedPosition = findTtsLanguageIndex(savedTtsLanguage);
+            if (selectedPosition < 0) {
+                // keep a saved language selectable even when the engine no
+                // longer lists it, so the value is not silently lost
+                Locale savedLocale = Locale.forLanguageTag(savedTtsLanguage);
+                mTtsLocales.add(savedLocale);
+                entries.add(savedLocale.getDisplayName());
+                selectedPosition = mTtsLocales.size() - 1;
+            }
+        }
+        mTtsLanguageAdapter.clear();
+        mTtsLanguageAdapter.addAll(entries);
+        mTtsLanguageSpinner.setSelection(selectedPosition, false);
+    }
+
+    private int findTtsLanguageIndex(String ttsLanguage) {
+        if (ttsLanguage != null) {
+            for (int i = 0; i < mTtsLocales.size(); i++) {
+                Locale locale = mTtsLocales.get(i);
+                if (locale != null && ttsLanguage.equals(locale.toLanguageTag())) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     /**

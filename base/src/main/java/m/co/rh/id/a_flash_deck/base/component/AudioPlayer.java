@@ -22,29 +22,30 @@ import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 import m.co.rh.id.aprovider.ProviderValue;
 
-public class AudioPlayer implements ProviderDisposable {
+/**
+ * Not thread-safe by itself. Only ever constructed and invoked by
+ * {@link AudioService} while its facade lock is held. Must not register any
+ * MediaPlayer listeners: a framework callback would reach this class from a
+ * binder thread outside the facade lock.
+ */
+class AudioPlayer implements ProviderDisposable {
     private static final String TAG = AudioPlayer.class.getName();
 
     private final Context mAppContext;
     private final ProviderValue<ILogger> mLogger;
-    private final ReentrantLock mLock;
     private volatile MediaPlayer mediaPlayer;
 
-    public AudioPlayer(Provider provider) {
+    AudioPlayer(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
-        mLock = new ReentrantLock();
     }
 
     public void play(Uri uri) {
-        mLock.lock();
         try {
             if (mediaPlayer != null) {
                 stopInternal();
@@ -69,18 +70,15 @@ public class AudioPlayer implements ProviderDisposable {
                 }
                 mediaPlayer = null;
             }
-        } finally {
-            mLock.unlock();
         }
     }
 
     public void stop() {
-        mLock.lock();
-        try {
-            stopInternal();
-        } finally {
-            mLock.unlock();
-        }
+        stopInternal();
+    }
+
+    public boolean isPlaying() {
+        return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
     private void stopInternal() {

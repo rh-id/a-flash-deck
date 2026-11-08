@@ -50,6 +50,8 @@ public class DbMigrationTest {
             + "-migration-test-17-18";
     private static final String TEST_DB_18_19 = DbMigrationTest.class.getName()
             + "-migration-test-18-19";
+    private static final String TEST_DB_19_20 = DbMigrationTest.class.getName()
+            + "-migration-test-19-20";
 
     @Rule
     public MigrationTestHelper helper;
@@ -257,6 +259,38 @@ public class DbMigrationTest {
                 cursor.getColumnIndexOrThrow("stability")), 0.0);
         Assert.assertEquals(5.5, cursor.getDouble(
                 cursor.getColumnIndexOrThrow("difficulty")), 0.0);
+        cursor.close();
+        migratedDb.close();
+    }
+
+    @Test
+    public void migrate19To20() throws IOException {
+        // Create the v19 database with an existing deck (the ttsLanguage
+        // column does not exist yet).
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB_19_20, 19);
+        db.execSQL("INSERT INTO deck (name, created_date_time, updated_date_time) " +
+                "VALUES ('deck1', 100, 100)");
+        db.close();
+
+        // Run MIGRATION_19_20 and validate the resulting schema against v20.
+        SupportSQLiteDatabase migratedDb = helper.runMigrationsAndValidate(
+                TEST_DB_19_20, 20, true, DbMigration.MIGRATION_19_20);
+
+        // The new column is null for pre-existing rows (system default).
+        Cursor cursor = migratedDb.query(
+                "SELECT ttsLanguage FROM deck WHERE id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertNull(cursor.getString(
+                cursor.getColumnIndexOrThrow("ttsLanguage")));
+        cursor.close();
+
+        // The new column accepts values.
+        migratedDb.execSQL("UPDATE deck SET ttsLanguage = 'fr-FR' WHERE id = 1");
+        cursor = migratedDb.query(
+                "SELECT ttsLanguage FROM deck WHERE id = 1");
+        Assert.assertTrue(cursor.moveToFirst());
+        Assert.assertEquals("fr-FR", cursor.getString(
+                cursor.getColumnIndexOrThrow("ttsLanguage")));
         cursor.close();
         migratedDb.close();
     }

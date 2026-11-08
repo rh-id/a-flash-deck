@@ -26,20 +26,31 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
-import m.co.rh.id.a_flash_deck.base.component.AudioPlayer;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
+import m.co.rh.id.a_flash_deck.base.component.AudioService;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
+import m.co.rh.id.a_flash_deck.base.dao.DeckDao;
 import m.co.rh.id.a_flash_deck.base.entity.Card;
+import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.model.ReviewScheduler;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.CardMediaStore;
@@ -56,17 +67,36 @@ import m.co.rh.id.aprovider.Provider;
 
 public class TestPage extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, View.OnClickListener {
     private static final String TAG = TestPage.class.getName();
+    private static final String UTTERANCE_ID_QUESTION = "tts_question";
+    private static final String UTTERANCE_ID_ANSWER = "tts_answer";
 
     private transient INavigator mNavigator;
 
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
     private transient TestStateModifier mTestStateModifier;
-    private transient AudioPlayer mAudioPlayer;
+    private transient AudioService mAudioService;
+    private transient AppSharedPreferences mAppSharedPreferences;
+    private transient DeckDao mDeckDao;
+    private transient ExecutorService mExecutorService;
+    // decks of the test's cards, prefetched once the test is loaded so the
+    // deck TTS language can be resolved synchronously on click/autoplay
+    private transient Map<Long, Deck> mDeckByIdMap;
+    // dedupe key of the last autoplay-spoken card (index + id), the first
+    // emission counts so the first card is spoken on test open
+    private transient int mLastAutoplayCardIndex;
+    private transient Long mLastAutoplayCardId;
     private transient MarkdownRenderer mMarkdownRenderer;
     private transient BotAnalytics mBotAnalytics;
     private transient BehaviorSubject<TestState> mTestStateSubject;
     private transient boolean mIsGradeInFlight;
+    // TTS buttons kept as fields so the ttsEnabled setting toggle can
+    // refresh their visibility outside the test-state subscription
+    private transient Button mButtonQuestionTts;
+    private transient Button mButtonAnswerTts;
+    // mirror of the current card's answer-reveal state, reset on every
+    // card change; TestState exposes no getter for it
+    private transient boolean mIsAnswerRevealed;
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -78,11 +108,18 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         mSvProvider = provider.get(IStatefulViewProvider.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mTestStateModifier = mSvProvider.get(TestStateModifier.class);
-        mAudioPlayer = mSvProvider.get(AudioPlayer.class);
+        mAudioService = mSvProvider.get(AudioService.class);
+        mAppSharedPreferences = mSvProvider.get(AppSharedPreferences.class);
+        mDeckDao = mSvProvider.get(DeckDao.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
+        mDeckByIdMap = new HashMap<>();
+        mLastAutoplayCardIndex = -1;
+        mLastAutoplayCardId = null;
         mMarkdownRenderer = mSvProvider.get(MarkdownRenderer.class);
         mBotAnalytics = mSvProvider.get(BotAnalytics.class);
         mTestStateSubject = BehaviorSubject.create();
         mIsGradeInFlight = false;
+        mIsAnswerRevealed = false;
     }
 
     @Override
@@ -115,6 +152,12 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         buttonQuestionVoice.setOnClickListener(this);
         Button buttonAnswerVoice = rootLayout.findViewById(R.id.button_answer_voice);
         buttonAnswerVoice.setOnClickListener(this);
+        Button buttonQuestionTts = rootLayout.findViewById(R.id.button_question_tts);
+        buttonQuestionTts.setOnClickListener(this);
+        mButtonQuestionTts = buttonQuestionTts;
+        Button buttonAnswerTts = rootLayout.findViewById(R.id.button_answer_tts);
+        buttonAnswerTts.setOnClickListener(this);
+        mButtonAnswerTts = buttonAnswerTts;
         TextView textProgress = rootLayout.findViewById(R.id.text_progress);
         Context context = mSvProvider.getContext();
         CardMediaStore cardMediaStore = mSvProvider.get(CardMediaStore.class);
@@ -153,18 +196,40 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                         buttonQuestionVoice.setVisibility(View.GONE);
                                     }
 
+                                    // TTS is an always-available feature, gated
+                                    // only on the user setting and a non-empty text
+                                    if (mAppSharedPreferences.isTtsEnabled()
+                                            && questionText != null && !questionText.isEmpty()) {
+                                        buttonQuestionTts.setVisibility(View.VISIBLE);
+                                    } else {
+                                        buttonQuestionTts.setVisibility(View.GONE);
+                                    }
+
                                     // Reset answer part
                                     textAnswer.setText(context.getString(R.string.tap_to_view_answer));
                                     textAnswer.setOnClickListener(this);
                                     answerImageView.setVisibility(View.GONE);
                                     answerImageView.setImageURI(null);
                                     buttonAnswerVoice.setVisibility(View.GONE);
+                                    buttonAnswerTts.setVisibility(View.GONE);
                                     containerGradeButtons.setVisibility(View.GONE);
+                                    mIsAnswerRevealed = false;
 
                                     textProgress.setText(progress);
                                     buttonPrev.setEnabled(testState.getCurrentCardIndex() != 0);
                                     buttonNext.setEnabled(testState.getCurrentCardIndex() != testState.getTotalCards() - 1);
                                     buttonExit.setEnabled(true);
+
+                                    // Autoplay speaks only on an actual card
+                                    // change (dedupe on index + id), unrelated
+                                    // state refreshes must not re-trigger
+                                    if (mAppSharedPreferences.isTtsAutoplayEnabled()
+                                            && (testState.getCurrentCardIndex() != mLastAutoplayCardIndex
+                                            || !Objects.equals(card.id, mLastAutoplayCardId))) {
+                                        mLastAutoplayCardIndex = testState.getCurrentCardIndex();
+                                        mLastAutoplayCardId = card.id;
+                                        speakWithTts(questionText, card, UTTERANCE_ID_QUESTION);
+                                    }
                                 }
                         )
                 );
@@ -172,6 +237,14 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         // disposes the previous in-flight parse on prev/next navigation, so the
         // question always matches the current card. Guard against the card
         // having changed before the parse completes.
+        // Live-refresh the TTS buttons when the user toggles the setting.
+        // skip(1) drops the seeded current value, initial visibility is
+        // handled by the test-state subscription above
+        mRxDisposer.add("createView_ttsEnabled",
+                mAppSharedPreferences.getTtsEnabledSubject()
+                        .skip(1)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::handleTtsEnabledChanged));
         mRxDisposer
                 .add("createView_onQuestionText",
                         mTestStateSubject
@@ -213,7 +286,38 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                     } else {
                                         if (testStateOpt.isPresent()) {
                                             TestState testState = testStateOpt.get();
-                                            mTestStateSubject.onNext(testState);
+                                            // Prefetch the decks of the test's
+                                            // cards so the deck TTS language can
+                                            // be resolved synchronously. The test
+                                            // state is published only after the
+                                            // decks are loaded so autoplay on
+                                            // open speaks with the resolved
+                                            // language; on lookup failure it
+                                            // falls back to the system default.
+                                            List<Long> deckIds = new ArrayList<>();
+                                            for (Card cardItem : testState.getCards()) {
+                                                if (cardItem.deckId != null
+                                                        && !deckIds.contains(cardItem.deckId)) {
+                                                    deckIds.add(cardItem.deckId);
+                                                }
+                                            }
+                                            mRxDisposer.add("createView_prefetchTtsDecks",
+                                                    Single.fromCallable(() ->
+                                                            mDeckDao.findDeckByIds(deckIds))
+                                                            .subscribeOn(Schedulers.from(mExecutorService))
+                                                            .observeOn(AndroidSchedulers.mainThread())
+                                                            .subscribe(decks -> {
+                                                                Map<Long, Deck> deckByIdMap = new HashMap<>();
+                                                                for (Deck deck : decks) {
+                                                                    deckByIdMap.put(deck.id, deck);
+                                                                }
+                                                                mDeckByIdMap = deckByIdMap;
+                                                                mTestStateSubject.onNext(testState);
+                                                            }, throwable1 -> {
+                                                                iLogger.e(TAG, svContext
+                                                                        .getString(R.string.error_loading_deck), throwable1);
+                                                                mTestStateSubject.onNext(testState);
+                                                            }));
                                         } else {
                                             String title = svContext.getString(R.string.title_error);
                                             String content = svContext.getString(R.string.error_test_not_found);
@@ -231,6 +335,9 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        if (mAudioService != null) {
+            mAudioService.stopSpeech();
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -239,6 +346,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             mTestStateSubject.onComplete();
             mTestStateSubject = null;
         }
+        mButtonQuestionTts = null;
+        mButtonAnswerTts = null;
     }
 
     @Override
@@ -250,7 +359,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         }
         if (mIsGradeInFlight && (id == R.id.button_exit
                 || id == R.id.image_question || id == R.id.image_answer
-                || id == R.id.button_question_voice || id == R.id.button_answer_voice)) {
+                || id == R.id.button_question_voice || id == R.id.button_answer_voice
+                || id == R.id.button_question_tts || id == R.id.button_answer_tts)) {
             return;
         }
         Card card = testState.currentCard();
@@ -263,6 +373,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             ImageView answerImageView = rootView.findViewById(R.id.image_answer);
             TextView textAnswer = rootView.findViewById(R.id.text_answer);
             Button buttonAnswerVoice = rootView.findViewById(R.id.button_answer_voice);
+            Button buttonAnswerTts = rootView.findViewById(R.id.button_answer_tts);
             ViewGroup containerGradeButtons = rootView.findViewById(R.id.container_grade_buttons);
             final String answerText;
             if (card.isReversed) {
@@ -296,6 +407,13 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             }
             textAnswer.setOnClickListener(null);
             containerGradeButtons.setVisibility(View.VISIBLE);
+            // follows the answer voice button lifecycle: shown on reveal
+            if (mAppSharedPreferences.isTtsEnabled()
+                    && answerText != null && !answerText.isEmpty()) {
+                buttonAnswerTts.setVisibility(View.VISIBLE);
+            } else {
+                buttonAnswerTts.setVisibility(View.GONE);
+            }
             // Parse the answer markdown off the main thread. Keyed so a second
             // tap (or navigation) disposes any in-flight parse.
             mRxDisposer
@@ -311,7 +429,9 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                                             context.getString(R.string.error_loading_deck), throwable)));
             mBotAnalytics.trackOpenTestAnswer(card.id);
             testState.markAnswerRevealed();
+            mIsAnswerRevealed = true;
         } else if (id == R.id.button_previous) {
+            mAudioService.stopSpeech();
             mRxDisposer
                     .add("onCLick_buttonPrevious",
                             mTestStateModifier
@@ -333,6 +453,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                         Serializable serializable = navRoute.getRouteResult();
                         if (serializable instanceof Boolean) {
                             if ((Boolean) serializable) {
+                                mAudioService.stopSpeech();
                                 CompositeDisposable compositeDisposable = new CompositeDisposable();
                                 compositeDisposable.add(mTestStateModifier
                                         .stopTest(testState)
@@ -349,6 +470,7 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
                         }
                     });
         } else if (id == R.id.button_next) {
+            mAudioService.stopSpeech();
             mRxDisposer
                     .add("onClick_buttonNext",
                             mTestStateModifier
@@ -368,6 +490,8 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
             View rootView = view.getRootView();
             ViewGroup containerGradeButtons = rootView.findViewById(R.id.container_grade_buttons);
             containerGradeButtons.setVisibility(View.GONE);
+            // stop any ongoing speech, also covers the session-complete path
+            mAudioService.stopSpeech();
             mIsGradeInFlight = true;
             // disable nav buttons while the grade is in flight,
             // a concurrent next/previous would double-advance the test
@@ -431,11 +555,78 @@ public class TestPage extends StatefulView<Activity> implements RequireNavigator
         } else if (id == R.id.button_question_voice) {
             File file = card.isReversed ? cardMediaStore.getCardAnswerVoice(card.answerVoice) :
                     cardMediaStore.getCardQuestionVoice(card.questionVoice);
-            mAudioPlayer.play(Uri.fromFile(file));
+            mAudioService.playRecording(Uri.fromFile(file));
         } else if (id == R.id.button_answer_voice) {
             File file = card.isReversed ? cardMediaStore.getCardQuestionVoice(card.questionVoice) :
                     cardMediaStore.getCardAnswerVoice(card.answerVoice);
-            mAudioPlayer.play(Uri.fromFile(file));
+            mAudioService.playRecording(Uri.fromFile(file));
+        } else if (id == R.id.button_question_tts) {
+            speakWithTts(card.isReversed ? card.answer : card.question, card, UTTERANCE_ID_QUESTION);
+        } else if (id == R.id.button_answer_tts) {
+            speakWithTts(card.isReversed ? card.question : card.answer, card, UTTERANCE_ID_ANSWER);
+        }
+    }
+
+    /**
+     * Speaks the given text with the TTS language of the card's deck (system
+     * default when the deck is unknown or has no language set), stopping any
+     * ongoing audio first. Shows a toast when the TTS engine is unavailable.
+     */
+    private void speakWithTts(String text, Card card, String utteranceId) {
+        if (!mAppSharedPreferences.isTtsEnabled() || text == null || text.isEmpty()) {
+            return;
+        }
+        // speak the plain-text extraction, raw markdown/LaTeX markup is
+        // noise when spoken; a strip to empty (e.g. math-only card) is a
+        // silent no-op
+        String speakable = mMarkdownRenderer.toSpeakableText(text);
+        if (speakable.isEmpty()) {
+            return;
+        }
+        Deck deck = card.deckId == null ? null : mDeckByIdMap.get(card.deckId);
+        boolean spoken = mAudioService.speak(speakable, utteranceId,
+                mAudioService.resolveLocale(deck == null ? null : deck.ttsLanguage));
+        if (!spoken) {
+            Context context = mSvProvider.getContext();
+            Toast.makeText(context.getApplicationContext(),
+                    context.getString(R.string.tts_unavailable),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Live TTS-button refresh on the user setting toggle: turning TTS off
+     * hides both buttons and stops any ongoing speech, turning it on
+     * re-evaluates visibility from the current test state (the answer button
+     * only reappears while the current answer is still revealed).
+     */
+    private void handleTtsEnabledChanged(boolean ttsEnabled) {
+        Button buttonQuestionTts = mButtonQuestionTts;
+        Button buttonAnswerTts = mButtonAnswerTts;
+        if (buttonQuestionTts == null || buttonAnswerTts == null) {
+            return;
+        }
+        if (!ttsEnabled) {
+            mAudioService.stopSpeech();
+            buttonQuestionTts.setVisibility(View.GONE);
+            buttonAnswerTts.setVisibility(View.GONE);
+            return;
+        }
+        TestState testState = mTestStateSubject.getValue();
+        Card card = testState == null ? null : testState.currentCard();
+        String questionText = card == null ? null
+                : (card.isReversed ? card.answer : card.question);
+        if (questionText != null && !questionText.isEmpty()) {
+            buttonQuestionTts.setVisibility(View.VISIBLE);
+        } else {
+            buttonQuestionTts.setVisibility(View.GONE);
+        }
+        String answerText = card == null ? null
+                : (card.isReversed ? card.question : card.answer);
+        if (mIsAnswerRevealed && answerText != null && !answerText.isEmpty()) {
+            buttonAnswerTts.setVisibility(View.VISIBLE);
+        } else {
+            buttonAnswerTts.setVisibility(View.GONE);
         }
     }
 }
