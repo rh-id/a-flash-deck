@@ -149,7 +149,8 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
 
     @Override
     protected void onCancelDialog(DialogInterface dialog) {
-        clear();
+        // intentionally empty: cancel must not touch state; a queued main-thread
+        // emission would re-enter afterTextChanged after dispose() released the fields
     }
 
     @Override
@@ -185,11 +186,6 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
     private boolean isUpdate() {
         Args args = getArgs();
         return args != null && args.isUpdate();
-    }
-
-    private void clear() {
-        mDeck.name = "";
-        setNameSubject();
     }
 
     private void setNameSubject() {
@@ -256,6 +252,11 @@ public class DeckDetailSVDialog extends StatefulViewDialog<Activity> implements 
 
     @Override
     public void afterTextChanged(Editable editable) {
+        if (mDeck == null || mNewDeckCmd == null) {
+            // post-dispose delivery: a queued main-thread emission can
+            // invoke this TextWatcher after dispose() released the fields
+            return;
+        }
         mDeck.name = editable.toString();
         mNewDeckCmd.valid(mDeck);
     }
