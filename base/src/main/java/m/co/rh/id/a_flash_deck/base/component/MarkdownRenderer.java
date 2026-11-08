@@ -62,6 +62,13 @@ import m.co.rh.id.aprovider.Provider;
  * scroll-back over previously-seen rows is instant. Parsed {@link Spanned} is NOT
  * cached: latex/image {@code AsyncDrawableSpans} are tied to a specific TextView
  * and must not be reused across views.
+ *
+ * <p>This class also owns the voice path: {@link #toSpeakableText(String)}
+ * decides what a text-to-speech engine should say. The rendering APIs above
+ * serve the eyes (math becomes formulas, images become drawables), while the
+ * speech path drops math and images outright, keeps currency dollars intact,
+ * and is plain conservative synchronous regex rather than the Markwon
+ * pipeline.
  */
 public class MarkdownRenderer {
 
@@ -78,6 +85,102 @@ public class MarkdownRenderer {
      */
     private static final Pattern INLINE_MATH =
             Pattern.compile("\\\\\\((.*?)\\\\\\)", Pattern.DOTALL);
+
+    // ---- speech path ({@link #toSpeakableText}) patterns, prefixed SPEECH_
+    // where they would otherwise clash with the render patterns above ----
+
+    /** Images {@code ![alt](url)}: dropped entirely (alt text is not spoken). */
+    private static final Pattern IMAGES =
+            Pattern.compile("!\\[([^\\]]*)\\]\\([^)]*\\)");
+
+    /** Inline links {@code [text](url)}: keep only the link text. */
+    private static final Pattern LINKS =
+            Pattern.compile("\\[([^\\]]*)\\]\\([^)]*\\)");
+
+    /** Autolinks {@code <https://...>}: keep the bare URL as the text. */
+    private static final Pattern AUTOLINKS =
+            Pattern.compile("<(https?://[^>\\s]+)>");
+
+    /**
+     * Fenced code blocks: drop the {@code ```} fence lines, keep the inner
+     * code text. DOTALL lets the body span lines, MULTILINE anchors the
+     * fences at line starts.
+     */
+    private static final Pattern FENCED_CODE = Pattern.compile(
+            "^[ \\t]{0,3}`{3,}[^`\\n]*\\n(.*?)^[ \\t]{0,3}`{3,}[ \\t]*$",
+            Pattern.MULTILINE | Pattern.DOTALL);
+
+    /** Inline code {@code `code`}: keep the code text, drop the backticks. */
+    private static final Pattern INLINE_CODE =
+            Pattern.compile("`([^`\\n]+)`");
+
+    /** Display math {@code $$...$$}: dropped (speaking math is noise). */
+    private static final Pattern SPEECH_DISPLAY_MATH =
+            Pattern.compile("\\$\\$(.+?)\\$\\$", Pattern.DOTALL);
+
+    /**
+     * Inline math {@code $...$}: dropped. Conservative dollar handling so
+     * currency never matches: the content must not span lines, must not
+     * contain another {@code $}, and no whitespace may sit directly inside
+     * either delimiter ({@code $5 and $10} therefore stays intact).
+     */
+    private static final Pattern SPEECH_INLINE_MATH =
+            Pattern.compile("\\$(?!\\s)([^$\\n]+?)(?<!\\s)\\$");
+
+    /** Anki block math {@code \\[...\\]}: dropped (see MarkdownRenderer). */
+    private static final Pattern SPEECH_ANKI_BLOCK_MATH =
+            Pattern.compile("\\\\\\[(.*?)\\\\\\]", Pattern.DOTALL);
+
+    /** Anki inline math {@code \\(...\\)}: dropped (see MarkdownRenderer). */
+    private static final Pattern SPEECH_ANKI_INLINE_MATH =
+            Pattern.compile("\\\\\\((.*?)\\\\\\)", Pattern.DOTALL);
+
+    /**
+     * Horizontal rules ({@code ---}, {@code ***}, {@code ___} and spaced
+     * variants): dropped. Must run before the list-marker and emphasis
+     * passes, whose markers these lines consist of.
+     */
+    private static final Pattern HORIZONTAL_RULE = Pattern.compile(
+            "^[ \\t]{0,3}(?:[-*_][ \\t]*){3,}$", Pattern.MULTILINE);
+
+    /** ATX headers ({@code ## Title}): drop the marker, keep the title. */
+    private static final Pattern ATX_HEADER = Pattern.compile(
+            "^[ \\t]{0,3}#{1,6}[ \\t]+", Pattern.MULTILINE);
+
+    /** Blockquotes ({@code > text}): drop the markers, keep the text. */
+    private static final Pattern BLOCKQUOTE = Pattern.compile(
+            "^(?:[ \\t]*>[ \\t]*)+", Pattern.MULTILINE);
+
+    /**
+     * List markers ({@code -}, {@code +}, {@code *}, {@code 1.}, {@code 2)}):
+     * drop the marker, keep the item text. A space is required after the
+     * marker (CommonMark), so {@code -5 degrees} stays plain text.
+     */
+    private static final Pattern LIST_MARKER = Pattern.compile(
+            "^[ \\t]{0,3}(?:[-+*]|\\d{1,9}[.)])[ \\t]+", Pattern.MULTILINE);
+
+    /** Bold {@code **text**}: keep the text, drop the markers. */
+    private static final Pattern BOLD = Pattern.compile("\\*\\*(.+?)\\*\\*");
+
+    /** Italic {@code *text*}: keep the text, drop the markers. */
+    private static final Pattern ITALIC_STAR = Pattern.compile("\\*([^*\\n]+)\\*");
+
+    /** Bold {@code __text__}: keep the text, drop the markers. */
+    private static final Pattern BOLD_UNDERSCORE = Pattern.compile("__(.+?)__");
+
+    /**
+     * Italic {@code _text_}: keep the text, drop the markers. Underscore
+     * emphasis is only recognized outside words (CommonMark), so
+     * {@code some_var_name} stays intact.
+     */
+    private static final Pattern ITALIC_UNDERSCORE =
+            Pattern.compile("(?<!\\w)_([^_\\n]+)_(?!\\w)");
+
+    /** HTML tags: stripped, the inner text is kept. */
+    private static final Pattern HTML_TAG = Pattern.compile("<[^>\\n]+>");
+
+    /** Collapses all whitespace runs (incl. newlines) into single spaces. */
+    private static final Pattern WHITESPACE_RUNS = Pattern.compile("\\s+");
 
     /** Bounded cache for plain-text conversions (list-row previews). */
     private static final int PLAIN_TEXT_CACHE_SIZE = 256;
@@ -139,6 +242,61 @@ public class MarkdownRenderer {
                     return result;
                 })
                 .subscribeOn(Schedulers.from(mExecutorService));
+    }
+
+    /**
+     * Converts raw card markdown/LaTeX into speakable plain text, deciding
+     * what a speech engine should say: math and images are dropped rather
+     * than rendered, inline markup is stripped to the carried text, and
+     * dollar signs are handled conservatively so currency is never eaten
+     * as math.
+     *
+     * <p>This is deliberately a different contract from
+     * {@link #toPlainText(String)}: {@code toPlainText} renders for the eyes
+     * through the Markwon pipeline (async, cached, produces formatted
+     * output), while this path intentionally avoids it — it is conservative
+     * synchronous regex over the raw source, no Markwon, no executor, no
+     * cache.
+     *
+     * @param raw the raw card text, may be null
+     * @return null for null input, empty for empty input, otherwise the
+     * plain text with markup removed and whitespace collapsed
+     */
+    public String toSpeakableText(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw.isEmpty()) {
+            return "";
+        }
+        String text = raw;
+        // images first, otherwise the link pass would strip their target and
+        // leave the "!" behind; autolinks must precede the generic HTML tag
+        // strip below, otherwise <https://...> would be dropped entirely
+        text = IMAGES.matcher(text).replaceAll(" ");
+        text = LINKS.matcher(text).replaceAll("$1");
+        text = AUTOLINKS.matcher(text).replaceAll("$1");
+        // code first so math dollar signs inside code are not eaten
+        text = FENCED_CODE.matcher(text).replaceAll(" $1 ");
+        text = INLINE_CODE.matcher(text).replaceAll("$1");
+        text = SPEECH_DISPLAY_MATH.matcher(text).replaceAll(" ");
+        text = SPEECH_INLINE_MATH.matcher(text).replaceAll(" ");
+        text = SPEECH_ANKI_BLOCK_MATH.matcher(text).replaceAll(" ");
+        text = SPEECH_ANKI_INLINE_MATH.matcher(text).replaceAll(" ");
+        // line-level constructs before the emphasis pass, otherwise rule
+        // lines made of * or _ would pair up as emphasis
+        text = HORIZONTAL_RULE.matcher(text).replaceAll(" ");
+        text = ATX_HEADER.matcher(text).replaceAll("");
+        text = BLOCKQUOTE.matcher(text).replaceAll("");
+        text = LIST_MARKER.matcher(text).replaceAll("");
+        // bold before italic within each marker family, so **x** does not
+        // degrade into *x* for the italic pass
+        text = BOLD.matcher(text).replaceAll("$1");
+        text = ITALIC_STAR.matcher(text).replaceAll("$1");
+        text = BOLD_UNDERSCORE.matcher(text).replaceAll("$1");
+        text = ITALIC_UNDERSCORE.matcher(text).replaceAll("$1");
+        text = HTML_TAG.matcher(text).replaceAll(" ");
+        return WHITESPACE_RUNS.matcher(text).replaceAll(" ").trim();
     }
 
     /**

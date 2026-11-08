@@ -19,6 +19,7 @@ package m.co.rh.id.a_flash_deck.base.component;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -47,6 +48,12 @@ import m.co.rh.id.aprovider.ProviderRegistry;
  * <p>{@code translateMathDelimiters} is private, so it is validated indirectly
  * through the public {@link MarkdownRenderer#toPlainText(String)}, which runs
  * the complete {@code mMarkwon.toMarkdown(translateMathDelimiters(md))} chain.
+ *
+ * <p>The {@code speakable_} tests cover the voice path
+ * {@link MarkdownRenderer#toSpeakableText(String)}: markup stripping and
+ * currency-safe dollar handling for what a TTS engine should say, a
+ * deliberately different contract from the eyes path above (null stays null,
+ * math and images are dropped instead of rendered).
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
@@ -192,5 +199,120 @@ public class MarkdownRendererTest {
         assertTrue("expected newline-spanning content present, got: " + result,
                 result.contains("= c"));
         assertFalse("no raw \\[ in result: " + result, result.contains("\\["));
+    }
+
+    // ---- speech path: toSpeakableText decides what a TTS engine says ----
+
+    @Test
+    public void speakable_nullInput_returnsNull() {
+        assertNull(mMarkdownRenderer.toSpeakableText(null));
+    }
+
+    @Test
+    public void speakable_emptyInput_returnsEmpty() {
+        assertEquals("", mMarkdownRenderer.toSpeakableText(""));
+    }
+
+    @Test
+    public void speakable_plainText_isUnchanged() {
+        assertEquals("Hello world, hello TTS",
+                mMarkdownRenderer.toSpeakableText("Hello world, hello TTS"));
+    }
+
+    @Test
+    public void speakable_currencyAmounts_arePreserved() {
+        assertEquals("It costs $5 and $10 total",
+                mMarkdownRenderer.toSpeakableText("It costs $5 and $10 total"));
+    }
+
+    @Test
+    public void speakable_intraWordUnderscores_arePreserved() {
+        assertEquals("some_var_name stays intact",
+                mMarkdownRenderer.toSpeakableText("some_var_name stays intact"));
+    }
+
+    @Test
+    public void speakable_emphasisMarkers_areStripped() {
+        assertEquals("bold italic both",
+                mMarkdownRenderer.toSpeakableText("**bold** *italic* __both__"));
+        assertEquals("underscore italic",
+                mMarkdownRenderer.toSpeakableText("_underscore italic_"));
+    }
+
+    @Test
+    public void speakable_headerMarker_isStrippedAndTitleKept() {
+        assertEquals("Chapter one",
+                mMarkdownRenderer.toSpeakableText("## Chapter one"));
+    }
+
+    @Test
+    public void speakable_inlineCode_backticksStrippedTextKept() {
+        assertEquals("call toString() now",
+                mMarkdownRenderer.toSpeakableText("call `toString()` now"));
+    }
+
+    @Test
+    public void speakable_fencedCode_fencesDroppedInnerTextKept() {
+        assertEquals("int x = 1;",
+                mMarkdownRenderer.toSpeakableText("```java\nint x = 1;\n```"));
+    }
+
+    @Test
+    public void speakable_imageIsDroppedEntirely_andLinkKeepsText() {
+        assertEquals("see and the docs page",
+                mMarkdownRenderer.toSpeakableText(
+                        "see ![diagram](https://example.com/i.png) "
+                                + "and [the docs](https://example.com/docs) page"));
+    }
+
+    @Test
+    public void speakable_autolink_keepsUrlText() {
+        assertEquals("open https://example.com now",
+                mMarkdownRenderer.toSpeakableText("open <https://example.com> now"));
+    }
+
+    @Test
+    public void speakable_blockquoteAndListMarkers_areStripped() {
+        assertEquals("quoted line item one item two third",
+                mMarkdownRenderer.toSpeakableText(
+                        "> quoted line\n- item one\n+ item two\n3) third"));
+    }
+
+    @Test
+    public void speakable_horizontalRule_isDropped() {
+        assertEquals("before after",
+                mMarkdownRenderer.toSpeakableText("before\n\n---\n\nafter"));
+    }
+
+    @Test
+    public void speakable_htmlTags_areStrippedInnerTextKept() {
+        assertEquals("bold line break next",
+                mMarkdownRenderer.toSpeakableText("<b>bold</b> line<br/>break <i>next</i>"));
+    }
+
+    @Test
+    public void speakable_latexDollarSegments_areDropped() {
+        assertEquals("", mMarkdownRenderer.toSpeakableText("$$x^2$$"));
+        assertEquals("twice", mMarkdownRenderer.toSpeakableText("$x$ twice $y$"));
+        assertEquals("area is here", mMarkdownRenderer.toSpeakableText("area is $a^2$ here"));
+    }
+
+    @Test
+    public void speakable_ankiMathDelimiters_areDropped() {
+        assertEquals("", mMarkdownRenderer.toSpeakableText("\\(x^2\\)"));
+        assertEquals("", mMarkdownRenderer.toSpeakableText("\\[\\frac{1}{2}\\]"));
+        assertEquals("the formula is easy",
+                mMarkdownRenderer.toSpeakableText("the formula \\(a+b\\) is easy"));
+    }
+
+    @Test
+    public void speakable_mathOnlyCard_stripsToEmpty() {
+        assertEquals("", mMarkdownRenderer.toSpeakableText("$$\\int_0^1 x\\,dx$$"));
+    }
+
+    @Test
+    public void speakable_whitespaceRuns_areCollapsedAndTrimmed() {
+        assertEquals("a b c",
+                mMarkdownRenderer.toSpeakableText("  a\t\tb\n\nc  "));
     }
 }
