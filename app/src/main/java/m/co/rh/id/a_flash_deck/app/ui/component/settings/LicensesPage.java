@@ -18,6 +18,7 @@
 package m.co.rh.id.a_flash_deck.app.ui.component.settings;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -27,13 +28,26 @@ import m.co.rh.id.anavigator.StatefulView;
 
 public class LicensesPage extends StatefulView<Activity> {
 
+    private static final String TAG = "LicensesPage";
+
     @Override
     protected View createView(Activity activity, ViewGroup container) {
-        View view = activity.getLayoutInflater().inflate(R.layout.page_licenses,
-                container, false);
-        WebView webView = view.findViewById(R.id.webView);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl("file:///android_asset/licenses.html");
-        return view;
+        try {
+            View view = activity.getLayoutInflater().inflate(R.layout.page_licenses,
+                    container, false);
+            WebView webView = view.findViewById(R.id.webView);
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.loadUrl("file:///android_asset/licenses.html");
+            return view;
+        } catch (RuntimeException e) {
+            // WebView provider missing/broken on this device (e.g. AOSP images
+            // without any WebView). InflateException wraps
+            // MissingWebViewPackageException; RuntimeException also covers
+            // broken-provider construction failures. Navigate fallback so the
+            // push completes and back works.
+            Log.e(TAG, "WebView unavailable, showing fallback licenses page", e);
+            return activity.getLayoutInflater().inflate(
+                    R.layout.page_licenses_unavailable, container, false);
+        }
     }
 }

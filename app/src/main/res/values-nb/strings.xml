@@ -192,4 +192,5 @@
     <string name="scheduler_desired_retention">Ønsket hukommelsesprosent</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Klarte ikke å planlegge kortøvinger på nytt</string>
+    <string name="licenses_webview_unavailable">WebView er ikke tilgjengelig på denne enheten. Kan ikke vise lisenser.</string>
 </resources>

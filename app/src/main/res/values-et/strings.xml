@@ -192,4 +192,5 @@
     <string name="scheduler_desired_retention">Soovitud mäletamismäär</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Kaartide korduste ümberplaneerimine ebaõnnestus</string>
+    <string name="licenses_webview_unavailable">WebView ei ole selles seadmes saadaval. Litsentside kuvamine pole võimalik.</string>
 </resources>

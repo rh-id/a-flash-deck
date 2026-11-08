@@ -192,4 +192,5 @@
     <string name="scheduler_desired_retention">Ritenzione desiderata</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Ripianificazione delle ripetizioni delle carte non riuscita</string>
+    <string name="licenses_webview_unavailable">WebView non disponibile su questo dispositivo. Impossibile visualizzare le licenze.</string>
 </resources>

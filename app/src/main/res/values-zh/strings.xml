@@ -193,4 +193,5 @@
     <string name="scheduler_desired_retention">目标记忆保留率</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">重新安排卡片复习失败</string>
+    <string name="licenses_webview_unavailable">此设备不支持 WebView，无法显示许可证。</string>
 </resources>

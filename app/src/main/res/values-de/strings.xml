@@ -192,4 +192,5 @@
     <string name="scheduler_desired_retention">Gewünschte Behaltensquote</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Kartenwiederholungen konnten nicht neu geplant werden</string>
+    <string name="licenses_webview_unavailable">WebView ist auf diesem Gerät nicht verfügbar. Lizenzen können nicht angezeigt werden.</string>
 </resources>

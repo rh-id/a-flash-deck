@@ -192,4 +192,5 @@
     <string name="scheduler_desired_retention">Æskilegt munadarhlutfall</string>
     <string name="scheduler_retention_percent_format">%d%%</string>
     <string name="error_failed_to_reschedule_reviews">Mistókst að enduráætla spjaldaæfingar</string>
+    <string name="licenses_webview_unavailable">WebView er ekki tiltækt á þessu tæki. Ekki er hægt að birta leyfi.</string>
 </resources>

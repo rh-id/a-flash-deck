@@ -192,4 +192,5 @@
     <string name="stats_by_deck">By deck</string>
     <string name="stats_deck_summary">%1$d cards · %2$d due</string>
     <string name="stats_empty_history">No review history yet. Grade cards in a test and your statistics will appear here.</string>
+    <string name="licenses_webview_unavailable">WebView is not available on this device. Unable to display licenses.</string>
 </resources>
