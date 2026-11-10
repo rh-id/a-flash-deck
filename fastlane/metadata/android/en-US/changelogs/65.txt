@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Features:
+* Text-to-speech for flashcards — speak a card's question and answer with dedicated buttons on the study pages, set the language per deck, and optionally auto-speak the question when a test opens
+* New text-to-speech settings — enable speech, auto-speak the question, test the voice and check the engine status; the grading notification reads the answer aloud too
+
+Fixes:
+* The deck dialog no longer crashes when dismissed with BACK or ESC
+* The licenses page now shows a fallback message on devices without WebView

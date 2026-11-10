@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Nouveautés :
+* Synthèse vocale des cartes — lisez la question et la réponse d'une carte via des boutons dédiés sur les pages d'étude, réglez la langue par paquet et faites lire automatiquement la question à l'ouverture d'un test
+* Nouveaux paramètres de synthèse vocale — activer la voix, lire automatiquement la question, tester la voix et vérifier l'état du moteur ; la notification d'évaluation lit aussi la réponse à voix haute
+
+Corrections :
+* Correction du crash à la fermeture du dialogue de paquet avec RETOUR ou ÉCHAP
+* La page des licences affiche désormais un message lorsque WebView n'est pas disponible sur l'appareil

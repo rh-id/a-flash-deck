@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Nýtt:
+* Texti í tal fyrir spjöld — lesið upp spurningu og svar spjalds með sérstökum hnöppum á æfingasíðum, stillið tungumálið fyrir hverja kortastoklu og látið spurninguna lesast sjálfvirkt upp í prófum
+* Nýir texti-í-tal-stillingar — virkja tal, lesa spurningu sjálfvirkt, prófa rödd og sjá stöðu vélarinnar; einkunnatilkynningin les svörið líka upp
+
+Villuleiðréttingar:
+* Lagfært hrun þegar stokkuglugganum er lokað með TIL BAKA eða ESC
+* Leyfissíðan birtir nú skilaboð þegar WebView er ekki tiltækt á tækinu

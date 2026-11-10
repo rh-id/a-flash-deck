@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Uuendus:
+* Kaartide ettelugemine (tekstist kõneks) — õppelehtedel saab nuppudega ette lugeda kaardi küsimuse ja vastuse, keel saab olla iga kaardipaki jaoks eraldi ning küsimust saab testi avamisel automaatselt ette lugeda
+* Uued tekstist kõneks sätted — kõne lubamine, küsimuse automaatne ettelugemine, hääle testimine ja mootori oleku kontroll; hindamise märguanne loeb vastuse samuti ette
+
+Parandused:
+* Parandatud krahh kaardipaki dialoogi sulgemisel nuppudega TAGASI või ESC
+* Litsentside leht kuvab nüüd teate, kui seadmes pole WebView saadaval

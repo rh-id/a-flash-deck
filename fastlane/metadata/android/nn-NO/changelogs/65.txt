@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Ny funksjon:
+* Tekst-til-tale for kort — les opp spørsmål og svar på eit kort med eigne knappar på studiesidene, vel språk per stokk og la spørsmålet lesast automatisk når ein test blir opna
+* Nye tekst-til-tale-innstillingar — aktiver tale, les spørsmålet automatisk, test stemmen og sjekk motorstatus; vurderingsvarselet les òg svaret høgt
+
+Feilrettingar:
+* Fiksa krasj når stokk-dialogen blir lukka med TILBAKE eller ESC
+* Lisenssida viser no ei melding når WebView ikkje er tilgjengeleg på eininga

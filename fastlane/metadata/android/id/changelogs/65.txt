@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Fitur:
+* Teks ke suara untuk kartu — ucapkan pertanyaan dan jawaban kartu dengan tombol khusus di halaman belajar, atur bahasa per dek, dan pertanyaan dapat diucapkan otomatis saat tes dibuka
+* Pengaturan teks ke suara baru — aktifkan suara, ucapkan pertanyaan otomatis, uji suara, dan periksa status mesin; notifikasi penilaian juga mengucapkan jawaban
+
+Perbaikan:
+* Memperbaiki crash saat menutup dialog dek dengan tombol KEMBALI atau ESC
+* Halaman lisensi kini menampilkan pesan jika WebView tidak tersedia di perangkat

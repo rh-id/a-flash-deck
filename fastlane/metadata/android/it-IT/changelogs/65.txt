@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Novità:
+* Sintesi vocale per le carte — leggi a voce alta domanda e risposta di una carta con pulsanti dedicati nelle pagine di studio, imposta la lingua per singolo mazzo e fai leggere automaticamente la domanda all'apertura di un test
+* Nuove impostazioni di sintesi vocale — attiva la voce, leggi automaticamente la domanda, prova la voce e controlla lo stato del motore; anche la notifica di valutazione legge la risposta ad alta voce
+
+Correzioni:
+* Corretto l'arresto anomalo alla chiusura della finestra del mazzo con INDIETRO o ESC
+* La pagina delle licenze ora mostra un messaggio quando WebView non è disponibile sul dispositivo

@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Nova funcziun:
+* Sintesa da vusch per cartas — legiai a clom la dumonda e la resposta d'ina carta cun buttuns specifics sin las paginas d'emprender, defini la lingua per mintga stack e laschai legiar la dumonda automaticamain cun avrir in test
+* Novs parameters da sintesa da vusch — activar la vusch, legiar la dumonda automaticamain, emprovar la vusch e controllar il stadi dal motor; l'avert d'assessament legia era la resposta a clom
+
+Corecziuns:
+* Chastogni dal crash tar la serrada dal dialog da stack cun ENAVOS u ESC
+* La pagina da las licenzas mussa uss in messadi scha WebView n'è betg disponibel sin l'apparat

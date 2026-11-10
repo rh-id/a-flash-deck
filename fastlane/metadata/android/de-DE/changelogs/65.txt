@@ -1,0 +1,9 @@
+Release 2.5.0+65
+
+Neu:
+* Text-zu-Sprache für Karten — lesen Sie Frage und Antwort einer Karte über eigene Schaltflächen auf den Lernseiten vor, legen Sie die Sprache pro Stapel fest und lassen Sie die Frage in Tests optional automatisch vorlesen
+* Neue Text-zu-Sprache-Einstellungen — Sprachausgabe aktivieren, Frage automatisch vorlesen, Stimme testen und Status der Engine prüfen; die Bewertungsbenachrichtigung liest die Antwort ebenfalls vor
+
+Fehlerbehebungen:
+* Absturz behoben, wenn der Stapel-Dialog mit ZURÜCK oder ESC geschlossen wird
+* Die Lizenzseite zeigt jetzt einen Hinweis an, wenn auf dem Gerät kein WebView verfügbar ist
