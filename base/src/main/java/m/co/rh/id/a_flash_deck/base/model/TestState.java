@@ -17,9 +17,14 @@
 
 package m.co.rh.id.a_flash_deck.base.model;
 
+import androidx.annotation.Nullable;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import m.co.rh.id.a_flash_deck.base.entity.Card;
@@ -46,11 +51,36 @@ public class TestState implements Serializable {
     private transient long mCardRevealedAtMs;
     // elapsed time in ms actually spent viewing/answering cards
     private long mElapsedMs;
+    // active test mode, TestMode.SELF_GRADE or TestMode.MULTIPLE_CHOICE
+    private int mTestMode = TestMode.SELF_GRADE;
+    // generated multiple-choice options per card id, they are serialized
+    // with the state so a resumed test shows the exact same options the
+    // card was first shown with (stable across navigation and app restart)
+    private HashMap<Long, McqOptions> mMcqOptionsByCardId = new HashMap<>();
+    // distractor card ids to exclude when the options of a card are
+    // regenerated (stashed on a AGAIN requeue, consumed on the re-show),
+    // also serialized for resume safety
+    private HashMap<Long, ArrayList<Long>> mPendingDistractorExclusions = new HashMap<>();
 
     public TestState(List<Card> choosenCards, long testId) {
         mChoosenCards = new ArrayList<>();
         mChoosenCards.addAll(choosenCards);
         mTestId = testId;
+    }
+
+    private void readObject(ObjectInputStream objectInputStream)
+            throws IOException, ClassNotFoundException {
+        objectInputStream.defaultReadObject();
+        // test states serialized by older app versions carry no values for
+        // the MCQ fields (mTestMode deserializes as 0 == SELF_GRADE, the
+        // maps are absent), initialize the maps so resuming such a state
+        // never runs into a NullPointerException
+        if (mMcqOptionsByCardId == null) {
+            mMcqOptionsByCardId = new HashMap<>();
+        }
+        if (mPendingDistractorExclusions == null) {
+            mPendingDistractorExclusions = new HashMap<>();
+        }
     }
 
     public Card previousCard() {
@@ -177,11 +207,79 @@ public class TestState implements Serializable {
         return total;
     }
 
+    public int getTestMode() {
+        return mTestMode;
+    }
+
+    public void setTestMode(int testMode) {
+        mTestMode = TestMode.normalize(testMode);
+    }
+
+    /**
+     * @return the generated multiple-choice options of the given card,
+     * null when none were generated. These survive serialization so a
+     * resumed test re-shows the exact same options (resume-safe)
+     */
+    @Nullable
+    public McqOptions getMcqOptions(long cardId) {
+        return mMcqOptionsByCardId.get(cardId);
+    }
+
+    /**
+     * Stores the generated multiple-choice options of the given card,
+     * they persist with the serialized state until removed
+     */
+    public void putMcqOptions(long cardId, McqOptions mcqOptions) {
+        mMcqOptionsByCardId.put(cardId, mcqOptions);
+    }
+
+    /**
+     * Removes the stored multiple-choice options of the given card,
+     * e.g. so a re-queued card regenerates a fresh set
+     */
+    public void removeMcqOptions(long cardId) {
+        mMcqOptionsByCardId.remove(cardId);
+    }
+
+    /**
+     * Stashes distractor card ids to exclude when the options of the
+     * given card are regenerated, they survive serialization so the
+     * exclusion also holds across an app restart before the re-show
+     */
+    public void stashPendingExclusions(long cardId, List<Long> distractorCardIds) {
+        mPendingDistractorExclusions.put(cardId, new ArrayList<>(distractorCardIds));
+    }
+
+    /**
+     * Reads the pending distractor exclusions of the given card without
+     * removing them, e.g. to run a generation attempt against the stashed
+     * ids before they are consumed
+     *
+     * @return the stashed ids, or null when none were stashed
+     */
+    @Nullable
+    public List<Long> peekPendingExclusions(long cardId) {
+        return mPendingDistractorExclusions.get(cardId);
+    }
+
+    /**
+     * Consumes the pending distractor exclusions of the given card.
+     *
+     * @return the stashed ids, or null when none were stashed; the entry
+     * is removed either way so exclusions apply exactly once
+     */
+    @Nullable
+    public List<Long> consumePendingExclusions(long cardId) {
+        return mPendingDistractorExclusions.remove(cardId);
+    }
+
     /**
      * The split of the time spent on a card: before and after its answer
      * was revealed
      */
-    public static class AnswerTiming {
+    public static class AnswerTiming implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         public final long beforeRevealMs;
         public final long afterRevealMs;
 

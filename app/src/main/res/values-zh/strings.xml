@@ -143,6 +143,13 @@
     <string name="test_suspended_cards_skipped">已跳过暂停的卡片（%1$d）</string>
     <string name="error_no_due_cards">当前没有待学习的到期卡片。新卡片始终包含在内。</string>
     <string name="error_saving_card_grade">保存评分失败</string>
+    <string name="test_mode">测试模式</string>
+    <string name="test_mode_self_grade">自评模式</string>
+    <string name="test_mode_self_grade_desc">自己揭示答案，然后评价掌握程度（忘记 / 困难 / 良好 / 简单）。</string>
+    <string name="test_mode_multiple_choice">选择题</string>
+    <string name="test_mode_mcq_desc">从牌组中其他卡牌生成的选项里选出正确答案。</string>
+    <string name="mcq_choose_answer">请选择答案</string>
+    <string name="mcq_tap_next_to_continue">点按“下一个”继续</string>
     <string name="suspend_card">暂停</string>
     <string name="unsuspend_card">取消暂停</string>
     <string name="card_suspended">已暂停</string>

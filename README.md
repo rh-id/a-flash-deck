@@ -46,6 +46,7 @@ A simple and easy to use flash card app to help you study.
 * Per-deck due badges on the deck list, with a "Study Due Cards" flow that tests a single deck's due/new cards
 * Grade your recall during tests (Again / Hard / Good / Easy) to schedule each card's next review
 * Cards graded "Again" are re-queued and asked again within the same test session
+* Multiple-choice test mode — pick the correct answer from options generated from the deck's other cards; the result icon and revealed answer stay on screen until you press NEXT (choose the mode when starting a test via deck selection)
 * Test session summary — total answers and elapsed time shown when a test finishes
 * Suspend cards to set them aside — suspended cards are excluded from study and test flows (Study Due, Start Test, bot suggestions)
 * Statistics page — reviews today, day streak, retention (last 30 days), today's grade breakdown, due forecast for the next 14 days, and per-deck due/new progress (history starts from when this feature shipped)

@@ -158,6 +158,13 @@
     <string name="test_suspended_cards_skipped">Suspended cards skipped (%1$d)</string>
     <string name="error_no_due_cards">No cards are due for study right now. New cards are always included.</string>
     <string name="error_saving_card_grade">Failed to save grade</string>
+    <string name="test_mode">Test mode</string>
+    <string name="test_mode_self_grade">Self grade</string>
+    <string name="test_mode_self_grade_desc">Reveal the answer yourself, then grade how well you knew it (Again / Hard / Good / Easy).</string>
+    <string name="test_mode_multiple_choice">Multiple choice</string>
+    <string name="test_mode_mcq_desc">Pick the correct answer from options generated from the other cards of the deck.</string>
+    <string name="mcq_choose_answer">Choose an answer</string>
+    <string name="mcq_tap_next_to_continue">Tap NEXT to continue</string>
     <string name="suspend_card">Suspend</string>
     <string name="unsuspend_card">Unsuspend</string>
     <string name="card_suspended">Suspended</string>

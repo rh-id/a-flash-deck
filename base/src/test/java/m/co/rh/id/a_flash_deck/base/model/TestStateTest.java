@@ -18,6 +18,8 @@
 package m.co.rh.id.a_flash_deck.base.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
@@ -155,5 +157,89 @@ public class TestStateTest {
         assertEquals(1, deserialized.getGradeCounts()[ReviewScheduler.GRADE_GOOD]);
         assertEquals(1, deserialized.getTotalAnswers());
         assertEquals(5000, deserialized.getElapsedMs());
+    }
+
+    @Test
+    public void mcqDefaults_afterConstruction() {
+        TestState testState = newTestState(newCard(1));
+        assertEquals(TestMode.SELF_GRADE, testState.getTestMode());
+        assertNull(testState.getMcqOptions(1L));
+        assertNull(testState.consumePendingExclusions(1L));
+    }
+
+    @Test
+    public void setTestMode_normalizesUnknownValues() {
+        TestState testState = newTestState(newCard(1));
+        testState.setTestMode(TestMode.MULTIPLE_CHOICE);
+        assertEquals(TestMode.MULTIPLE_CHOICE, testState.getTestMode());
+        testState.setTestMode(99);
+        assertEquals(TestMode.SELF_GRADE, testState.getTestMode());
+    }
+
+    @Test
+    public void mcqState_roundTripsThroughSerialization() throws Exception {
+        TestState testState = newTestState(newCard(1), newCard(2), newCard(3), newCard(4));
+        testState.setTestMode(TestMode.MULTIPLE_CHOICE);
+        McqOptions options = new McqOptions(
+                Arrays.asList("Correct", "D2", "D3", "D4"), 0,
+                Arrays.asList(2L, 3L, 4L));
+        testState.putMcqOptions(1L, options);
+        testState.stashPendingExclusions(1L, Arrays.asList(2L, 3L, 4L));
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
+            objectOutputStream.writeObject(testState);
+        }
+        TestState deserialized;
+        try (ObjectInputStream objectInputStream = new ObjectInputStream(
+                new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))) {
+            deserialized = (TestState) objectInputStream.readObject();
+        }
+
+        assertEquals(TestMode.MULTIPLE_CHOICE, deserialized.getTestMode());
+        McqOptions deserializedOptions = deserialized.getMcqOptions(1L);
+        assertNotNull(deserializedOptions);
+        assertEquals(options.getOptionTexts(), deserializedOptions.getOptionTexts());
+        assertEquals(options.getCorrectIndex(), deserializedOptions.getCorrectIndex());
+        assertEquals(options.getDistractorCardIds(), deserializedOptions.getDistractorCardIds());
+        assertEquals(Arrays.asList(2L, 3L, 4L),
+                deserialized.consumePendingExclusions(1L));
+        assertNull(deserialized.consumePendingExclusions(1L));
+    }
+
+    @Test
+    public void consumePendingExclusions_returnsStashedIdsOnceThenNull() {
+        TestState testState = newTestState(newCard(1));
+        assertNull(testState.consumePendingExclusions(1L));
+        testState.stashPendingExclusions(1L, Arrays.asList(2L, 3L));
+        assertEquals(Arrays.asList(2L, 3L), testState.consumePendingExclusions(1L));
+        assertNull(testState.consumePendingExclusions(1L));
+        // stashing again after consumption works independently
+        testState.stashPendingExclusions(1L, Arrays.asList(4L));
+        assertEquals(Arrays.asList(4L), testState.consumePendingExclusions(1L));
+    }
+
+    @Test
+    public void peekPendingExclusions_readsWithoutRemoving() {
+        TestState testState = newTestState(newCard(1));
+        assertNull(testState.peekPendingExclusions(1L));
+        testState.stashPendingExclusions(1L, Arrays.asList(2L, 3L));
+        // peeking is non-destructive: repeated peeks are stable
+        assertEquals(Arrays.asList(2L, 3L), testState.peekPendingExclusions(1L));
+        assertEquals(Arrays.asList(2L, 3L), testState.peekPendingExclusions(1L));
+        // consume still removes the entry exactly once afterwards
+        assertEquals(Arrays.asList(2L, 3L), testState.consumePendingExclusions(1L));
+        assertNull(testState.peekPendingExclusions(1L));
+        assertNull(testState.consumePendingExclusions(1L));
+    }
+
+    @Test
+    public void removeMcqOptions_dropsStoredOptions() {
+        TestState testState = newTestState(newCard(1));
+        testState.putMcqOptions(1L, new McqOptions(
+                Arrays.asList("Correct", "D2", "D3"), 0, Arrays.asList(2L, 3L)));
+        assertNotNull(testState.getMcqOptions(1L));
+        testState.removeMcqOptions(1L);
+        assertNull(testState.getMcqOptions(1L));
     }
 }

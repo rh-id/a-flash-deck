@@ -35,6 +35,7 @@ import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.component.AudioRecorder;
 import m.co.rh.id.a_flash_deck.base.component.AudioService;
 import m.co.rh.id.a_flash_deck.base.component.MarkdownRenderer;
+import m.co.rh.id.a_flash_deck.base.component.McqDistractorGenerator;
 import m.co.rh.id.a_flash_deck.base.provider.navigator.CommonNavConfig;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.DeckChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.NotificationTimeChangeNotifier;
@@ -93,6 +94,7 @@ public class BaseProviderModule implements ProviderModule {
         providerRegistry.registerLazy(ImageHelper.class, () -> new ImageHelper(provider));
         providerRegistry.registerLazy(CardMediaStore.class, () -> new CardMediaStore(provider));
         providerRegistry.registerLazy(MarkdownRenderer.class, () -> new MarkdownRenderer(provider));
+        providerRegistry.registerLazy(McqDistractorGenerator.class, McqDistractorGenerator::new);
         providerRegistry.registerLazy(CommonNavConfig.class, CommonNavConfig::new);
         providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
         providerRegistry.registerLazy(AudioRecorder.class, () -> new AudioRecorder(provider));

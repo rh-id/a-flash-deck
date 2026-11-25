@@ -142,6 +142,13 @@
     <string name="test_suspended_cards_skipped">Kort på pause vart hoppa over (%1$d)</string>
     <string name="error_no_due_cards">Ingen kort står for tur til øving akkurat no. Nye kort er alltid inkluderte.</string>
     <string name="error_saving_card_grade">Klarte ikkje å lagra vurderinga</string>
+    <string name="test_mode">Testmodus</string>
+    <string name="test_mode_self_grade">Sjølvvurdering</string>
+    <string name="test_mode_self_grade_desc">Vis svaret sjølv, og vurder deretter kor godt du kjende det (Igjen / Vanskeleg / Bra / Enkel).</string>
+    <string name="test_mode_multiple_choice">Fleire val</string>
+    <string name="test_mode_mcq_desc">Vel riktig svar blant alternativ laga frå dei andre korta i kortstokken.</string>
+    <string name="mcq_choose_answer">Vel eit svar</string>
+    <string name="mcq_tap_next_to_continue">Trykk NESTE for å halde fram</string>
     <string name="suspend_card">Sett på pause</string>
     <string name="unsuspend_card">Gjenoppta</string>
     <string name="card_suspended">Pausa</string>

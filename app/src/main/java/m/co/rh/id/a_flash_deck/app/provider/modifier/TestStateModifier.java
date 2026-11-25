@@ -40,6 +40,8 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
+import m.co.rh.id.a_flash_deck.base.component.McqDistractorGenerator;
 import m.co.rh.id.a_flash_deck.base.dao.CardDao;
 import m.co.rh.id.a_flash_deck.base.dao.StudyDao;
 import m.co.rh.id.a_flash_deck.base.dao.TestDao;
@@ -47,8 +49,10 @@ import m.co.rh.id.a_flash_deck.base.entity.Card;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.entity.Test;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
+import m.co.rh.id.a_flash_deck.base.model.McqOptions;
 import m.co.rh.id.a_flash_deck.base.model.ReviewScheduler;
 import m.co.rh.id.a_flash_deck.base.model.TestEvent;
+import m.co.rh.id.a_flash_deck.base.model.TestMode;
 import m.co.rh.id.a_flash_deck.base.model.TestState;
 import m.co.rh.id.a_flash_deck.base.provider.notifier.TestChangeNotifier;
 import m.co.rh.id.a_flash_deck.base.repository.StudyRepository;
@@ -68,6 +72,8 @@ public class TestStateModifier {
     private ProviderValue<StudyRepository> mStudyRepository;
     private ProviderValue<TestDao> mTestDao;
     private ProviderValue<ILogger> mLogger;
+    private ProviderValue<AppSharedPreferences> mAppSharedPreferences;
+    private ProviderValue<McqDistractorGenerator> mMcqDistractorGenerator;
 
     public TestStateModifier(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -78,6 +84,8 @@ public class TestStateModifier {
         mStudyRepository = provider.lazyGet(StudyRepository.class);
         mTestDao = provider.lazyGet(TestDao.class);
         mLogger = provider.lazyGet(ILogger.class);
+        mAppSharedPreferences = provider.lazyGet(AppSharedPreferences.class);
+        mMcqDistractorGenerator = provider.lazyGet(McqDistractorGenerator.class);
     }
 
     public Single<TestState> previousCard(TestState testState) {
@@ -89,6 +97,7 @@ public class TestStateModifier {
                 }
                 Test test = mTestDao.get().getTestById(testState.getTestId());
                 testState.onCardShown();
+                generateMcqOptionsIfNeeded(testState);
                 serializeTest(testState, test);
                 mTestChangeNotifier.get().testStateChange(testState);
                 return testState;
@@ -105,6 +114,7 @@ public class TestStateModifier {
                 }
                 Test test = mTestDao.get().getTestById(testState.getTestId());
                 testState.onCardShown();
+                generateMcqOptionsIfNeeded(testState);
                 serializeTest(testState, test);
                 mTestChangeNotifier.get().testStateChange(testState);
                 return testState;
@@ -136,6 +146,16 @@ public class TestStateModifier {
                     boolean requeued = grade == ReviewScheduler.GRADE_AGAIN;
                     if (requeued) {
                         testState.requeueCurrentCard();
+                        // in MCQ mode, remember the shown distractors and drop
+                        // the used options so the re-show regenerates a fresh
+                        // non-repeating set
+                        if (testState.getTestMode() == TestMode.MULTIPLE_CHOICE) {
+                            McqOptions mcqOptions = testState.getMcqOptions(card.id);
+                            if (mcqOptions != null) {
+                                testState.stashPendingExclusions(card.id, mcqOptions.getDistractorCardIds());
+                                testState.removeMcqOptions(card.id);
+                            }
+                        }
                     }
                 }
                 // check BEFORE nextCard(): TestState.nextCard() no-ops on the last card
@@ -143,6 +163,7 @@ public class TestStateModifier {
                 if (!sessionComplete) {
                     testState.nextCard();
                     testState.onCardShown();
+                    generateMcqOptionsIfNeeded(testState);
                     serializeTest(testState, test);
                     mTestChangeNotifier.get().testStateChange(testState);
                 }
@@ -203,6 +224,9 @@ public class TestStateModifier {
                 testState = deserializeTest(test);
                 // the card is shown again on resume, restart its elapsed time
                 testState.onCardShown();
+                // regenerate missing MCQ options so a resumed test can also
+                // render cards whose options were never generated before
+                generateMcqOptionsIfNeeded(testState);
             } catch (Exception e) {
                 mLogger.get().d(TAG, "Failed to load test state", e);
                 mExecutorService.get().execute(() -> {
@@ -224,10 +248,11 @@ public class TestStateModifier {
      * Suspended cards are excluded from the test and the number of excluded
      * cards is reported via {@link StartTestResult#skippedSuspendedCount}.
      *
+     * @param testMode the test mode to run, normalized via {@link TestMode#normalize(int)}
      * @return the newly started test state with the excluded suspended count
      * @throws ValidationException when the deck list is empty or no selectable cards remain
      */
-    public Single<StartTestResult> startTest(List<Deck> deckList) {
+    public Single<StartTestResult> startTest(List<Deck> deckList, int testMode) {
         return Single.fromCallable(() -> {
                     synchronized (mLock) {
                         if (deckList != null && !deckList.isEmpty()) {
@@ -238,7 +263,7 @@ public class TestStateModifier {
                             List<Card> allCards = mCardDao.get().findCardByDeckIds(deckIds);
                             List<Card> selectableCards = mStudyDao.get().findNonSuspendedCardsByDeckIds(deckIds);
                             int skippedSuspended = allCards.size() - selectableCards.size();
-                            return new StartTestResult(prepareTest(selectableCards), skippedSuspended);
+                            return new StartTestResult(prepareTest(selectableCards, testMode), skippedSuspended);
                         } else {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }
@@ -261,7 +286,8 @@ public class TestStateModifier {
                         if (cardList.isEmpty()) {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_due_cards));
                         }
-                        return prepareTest(cardList);
+                        return prepareTest(cardList, TestMode.normalize(
+                                mAppSharedPreferences.get().getLastTestMode()));
                     }
                 })
                 .subscribeOn(Schedulers.from(mExecutorService.get()));
@@ -286,7 +312,8 @@ public class TestStateModifier {
                             if (cardList.isEmpty()) {
                                 throw new ValidationException(mAppContext.getString(R.string.error_no_due_cards));
                             }
-                            return prepareTest(cardList);
+                            return prepareTest(cardList, TestMode.normalize(
+                                    mAppSharedPreferences.get().getLastTestMode()));
                         } else {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_due_cards));
                         }
@@ -307,7 +334,8 @@ public class TestStateModifier {
                     synchronized (mLock) {
                         if (cardIds != null && !cardIds.isEmpty()) {
                             List<Card> selectableCards = mStudyDao.get().findNonSuspendedCardsByCardIds(cardIds);
-                            return prepareTest(selectableCards);
+                            return prepareTest(selectableCards, TestMode.normalize(
+                                    mAppSharedPreferences.get().getLastTestMode()));
                         } else {
                             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
                         }
@@ -317,7 +345,7 @@ public class TestStateModifier {
     }
 
     @NonNull
-    public TestState prepareTest(List<Card> cardList) throws IOException {
+    public TestState prepareTest(List<Card> cardList, int testMode) throws IOException {
         if (cardList.isEmpty()) {
             throw new ValidationException(mAppContext.getString(R.string.error_no_card_from_deck));
         } else {
@@ -338,11 +366,47 @@ public class TestStateModifier {
             test.stateFileLocation = stateFile.getAbsolutePath();
             mTestDao.get().insertTest(test);
             TestState testState = new TestState(cardList, test.id);
+            testState.setTestMode(TestMode.normalize(testMode));
             testState.onSessionStarted();
+            generateMcqOptionsIfNeeded(testState);
             serializeTest(testState, test);
             TestEvent event = new TestEvent(testState, test);
             mTestChangeNotifier.get().startTest(event);
             return testState;
+        }
+    }
+
+    /**
+     * Generates the multiple-choice options of the current card when the
+     * test runs in MCQ mode. Options are kept in the TestState (and thus
+     * serialized) so they stay stable across prev/next navigation and app
+     * restarts; they are only regenerated once consumed (e.g. after an
+     * AGAIN requeue), honoring the stashed distractor exclusions so the
+     * same option set does not immediately repeat.
+     */
+    private void generateMcqOptionsIfNeeded(TestState testState) {
+        if (testState.getTestMode() != TestMode.MULTIPLE_CHOICE) {
+            return;
+        }
+        Card current = testState.currentCard();
+        if (current == null || current.id == null) {
+            return;
+        }
+        if (testState.getMcqOptions(current.id) != null) {
+            // already generated, stable across navigation & resume
+            return;
+        }
+        // honor the stashed exclusion ids of a previous requeue, so the
+        // re-show does not repeat the same distractor set (unless the pool
+        // would fall below 2 candidates); the stash is only consumed once
+        // generation actually stored options — a failed generate (null)
+        // keeps the exclusions intact for the next regeneration attempt
+        List<Long> exclusions = testState.peekPendingExclusions(current.id);
+        McqOptions options = mMcqDistractorGenerator.get().generate(
+                current, testState.getCards(), exclusions, new Random());
+        if (options != null) {
+            testState.consumePendingExclusions(current.id);
+            testState.putMcqOptions(current.id, options);
         }
     }
 

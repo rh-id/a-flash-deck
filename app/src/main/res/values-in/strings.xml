@@ -142,6 +142,13 @@
     <string name="test_suspended_cards_skipped">Kartu ditangguhkan dilewati (%1$d)</string>
     <string name="error_no_due_cards">Tidak ada kartu yang jatuh tempo untuk dipelajari saat ini. Kartu baru selalu disertakan.</string>
     <string name="error_saving_card_grade">Gagal menyimpan penilaian</string>
+    <string name="test_mode">Mode tes</string>
+    <string name="test_mode_self_grade">Penilaian mandiri</string>
+    <string name="test_mode_self_grade_desc">Tampilkan jawabannya sendiri, lalu nilai seberapa baik Anda mengenalnya (Ulangi / Sulit / Baik / Mudah).</string>
+    <string name="test_mode_multiple_choice">Pilihan ganda</string>
+    <string name="test_mode_mcq_desc">Pilih jawaban yang benar dari opsi yang dibuat dari kartu lain di dek.</string>
+    <string name="mcq_choose_answer">Pilih sebuah jawaban</string>
+    <string name="mcq_tap_next_to_continue">Ketuk SELANJUTNYA untuk melanjutkan</string>
     <string name="suspend_card">Tangguhkan</string>
     <string name="unsuspend_card">Batalkan penangguhan</string>
     <string name="card_suspended">Ditangguhkan</string>

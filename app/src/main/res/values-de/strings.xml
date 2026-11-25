@@ -142,6 +142,13 @@
     <string name="test_suspended_cards_skipped">Ausgesetzte Karten übersprungen (%1$d)</string>
     <string name="error_no_due_cards">Für das Lernen sind derzeit keine Karten fällig. Neue Karten werden immer einbezogen.</string>
     <string name="error_saving_card_grade">Fehler beim Speichern der Bewertung</string>
+    <string name="test_mode">Testmodus</string>
+    <string name="test_mode_self_grade">Selbst bewerten</string>
+    <string name="test_mode_self_grade_desc">Decke die Antwort selbst auf und bewerte dann, wie gut du sie kanntest (Nochmal / Schwer / Gut / Leicht).</string>
+    <string name="test_mode_multiple_choice">Multiple Choice</string>
+    <string name="test_mode_mcq_desc">Wähle die richtige Antwort aus Optionen, die aus den anderen Karten des Decks erzeugt werden.</string>
+    <string name="mcq_choose_answer">Wähle eine Antwort</string>
+    <string name="mcq_tap_next_to_continue">Tippe auf WEITER, um fortzufahren</string>
     <string name="suspend_card">Aussetzen</string>
     <string name="unsuspend_card">Wieder einsetzen</string>
     <string name="card_suspended">Ausgesetzt</string>

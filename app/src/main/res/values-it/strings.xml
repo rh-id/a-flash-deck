@@ -142,6 +142,13 @@
     <string name="test_suspended_cards_skipped">Schede sospese saltate (%1$d)</string>
     <string name="error_no_due_cards">Nessuna scheda da studiare al momento. Le nuove schede sono sempre incluse.</string>
     <string name="error_saving_card_grade">Salvataggio della valutazione non riuscito</string>
+    <string name="test_mode">Modalità test</string>
+    <string name="test_mode_self_grade">Autovalutazione</string>
+    <string name="test_mode_self_grade_desc">Svela la risposta da solo, poi valuta quanto la conoscevi (Di nuovo / Difficile / Bene / Facile).</string>
+    <string name="test_mode_multiple_choice">Scelta multipla</string>
+    <string name="test_mode_mcq_desc">Scegli la risposta corretta tra le opzioni generate dalle altre carte del mazzo.</string>
+    <string name="mcq_choose_answer">Scegli una risposta</string>
+    <string name="mcq_tap_next_to_continue">Tocca SUCCESSIVO per continuare</string>
     <string name="suspend_card">Sospendi</string>
     <string name="unsuspend_card">Riattiva</string>
     <string name="card_suspended">Sospesa</string>

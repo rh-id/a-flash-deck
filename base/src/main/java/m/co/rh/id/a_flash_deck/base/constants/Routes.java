@@ -30,6 +30,7 @@ public class Routes {
     public static final String DECKS = "/decks";
     public static final String CARDS = "/cards";
     public static final String TEST = "/test";
+    public static final String TEST_MODE_SELECT_PAGE = "/test/testModeSelectPage";
     public static final String TEST_SUMMARY_DIALOG = "/test/summaryDialog";
     public static final String NOTIFICATION_TIMERS = "/notificationTimers";
     public static final String NOTIFICATION_TIMER_DETAIL_DIALOG = "/notificationTimer/detailDialog";

@@ -142,6 +142,13 @@
     <string name="test_suspended_cards_skipped">Chartas suspendidas ignoradas (%1$d)</string>
     <string name="error_no_due_cards">Naginas chartas da scadenza per repetir actualmain. Chartas novas èn adina includidas.</string>
     <string name="error_saving_card_grade">Impussibel da salvar la valutaziun</string>
+    <string name="test_mode">Modus da test</string>
+    <string name="test_mode_self_grade">Autovalitaziun</string>
+    <string name="test_mode_self_grade_desc">Scuvra la resposta sezza e valitescha lura tge bain che la savevas (Anc / Difficil / Bain / Facil).</string>
+    <string name="test_mode_multiple_choice">Tscherna multipla</string>
+    <string name="test_mode_mcq_desc">Tscherna la resposta endretgira tranter las opziuns generadas da las autras cartas dal mazzo.</string>
+    <string name="mcq_choose_answer">Tscherna ina resposta</string>
+    <string name="mcq_tap_next_to_continue">Tippa ENAVANT per cuntinuar</string>
     <string name="suspend_card">Suspendere</string>
     <string name="unsuspend_card">Reactivar</string>
     <string name="card_suspended">Suspendì</string>

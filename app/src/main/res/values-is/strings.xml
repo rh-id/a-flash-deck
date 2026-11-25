@@ -142,6 +142,13 @@
     <string name="test_suspended_cards_skipped">Spjöld í bið sleppt (%1$d)</string>
     <string name="error_no_due_cards">Engin spjöld eru á falldagi núna. Ný spjöld eru alltaf innifalin.</string>
     <string name="error_saving_card_grade">Tókst ekki að vista einkunn</string>
+    <string name="test_mode">Prófhamur</string>
+    <string name="test_mode_self_grade">Sjálfsmat</string>
+    <string name="test_mode_self_grade_desc">Birtu svarið sjálf/ur og metur síðan hversu vel þú kunntu það (Aftur / Erfitt / Gott / Auðvelt).</string>
+    <string name="test_mode_multiple_choice">Fjölval</string>
+    <string name="test_mode_mcq_desc">Veldu rétt svarið úr valkostum sem gerðir eru úr öðrum kortum spjaldsins.</string>
+    <string name="mcq_choose_answer">Veldu svar</string>
+    <string name="mcq_tap_next_to_continue">Ýttu á NÆSTA til að halda áfram</string>
     <string name="suspend_card">Setja í bið</string>
     <string name="unsuspend_card">Taka úr bið</string>
     <string name="card_suspended">Í bið</string>

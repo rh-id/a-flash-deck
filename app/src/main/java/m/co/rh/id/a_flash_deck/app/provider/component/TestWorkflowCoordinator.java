@@ -30,6 +30,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_flash_deck.R;
 import m.co.rh.id.a_flash_deck.app.provider.modifier.TestStateModifier;
 import m.co.rh.id.a_flash_deck.app.ui.page.DeckSelectPage;
+import m.co.rh.id.a_flash_deck.app.ui.page.TestModeSelectPage;
+import m.co.rh.id.a_flash_deck.base.component.AppSharedPreferences;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
 import m.co.rh.id.a_flash_deck.base.entity.Deck;
 import m.co.rh.id.a_flash_deck.base.exception.ValidationException;
@@ -329,54 +331,74 @@ public class TestWorkflowCoordinator {
     }
 
     /**
-     * Internal method to handle deck selection and test start.
+     * Internal method to handle deck selection and test mode selection
+     * before starting the test.
      */
     private void startDeckSelectTestFlow(INavigator navigator) {
         navigator.push(Routes.DECK_SELECT_PAGE, DeckSelectPage.Args.multiSelectMode(),
                 (navigator1, navRoute, activity, currentView) -> {
                     DeckSelectPage.Result result = DeckSelectPage.Result.of(navRoute.getRouteResult());
                     if (result != null) {
-                        Provider provider = (Provider) navigator1.getNavConfiguration().getRequiredComponent();
-                        ArrayList<Deck> deckArrayList = result.getSelectedDeck();
-                        CompositeDisposable compositeDisposable = new CompositeDisposable();
-                        TestStateModifier testStateModifier = provider.get(TestStateModifier.class);
-                        compositeDisposable.add(
-                                testStateModifier.startTest(deckArrayList)
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe((startTestResult, throwable) -> {
-                                            if (throwable != null) {
-                                                Context context = provider.getContext();
-                                                Throwable cause = throwable.getCause();
-                                                if (cause == null) {
-                                                    cause = throwable;
-                                                }
-                                                if (cause instanceof ValidationException) {
-                                                    String title = context.getString(R.string.title_error);
-                                                    CommonNavConfig commonNavConfig = provider.get(CommonNavConfig.class);
-                                                    navigator1.push(Routes.COMMON_MESSAGE_DIALOG,
-                                                            commonNavConfig.args_commonMessageDialog(title,
-                                                                    cause.getMessage()),
-                                                            (navigator2, navRoute1, activity1, currentView1) ->
-                                                                    startDeckSelectTestFlow(navigator2));
-                                                } else {
-                                                    provider.get(ILogger.class).e(
-                                                            TAG,
-                                                            context.getString(R.string.error_starting_test), throwable);
-                                                }
-                                            } else {
-                                                if (startTestResult.skippedSuspendedCount > 0) {
-                                                    Context context = provider.getContext();
-                                                    Toast.makeText(context.getApplicationContext(),
-                                                            context.getString(R.string.test_suspended_cards_skipped, startTestResult.skippedSuspendedCount),
-                                                            Toast.LENGTH_SHORT).show();
-                                                }
-                                                navigator1.push(Routes.TEST);
-                                            }
-                                            compositeDisposable.dispose();
-                                        })
-                        );
+                        navigator1.push(Routes.TEST_MODE_SELECT_PAGE,
+                                (navigator2, navRoute1, activity1, currentView1) -> {
+                                    TestModeSelectPage.Result testModeResult =
+                                            TestModeSelectPage.Result.of(navRoute1.getRouteResult());
+                                    if (testModeResult != null) {
+                                        Provider provider = (Provider) navigator2.getNavConfiguration().getRequiredComponent();
+                                        int testMode = testModeResult.getTestMode();
+                                        // remember the choice for the direct due-test flows
+                                        provider.get(AppSharedPreferences.class).setLastTestMode(testMode);
+                                        startDeckTest(provider, navigator2,
+                                                result.getSelectedDeck(), testMode);
+                                    }
+                                });
                     }
                 });
+    }
+
+    /**
+     * Starts the test with the selected decks using the chosen test mode.
+     * A ValidationException re-prompts the deck selection exactly as before.
+     */
+    private void startDeckTest(Provider provider, INavigator navigator,
+                               ArrayList<Deck> deckArrayList, int testMode) {
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        TestStateModifier testStateModifier = provider.get(TestStateModifier.class);
+        compositeDisposable.add(
+                testStateModifier.startTest(deckArrayList, testMode)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((startTestResult, throwable) -> {
+                            if (throwable != null) {
+                                Context context = provider.getContext();
+                                Throwable cause = throwable.getCause();
+                                if (cause == null) {
+                                    cause = throwable;
+                                }
+                                if (cause instanceof ValidationException) {
+                                    String title = context.getString(R.string.title_error);
+                                    CommonNavConfig commonNavConfig = provider.get(CommonNavConfig.class);
+                                    navigator.push(Routes.COMMON_MESSAGE_DIALOG,
+                                            commonNavConfig.args_commonMessageDialog(title,
+                                                    cause.getMessage()),
+                                            (navigator2, navRoute1, activity1, currentView1) ->
+                                                    startDeckSelectTestFlow(navigator2));
+                                } else {
+                                    provider.get(ILogger.class).e(
+                                            TAG,
+                                            context.getString(R.string.error_starting_test), throwable);
+                                }
+                            } else {
+                                if (startTestResult.skippedSuspendedCount > 0) {
+                                    Context context = provider.getContext();
+                                    Toast.makeText(context.getApplicationContext(),
+                                            context.getString(R.string.test_suspended_cards_skipped, startTestResult.skippedSuspendedCount),
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                                navigator.push(Routes.TEST);
+                            }
+                            compositeDisposable.dispose();
+                        })
+        );
     }
 
     /**

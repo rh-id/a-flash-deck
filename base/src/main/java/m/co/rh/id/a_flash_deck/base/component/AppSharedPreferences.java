@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_flash_deck.base.model.FsrsParams;
 import m.co.rh.id.a_flash_deck.base.model.SchedulerMode;
+import m.co.rh.id.a_flash_deck.base.model.TestMode;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
@@ -81,6 +82,12 @@ public class AppSharedPreferences {
 
     private boolean mTtsAutoplayEnabled;
     private String mTtsAutoplayEnabledKey;
+
+    /** Default test mode: classic self-graded. */
+    public static final int DEFAULT_LAST_TEST_MODE = TestMode.SELF_GRADE;
+
+    private int mLastTestMode;
+    private String mLastTestModeKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -161,6 +168,13 @@ public class AppSharedPreferences {
                 mTtsAutoplayEnabledKey,
                 DEFAULT_TTS_AUTOPLAY_ENABLED);
         ttsAutoplayEnabled(ttsAutoplayEnabled);
+
+        mLastTestModeKey = SHARED_PREFERENCES_NAME
+                + ".lastTestMode";
+        int lastTestMode = mSharedPreferences.getInt(
+                mLastTestModeKey,
+                DEFAULT_LAST_TEST_MODE);
+        lastTestMode(lastTestMode);
     }
 
     private void selectedTheme(int setting) {
@@ -365,5 +379,27 @@ public class AppSharedPreferences {
 
     public boolean isTtsAutoplayEnabled() {
         return mTtsAutoplayEnabled;
+    }
+
+    private void lastTestMode(int mode) {
+        // normalize any value outside TestMode.SELF_GRADE/MULTIPLE_CHOICE
+        // (e.g. a corrupt stored value) to the default self-grade mode
+        int normalizedMode = TestMode.normalize(mode);
+        mLastTestMode = normalizedMode;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putInt(mLastTestModeKey, normalizedMode)
+                        .commit());
+    }
+
+    public void setLastTestMode(int mode) {
+        lastTestMode(mode);
+    }
+
+    /**
+     * @return the last used test mode, always
+     * TestMode.SELF_GRADE or TestMode.MULTIPLE_CHOICE
+     */
+    public int getLastTestMode() {
+        return TestMode.normalize(mLastTestMode);
     }
 }

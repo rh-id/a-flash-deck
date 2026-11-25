@@ -53,6 +53,7 @@ import m.co.rh.id.a_flash_deck.app.ui.page.NotificationTimerListPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SettingsPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.SplashPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.StatisticsPage;
+import m.co.rh.id.a_flash_deck.app.ui.page.TestModeSelectPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.TestPage;
 import m.co.rh.id.a_flash_deck.app.ui.page.TestSummarySVDialog;
 import m.co.rh.id.a_flash_deck.base.constants.Routes;
@@ -99,6 +100,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.DECKS, (args, activity) -> new DeckListPage());
         navMap.put(Routes.CARDS, (args, activity) -> new CardListPage());
         navMap.put(Routes.TEST, (args, activity) -> new TestPage());
+        navMap.put(Routes.TEST_MODE_SELECT_PAGE, (args, activity) -> new TestModeSelectPage());
         navMap.put(Routes.TEST_SUMMARY_DIALOG, (args, activity) -> new TestSummarySVDialog());
         navMap.put(Routes.NOTIFICATION_TIMERS, (args, activity) -> new NotificationTimerListPage());
         navMap.put(Routes.NOTIFICATION_TIMER_DETAIL_DIALOG, (args, activity) -> new NotificationTimerDetailSVDialog());

@@ -142,6 +142,13 @@
     <string name="test_suspended_cards_skipped">Peatatud kaardid jäeti vahele (%1$d)</string>
     <string name="error_no_due_cards">Hetkel pole ühtegi õppimiseks tähtaega saanud kaarti. Uued kaardid on alati kaasatud.</string>
     <string name="error_saving_card_grade">Hinnangu salvestamine ebaõnnestus</string>
+    <string name="test_mode">Testi režiim</string>
+    <string name="test_mode_self_grade">Isehindamine</string>
+    <string name="test_mode_self_grade_desc">Avalda vastus ise ja hinda seejärel, kui hästi sa seda teadsid (Uuesti / Raske / Hea / Lihtne).</string>
+    <string name="test_mode_multiple_choice">Valikvastused</string>
+    <string name="test_mode_mcq_desc">Vali õige vastus variantide seast, mis on koostatud teistest sama edi kaartidest.</string>
+    <string name="mcq_choose_answer">Vali vastus</string>
+    <string name="mcq_tap_next_to_continue">Puuduta JÄRGMINE, et jätkata</string>
     <string name="suspend_card">Peata</string>
     <string name="unsuspend_card">Taasta</string>
     <string name="card_suspended">Peatatud</string>
