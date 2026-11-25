@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Nouveautés :
+* Mode de test QCM — répondez avec 3-4 options générées à partir des autres cartes du paquet au lieu de la révélation libre, avec retour : coche verte / croix rouge et erreurs remises en file ; à choisir par test sur une nouvelle page Mode de test, mémorisé pour « À réviser » et le flash bot. Options conservées après redémarrage

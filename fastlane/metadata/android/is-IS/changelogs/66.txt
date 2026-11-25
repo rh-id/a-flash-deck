@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Nýtt:
+* Fjölvalshamur (MCQ) — svarið með 3-4 valkostum úr öðrum kortum kortastokklunnar í stað sjálfmats; svarviðbrökt með grænum hök / rauðum krossi og röng svör fara aftur í biðröð; valið fyrir hvert próf á nýrri prófhamurssíðu og munað fyrir „Til að læra“ og tillögur flash-botsins. Valkostir varðveitast yfir endurræsingu appsins

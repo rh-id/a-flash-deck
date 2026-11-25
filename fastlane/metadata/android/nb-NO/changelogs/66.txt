@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Ny funksjon:
+* Flervalgs-testmodus (MCQ) — svar valgfritt med 3-4 alternativer generert fra andre kort i kortstokken i stedet for fri visning; tilbakemelding med grønn hake / rødt kryss, feil svar settes i kø; velges per test på den nye Testmodus-siden og huskes for «Skal repeteres» og flash-bot-forslag. Alternativene overlever omstart

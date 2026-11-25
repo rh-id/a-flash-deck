@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Features:
+* Multiple-choice (MCQ) test mode — answer with 3-4 options generated from the deck's other cards instead of free reveal, with green check / red cross feedback and wrong answers requeued; pick the mode per test on a new Test Mode page, remembered for Study Due / bot suggestions. Options survive app restarts

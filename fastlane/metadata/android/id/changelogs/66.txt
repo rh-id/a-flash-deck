@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Fitur:
+* Mode tes pilihan ganda (MCQ) — jawab opsional dengan 3-4 opsi dari kartu lain di dek, bukan membuka jawaban sendiri, dengan umpan balik ikon centang hijau / silang merah dan jawaban salah kembali ke antrean; pilih per tes di halaman Mode tes baru, diingat untuk Belajar Jatuh Tempo / saran flash bot. Opsi bertahan setelah restart

@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Novità:
+* Modalità test a scelta multipla (MCQ) — rispondi facoltativamente con 3-4 opzioni generate dalle altre carte del mazzo, feedback con icone spunta verde / croce rossa e risposte sbagliate rimesse in coda; da scegliere per test nella nuova pagina Modalità test, memorizzato per «Da ripassare» e flash bot. Opzioni salvate al riavvio dell'app

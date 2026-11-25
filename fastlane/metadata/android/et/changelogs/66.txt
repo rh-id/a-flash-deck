@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Uuendus:
+* Valikvastuste testrežiim (MCQ) — vasta soovi korral 3-4 variandiga kaardipaki teistest kaartidest, vastuse tagasiside rohelise linnukese / punase ristiga, valed vastused lähevad uuesti järjekorda; vali režiim testi kaupa uuel testi režiimi lehel, valik jääb meelde „Kordamise“ ja välkroboti soovituste jaoks. Variandid säilivad taaskäivitamisel

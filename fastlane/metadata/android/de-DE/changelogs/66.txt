@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Neu:
+* Multiple-Choice-Testmodus (MCQ) — optional mit 3-4 Optionen aus anderen Karten des Decks statt freiem Aufdecken antworten, mit Antwort-Feedback aus grünem Häkchen / rotem Kreuz; falsche Antworten kommen erneut; pro Test auf der neuen Testmodus-Seite wählbar, gemerkt für „Fällig lernen“ / Flash-Bot-Vorschläge. Optionen überstehen Neustarts

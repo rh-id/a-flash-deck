@@ -1,0 +1,4 @@
+Release 2.6.0+66
+
+Nova funcziun:
+* Modus da test cun tscherna multipla (MCQ) — eventualmain 3-4 opziuns da las autras cartas dal pachet; feedback cun icona verda / crusch cotschna, respostas faussas vegnan anc dumandadas; tschernibel per test sin la nova pagina Modus da test, merclà per «Da repetir» e las propostas dal flash bot. Opziuns survivan in restart
